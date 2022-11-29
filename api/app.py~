@@ -1,0 +1,5 @@
+from flask import Flask
+
+@app.route('/')
+def get_current_time():
+    return 'Hello World'
