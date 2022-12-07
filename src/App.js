@@ -14,18 +14,21 @@ import RocketIcon from '@mui/icons-material/RocketLaunch';
 
 export default function InputAdornments() {
 	const [values, setValues] = React.useState({
-		amount: '',
-		password: '',
-		weight: '',
-		weightRange: '',
+		seconds: 0,
+		exposures: 0
 	});
 
 	const [isPointLoading, setPointLoading] = React.useState(false);
+	const [pointTxtVal, setPointTxtVal] = React.useState("Point");
+
 	const [isStartLoading, setStartLoading] = React.useState(false);
+	const [startTxtVal, setStartTxtVal] = React.useState("Start");
 
 	const handleChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
 	};
+
+	const props = { values, handleChange }
 
 	return (
 		<>
@@ -47,17 +50,15 @@ export default function InputAdornments() {
 						<span style={{ marginLeft: '4rem' }}>&nbsp;</span>
 						0/
 					</text>
+
 					<FormControl sx={{ m: 1, width: '17ch' }} variant="outlined">
 						<OutlinedInput
-							id="outlined-adornment-weight"
-							value={values.weight}
+							id="outlined-adornment-seconds"
+							value={values.seconds}
 							size="small"
-							onChange={handleChange('weight')}
+							onChange={handleChange("seconds")}
 							endAdornment={<InputAdornment position="end">Second(s)</InputAdornment>}
-							aria-describedby="outlined-weight-helper-text"
-							inputProps={{
-								'aria-label': 'weight',
-							}}
+							aria-describedby="outlined-seconds-helper-text"
 						/>
 					</FormControl>
 				</div>
@@ -74,9 +75,11 @@ export default function InputAdornments() {
 					</text>
 					<TextField
 						id="outlined-number"
+						value={values.exposures}
+						size="small"
+						onChange={handleChange("exposures")}
 						label="Exposures"
 						type="number"
-						size="small"
 						InputLabelProps={{
 							shrink: true,
 						}}
@@ -96,32 +99,41 @@ export default function InputAdornments() {
 						startIcon={<LocationSearchingIcon />}
 						onClick={() => {
 							setPointLoading(!isPointLoading);
+							setPointTxtVal("Pointing");
+
 							setTimeout(() => {
 								setPointLoading(false);
+								setPointTxtVal("Point");
 							}, 1000);
 						}}
 						loading={isPointLoading}
 						loadingPosition="start"
 						disabled={isStartLoading === true}
 					>
-						Point
+						{pointTxtVal}
 					</LoadingButton>
 
 					<LoadingButton
 						variant="contained"
+						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+						type="submit"
 						sx={{}}
 						startIcon={<RocketIcon />}
 						onClick={() => {
 							setStartLoading(!isStartLoading);
+							setStartTxtVal("Starting");
+							console.log(props.values);
+
 							setTimeout(() => {
 								setStartLoading(false);
+								setStartTxtVal("Start");
 							}, 1000);
 						}}
 						loading={isStartLoading}
 						loadingPosition="start"
 						disabled={isPointLoading === true}
 					>
-						Start
+						{startTxtVal}
 					</LoadingButton>
 				</Stack>
 			</div>
