@@ -1,11 +1,11 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import { LoadingButton } from "@mui/lab"
 
 // https://mui.com/material-ui/material-icons/
 import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
@@ -20,10 +20,12 @@ export default function InputAdornments() {
 		weightRange: '',
 	});
 
+	const [isPointLoading, setPointLoading] = React.useState(false);
+	const [isStartLoading, setStartLoading] = React.useState(false);
+
 	const handleChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
 	};
-
 
 	return (
 		<>
@@ -37,11 +39,12 @@ export default function InputAdornments() {
 			>
 				<div style={{
 					display: 'flex',
+					justifyContent: "center",
 					alignItems: 'center',
 				}}>
 					<text>
 						Time
-						<span style={{ marginLeft: '7.6rem' }}>&nbsp;</span>
+						<span style={{ marginLeft: '4rem' }}>&nbsp;</span>
 						0/
 					</text>
 					<FormControl sx={{ m: 1, width: '17ch' }} variant="outlined">
@@ -61,6 +64,7 @@ export default function InputAdornments() {
 
 				<div style={{
 					display: 'flex',
+					justifyContent: "center",
 					alignItems: 'center',
 				}}>
 					<text>
@@ -80,19 +84,47 @@ export default function InputAdornments() {
 				</div>
 			</Box>
 
-			<Stack direction="row" spacing={5}>
-				<Button
-					variant="contained"
-					sx={{}}
-					startIcon={<LocationSearchingIcon />}
-				>
-					Point
-				</Button>
+			<div style={{
+				display: 'flex',
+				justifyContent: "center",
+				alignItems: 'center',
+			}}>
+				<Stack direction="row" spacing={5}>
+					<LoadingButton
+						variant="contained"
+						sx={{}}
+						startIcon={<LocationSearchingIcon />}
+						onClick={() => {
+							setPointLoading(!isPointLoading);
+							setTimeout(() => {
+								setPointLoading(false);
+							}, 1000);
+						}}
+						loading={isPointLoading}
+						loadingPosition="start"
+						disabled={isStartLoading === true}
+					>
+						Point
+					</LoadingButton>
 
-				<Button variant="contained" startIcon={<RocketIcon />}>
-					Start
-				</Button>
-			</Stack>
+					<LoadingButton
+						variant="contained"
+						sx={{}}
+						startIcon={<RocketIcon />}
+						onClick={() => {
+							setStartLoading(!isStartLoading);
+							setTimeout(() => {
+								setStartLoading(false);
+							}, 1000);
+						}}
+						loading={isStartLoading}
+						loadingPosition="start"
+						disabled={isPointLoading === true}
+					>
+						Start
+					</LoadingButton>
+				</Stack>
+			</div>
 		</>
 	)
 }
