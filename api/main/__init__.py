@@ -20,5 +20,5 @@ POSTGRES_USER = get_env_variable("POSTGRES_USER")
 POSTGRES_PW = get_env_variable("POSTGRES_PW")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 
-import main.views as views
-#app.register_blueprint( example_blueprint, url_prefix="/buyer" )
+from .subystem_communication import subsystem_communication
+app.register_blueprint( subsystem_communication, url_prefix="/subsystem_communication" )
