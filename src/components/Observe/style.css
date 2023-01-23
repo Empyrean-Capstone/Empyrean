@@ -43,3 +43,8 @@ h5 {
 	background-color: #334155;
 	color: #ebeef2;
 }
+
+/* https://stackoverflow.com/a/46123688 */
+.half-containers {
+	flex: 1;
+}

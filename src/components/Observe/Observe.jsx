@@ -53,6 +53,47 @@ function Observe() {
 		setValues({ ...values, [prop]: event.target.value });
 	};
 
+	const [values, setValues] = React.useState({
+		object: "",
+		right_ascension: 0,
+		declination: 0,
+		altitude: 0,
+		visible: 0,
+		num_exposures: 0,
+		exposure_time: 0,
+	});
+
+	const fields_row1 = [
+		{ name: "Right Ascension (α)", value: "right_ascension" },
+		{ name: "Declination (δ)", value: "declination" },
+	]
+	const fields_row2 = [
+		{ name: "Altitude", value: "altitude" },
+		{ name: "Visible", value: "visible" },
+	]
+	const fields_row3 = [
+		{ name: "Number of Exposures", value: "num_exposures" },
+		{ name: "Exposure Time (secs)", value: "exposure_time" },
+	]
+
+	function field_init(type) {
+		return (
+			<TextField
+				required
+				className="half-containers"
+				id="outlined"
+				variant="outlined"
+				size="small"
+				value={values[type.value]}
+				onChange={handleChange(type.value)}
+				label={type.name}
+				InputLabelProps={{
+					shrink: true,
+				}}
+			/>
+		)
+	}
+
 	const props = { values, handleChange }
 
 	return (
@@ -106,75 +147,17 @@ function Observe() {
 			</Stack>
 
 			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
-				<TextField
-					required
-					id="outlined"
-					variant="outlined"
-					size="small"
-					value={values.right_ascension}
-					onChange={handleChange("right_ascension")}
-					label="Right Ascension (α)"
-					InputLabelProps={{
-						shrink: true,
-					}}
-				/>
-
-				<TextField
-					required
-					id="outlined"
-					value={values.declination}
-					size="small"
-					onChange={handleChange("declination")}
-					label="Declination (δ)"
-					type="text"
-					InputLabelProps={{
-						shrink: true,
-					}}
-				/>
+				{fields_row1.map(field_init)}
 			</Stack>
 
 			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
-				<TextField
-					required
-					id="outlined"
-					value={values.altitude}
-					size="small"
-					onChange={handleChange("altitude")}
-					label="Altitude"
-					type="text"
-					InputLabelProps={{
-						shrink: true,
-					}}
-				/>
-
-				<TextField
-					required
-					id="outlined"
-					value={values.visible}
-					size="small"
-					onChange={handleChange("visible")}
-					label="Visible"
-					type="text"
-					InputLabelProps={{
-						shrink: true,
-					}}
-				/>
+				{fields_row2.map(field_init)}
 			</Stack>
 
 
 			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
-				<TextField
-					required
-					id="outlined-number"
-					value={values.exposures}
-					size="small"
-					onChange={handleChange("exposures")}
-					label="Number of Exposures"
-					type="number"
-					InputLabelProps={{
-						shrink: true,
-					}}
-				/>
+				{fields_row3.map(field_init)}
+			</Stack>
 
 				<TextField
 					required
