@@ -1,8 +1,3 @@
-// TODO:
-// 1. make a factory for center input fields
-// 2. make center input fields half page apiece
-
-
 import React from 'react';
 import './style.css'
 
@@ -33,18 +28,7 @@ function ImgTypeButtons() {
 	return (buttons.map(button_init))
 }
 
-
 function Observe() {
-	const [values, setValues] = React.useState({
-		altitude: 0,
-		declination: 0,
-		exposures: 0,
-		exposure_time: 0,
-		object: "",
-		right_ascension: 0,
-		seconds: 0,
-		visible: 0,
-	});
 	const [resolving, setResolving] = React.useState(false);
 	const [startLoading, setStartLoading] = React.useState(false);
 	const [stopLoading, setStopLoading] = React.useState(false);
@@ -99,8 +83,8 @@ function Observe() {
 	return (
 		<div>
 			<Typography align="left">
-				<h2>Observe</h2>
-				<h5>Start observations from here</h5>
+				<h2 className="horiz-align">Observe</h2>
+				<h5 className="horiz-align">Start observations from here</h5>
 			</Typography>
 
 			<Stack className="horiz-align vertically-space" direction="row" spacing={1}>
@@ -159,74 +143,57 @@ function Observe() {
 				{fields_row3.map(field_init)}
 			</Stack>
 
-				<TextField
-					required
-					id="outlined-number"
-					value={values.exposure_time}
-					size="small"
-					onChange={handleChange("exposure_time")}
-					label="Exposure Time (secs)"
-					type="number"
-					InputLabelProps={{
-						shrink: true,
-					}}
-				/>
+			<Stack className="horiz-align" direction="row" spacing={1}>
+				<Tooltip title="Begin Observation">
+					<LoadingButton
+						className="button"
+						color="success"
+						variant="contained"
+						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+						type="submit"
+						sx={{}}
+						onClick={() => {
+							setStartLoading(!startLoading);
+							console.log(props.values);
+
+							setTimeout(() => {
+								setStartLoading(false);
+							}, 1000);
+						}}
+						loading={startLoading}
+						loadingPosition="center"
+						disabled={stopLoading === true || resolving === true}
+					>
+						Start
+					</LoadingButton>
+				</Tooltip>
+
+				<Tooltip title="End Observation">
+					<LoadingButton
+						className="button"
+						color="error"
+						variant="contained"
+						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+						type="submit"
+						sx={{}}
+						onClick={() => {
+							setStopLoading(!stopLoading);
+
+							setTimeout(() => {
+								setStopLoading(false);
+							}, 1000);
+						}}
+
+						loading={stopLoading}
+						loadingPosition="center"
+						disabled={startLoading === true || resolving === true}
+					>
+						Stop
+					</LoadingButton>
+				</Tooltip>
 			</Stack>
 
-			<div>
-				<Stack direction="row" spacing={1}>
-
-					<Tooltip title="Begin Observation">
-						<LoadingButton
-							className="button"
-							color="success"
-							variant="contained"
-							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
-							type="submit"
-							sx={{}}
-							onClick={() => {
-								setStartLoading(!startLoading);
-								console.log(props.values);
-
-								setTimeout(() => {
-									setStartLoading(false);
-								}, 1000);
-							}}
-							loading={startLoading}
-							loadingPosition="center"
-							disabled={stopLoading === true || resolving === true}
-						>
-							Start
-						</LoadingButton>
-					</Tooltip>
-
-					<Tooltip title="End Observation">
-						<LoadingButton
-							className="button"
-							color="error"
-							variant="contained"
-							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
-							type="submit"
-							sx={{}}
-							onClick={() => {
-								setStopLoading(!stopLoading);
-
-								setTimeout(() => {
-									setStopLoading(false);
-								}, 1000);
-							}}
-
-							loading={stopLoading}
-							loadingPosition="center"
-							disabled={startLoading === true || resolving === true}
-						>
-							Stop
-						</LoadingButton>
-					</Tooltip>
-
-				</Stack>
-			</div>
-		</div >
+		</div>
 	)
 }
 
