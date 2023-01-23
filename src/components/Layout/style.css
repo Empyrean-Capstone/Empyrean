@@ -1,0 +1,87 @@
+/* General Css */
+#layout-grid{
+    display: inline-grid;
+    width: 100vw;
+    height: 100vh;
+    grid-template-columns: 15% 85%;
+
+}
+
+body{
+    margin: 0; 
+}
+
+#page-content{
+    min-height: 93vh;
+}
+
+
+/* Toolbar css */
+#left-toolbar{
+    grid-row: 1;
+    grid-column: 1;
+    background-color: #1f2937;
+    color: white;
+}
+
+#profile-bar{
+    background-color: #232e3e;
+    height: 5%;
+}
+
+#main-page-title{
+    margin-top: 3em;
+    margin-left: 1em;
+    color: #e0ecf8;
+    font-size: .8em;
+}
+
+#main-links{
+    list-style: none;
+}
+
+.main-page-link{
+    padding-bottom: 10px
+}
+
+
+/* Footer css */
+#main-content{
+    grid-row: 1;
+    grid-column: 2;
+    display: inline;
+    background-color: #ebeef2;
+}
+
+
+#right-info{
+    list-style: none;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.footer-nav-link{
+    margin-left: 15px; 
+    display: inline; 
+}
+
+#left-info{
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+hr{
+    margin-bottom: 0;
+    opacity: .6;
+}
+
+#footer-section{
+    opacity: .65;
+    margin-top: 0;
+    width: 75%;
+    display: inline-flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-self: flex-end;
+
+}
