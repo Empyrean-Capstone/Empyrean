@@ -12,8 +12,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-      "start": "react-scripts start",
-      "start-api": "cd api && /home/koseward/miniconda3/envs/empyrean/bin/flask run --no-debugger",
+    "start": "react-scripts start",
+    "start-api": "cd api && /home/koseward/miniconda3/envs/empyrean/bin/flask run --no-debugger",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -36,5 +36,8 @@
       "last 1 safari version"
     ]
   },
-    "proxy": "http://localhost:5000"
+  "proxy": "http://localhost:5000",
+  "devDependencies": {
+    "react-router-dom": "^6.7.0"
+  }
 }

@@ -1,0 +1,27 @@
+#right-info{
+    list-style: none;
+    margin-top: 0;
+}
+
+.footer-nav-link{
+    margin-left: 15px; 
+    display: inline; 
+}
+
+#left-info{
+    margin-top: 0;
+}
+
+hr{
+    margin-bottom: 0;
+}
+
+#footer-section{
+    margin-top: 0;
+    width: 100%;
+    display: inline-flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-self: flex-end;
+
+}
