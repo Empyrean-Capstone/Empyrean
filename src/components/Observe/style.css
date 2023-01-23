@@ -1,0 +1,45 @@
+h2 {
+	color: #334155;
+	margin-top: 5px;
+	margin-left: 5px;
+	margin-bottom: -5px;
+}
+
+h5 {
+  margin-top: 0px;
+	margin-left: 5px;
+	margin-bottom: 30px;
+}
+
+.horiz-align {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.vertically-space {
+	margin-bottom: 25px;
+}
+
+.button {
+	max-width: 20px;
+}
+
+.short-button {
+	max-height: 38px;
+}
+
+.inactive-button {
+	background-color: #ebeef2;
+	color: #334155;
+}
+
+.inactive-button:hover {
+	background-color: #5B6676;
+	color: #ebeef2;
+}
+
+.active-button,
+.active-button:hover {
+	background-color: #334155;
+	color: #ebeef2;
+}

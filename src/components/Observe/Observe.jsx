@@ -1,31 +1,53 @@
-// TODO: modularize
+// TODO:
+// 1. make a factory for center input fields
+// 2. make center input fields half page apiece
+
 
 import React from 'react';
-import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import InputAdornment from '@mui/material/InputAdornment';
-import OutlinedInput from '@mui/material/OutlinedInput';
+import './style.css'
+
+import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import { LoadingButton } from "@mui/lab"
+import { Typography } from '@mui/material';
 
-// https://mui.com/material-ui/material-icons/
-import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
-import RocketIcon from '@mui/icons-material/RocketLaunch';
+
+function ImgTypeButtons() {
+	const [active, setActive] = React.useState("Object");
+	const buttons = ["Object", "Dark", "Flat", "ThAr"]
+
+	function button_init(name) {
+		return (
+			<Button
+				className={active === name ? 'active-button button' : 'inactive-button button'}
+				variant="contained"
+				onClick={() => { setActive(name) }}
+			>
+				{name}
+			</Button>
+		)
+	}
+
+	return (buttons.map(button_init))
+}
 
 
 function Observe() {
-
 	const [values, setValues] = React.useState({
+		altitude: 0,
+		declination: 0,
+		exposures: 0,
+		exposure_time: 0,
+		object: "",
+		right_ascension: 0,
 		seconds: 0,
-		exposures: 0
+		visible: 0,
 	});
-
-	const [isPointLoading, setPointLoading] = React.useState(false);
-	const [pointTxtVal, setPointTxtVal] = React.useState("Point");
-
-	const [isStartLoading, setStartLoading] = React.useState(false);
-	const [startTxtVal, setStartTxtVal] = React.useState("Start");
+	const [resolving, setResolving] = React.useState(false);
+	const [startLoading, setStartLoading] = React.useState(false);
+	const [stopLoading, setStopLoading] = React.useState(false);
 
 	const handleChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
@@ -34,113 +56,194 @@ function Observe() {
 	const props = { values, handleChange }
 
 	return (
-		<>
-			<Box
-				component="form"
-				sx={{
-					'& .MuiTextField-root': { m: 1, width: '10ch' },
-				}}
-				noValidate
-				autoComplete="off"
-			>
-				<div style={{
-					display: 'flex',
-					justifyContent: "center",
-					alignItems: 'center',
-				}}>
-					<text>
-						Time
-						<span style={{ marginLeft: '4rem' }}>&nbsp;</span>
-						0/
-					</text>
+		<div>
+			<Typography align="left">
+				<h2>Observe</h2>
+				<h5>Start observations from here</h5>
+			</Typography>
 
-					<FormControl sx={{ m: 1, width: '17ch' }} variant="outlined">
-						<OutlinedInput
-							id="outlined-adornment-seconds"
-							value={values.seconds}
-							size="small"
-							onChange={handleChange("seconds")}
-							endAdornment={<InputAdornment position="end">Second(s)</InputAdornment>}
-							aria-describedby="outlined-seconds-helper-text"
-						/>
-					</FormControl>
-				</div>
+			<Stack className="horiz-align vertically-space" direction="row" spacing={1}>
+				<ImgTypeButtons />
+			</Stack>
 
-				<div style={{
-					display: 'flex',
-					justifyContent: "center",
-					alignItems: 'center',
-				}}>
-					<text>
-						Exposures
-						<span style={{ marginLeft: '5rem' }}>&nbsp;</span>
-						1 of
-					</text>
-					<TextField
-						id="outlined-number"
-						value={values.exposures}
-						size="small"
-						onChange={handleChange("exposures")}
-						label="Exposures"
-						type="number"
-						InputLabelProps={{
-							shrink: true,
-						}}
-					/>
-				</div>
-			</Box>
+			<Stack className="horiz-align vertically-space" direction="row" spacing={1}>
+				<TextField
+					required
+					fullWidth
+					id="outlined"
+					value={values.object}
+					size="small"
+					onChange={handleChange("object")}
+					label="Object"
+					type="text"
+					InputLabelProps={{
+						shrink: true,
+					}}
+				/>
 
-			<div style={{
-				display: 'flex',
-				justifyContent: "center",
-				alignItems: 'center',
-			}}>
-				<Stack direction="row" spacing={5}>
+				<Tooltip title="Resolve Astronomical Object">
 					<LoadingButton
-						variant="contained"
-						sx={{}}
-						startIcon={<LocationSearchingIcon />}
-						onClick={() => {
-							setPointLoading(!isPointLoading);
-							setPointTxtVal("Pointing");
-
-							setTimeout(() => {
-								setPointLoading(false);
-								setPointTxtVal("Point");
-							}, 1000);
-						}}
-						loading={isPointLoading}
-						loadingPosition="start"
-						disabled={isStartLoading === true}
-					>
-						{pointTxtVal}
-					</LoadingButton>
-
-					<LoadingButton
+						className="button short-button"
 						variant="contained"
 						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
 						type="submit"
 						sx={{}}
-						startIcon={<RocketIcon />}
 						onClick={() => {
-							setStartLoading(!isStartLoading);
-							setStartTxtVal("Starting");
-							console.log(props.values);
+							setResolving(!resolving);
+							console.log(props.values.object);
 
 							setTimeout(() => {
-								setStartLoading(false);
-								setStartTxtVal("Start");
+								setResolving(false);
 							}, 1000);
 						}}
-						loading={isStartLoading}
-						loadingPosition="start"
-						disabled={isPointLoading === true}
+						loading={resolving}
+						loadingPosition="center"
+						disabled={startLoading === true || stopLoading === true}
 					>
-						{startTxtVal}
+						Resolve
 					</LoadingButton>
+				</Tooltip>
+			</Stack>
+
+			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+				<TextField
+					required
+					id="outlined"
+					variant="outlined"
+					size="small"
+					value={values.right_ascension}
+					onChange={handleChange("right_ascension")}
+					label="Right Ascension (α)"
+					InputLabelProps={{
+						shrink: true,
+					}}
+				/>
+
+				<TextField
+					required
+					id="outlined"
+					value={values.declination}
+					size="small"
+					onChange={handleChange("declination")}
+					label="Declination (δ)"
+					type="text"
+					InputLabelProps={{
+						shrink: true,
+					}}
+				/>
+			</Stack>
+
+			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+				<TextField
+					required
+					id="outlined"
+					value={values.altitude}
+					size="small"
+					onChange={handleChange("altitude")}
+					label="Altitude"
+					type="text"
+					InputLabelProps={{
+						shrink: true,
+					}}
+				/>
+
+				<TextField
+					required
+					id="outlined"
+					value={values.visible}
+					size="small"
+					onChange={handleChange("visible")}
+					label="Visible"
+					type="text"
+					InputLabelProps={{
+						shrink: true,
+					}}
+				/>
+			</Stack>
+
+
+			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+				<TextField
+					required
+					id="outlined-number"
+					value={values.exposures}
+					size="small"
+					onChange={handleChange("exposures")}
+					label="Number of Exposures"
+					type="number"
+					InputLabelProps={{
+						shrink: true,
+					}}
+				/>
+
+				<TextField
+					required
+					id="outlined-number"
+					value={values.exposure_time}
+					size="small"
+					onChange={handleChange("exposure_time")}
+					label="Exposure Time (secs)"
+					type="number"
+					InputLabelProps={{
+						shrink: true,
+					}}
+				/>
+			</Stack>
+
+			<div>
+				<Stack direction="row" spacing={1}>
+
+					<Tooltip title="Begin Observation">
+						<LoadingButton
+							className="button"
+							color="success"
+							variant="contained"
+							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+							type="submit"
+							sx={{}}
+							onClick={() => {
+								setStartLoading(!startLoading);
+								console.log(props.values);
+
+								setTimeout(() => {
+									setStartLoading(false);
+								}, 1000);
+							}}
+							loading={startLoading}
+							loadingPosition="center"
+							disabled={stopLoading === true || resolving === true}
+						>
+							Start
+						</LoadingButton>
+					</Tooltip>
+
+					<Tooltip title="End Observation">
+						<LoadingButton
+							className="button"
+							color="error"
+							variant="contained"
+							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+							type="submit"
+							sx={{}}
+							onClick={() => {
+								setStopLoading(!stopLoading);
+
+								setTimeout(() => {
+									setStopLoading(false);
+								}, 1000);
+							}}
+
+							loading={stopLoading}
+							loadingPosition="center"
+							disabled={startLoading === true || resolving === true}
+						>
+							Stop
+						</LoadingButton>
+					</Tooltip>
+
 				</Stack>
 			</div>
-		</>
+		</div >
 	)
 }
 
