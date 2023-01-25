@@ -4,7 +4,6 @@ import './style.css'
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
 import PropTypes from 'prop-types';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -117,9 +116,8 @@ function MakeProgRows() {
 function Status() {
 
 	return (
-		<TableContainer component={Paper}>
-			<Table sx={{ minWidth: 650 }}>
-
+		<TableContainer>
+			<Table sx={{ minWidth: 150 }}>
 				<TableHead>
 					<TableRow>
 						<TableCell sx={{ fontSize: "large", fontWeight: 'bold' }}>System</TableCell>
