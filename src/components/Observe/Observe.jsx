@@ -29,9 +29,7 @@ function ImgTypeButtons() {
 }
 
 function Observe() {
-	const [resolving, setResolving] = React.useState(false);
-	const [startLoading, setStartLoading] = React.useState(false);
-	const [stopLoading, setStopLoading] = React.useState(false);
+	const [isLoading, setLoading] = React.useState("");
 
 	const handleChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
@@ -114,16 +112,16 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setResolving(!resolving);
+							setLoading("Resolve");
 							console.log(props.values.object);
 
 							setTimeout(() => {
-								setResolving(false);
+								setLoading("");
 							}, 1000);
 						}}
-						loading={resolving}
 						loadingPosition="center"
-						disabled={startLoading === true || stopLoading === true}
+						loading={isLoading === "Resolve"}
+						disabled={isLoading !== "" && isLoading !== "Resolve"}
 					>
 						Resolve
 					</LoadingButton>
@@ -153,16 +151,16 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setStartLoading(!startLoading);
+							setLoading("Start");
 							console.log(props.values);
 
 							setTimeout(() => {
-								setStartLoading(false);
+								setLoading("");
 							}, 1000);
 						}}
-						loading={startLoading}
 						loadingPosition="center"
-						disabled={stopLoading === true || resolving === true}
+						loading={isLoading === "Start"}
+						disabled={isLoading !== "" && isLoading !== "Start"}
 					>
 						Start
 					</LoadingButton>
@@ -177,16 +175,16 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setStopLoading(!stopLoading);
+							setLoading("Stop");
 
 							setTimeout(() => {
-								setStopLoading(false);
+								setLoading("");
 							}, 1000);
 						}}
 
-						loading={stopLoading}
 						loadingPosition="center"
-						disabled={startLoading === true || resolving === true}
+						loading={isLoading === "Stop"}
+						disabled={isLoading !== "" && isLoading !== "Stop"}
 					>
 						Stop
 					</LoadingButton>
