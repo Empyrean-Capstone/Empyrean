@@ -12,11 +12,35 @@ import { Typography } from '@mui/material';
 function ImgTypeButtons() {
 	const [active, setActive] = React.useState("Object");
 	const buttons = ["Object", "Dark", "Flat", "ThAr"]
+	const styles = {
+		"active": {
+			backgroundColor: "#334155",
+			color: "#ebeef2",
+			"&:hover": {
+				backgroundColor: "#334155",
+				color: "#ebeef2"
+			}
+		},
+		"inactive": {
+			backgroundColor: "#ebeef2",
+			color: "#334155",
+			"&:hover": {
+				backgroundColor: "#5B6676",
+				color: "#ebeef2",
+			}
+		}
+	}
 
 	function button_init(name) {
 		return (
 			<Button
-				className={active === name ? 'active-button button' : 'inactive-button button'}
+				sx={[
+					{
+						fontWeight: 'bold',
+						maxWidth: '20px',
+					},
+					active === name ? styles["active"] : styles["inactive"]
+				]}
 				variant="contained"
 				onClick={() => { setActive(name) }}
 			>

@@ -28,22 +28,6 @@ h5 {
 	max-height: 38px;
 }
 
-.inactive-button {
-	background-color: #ebeef2;
-	color: #334155;
-}
-
-.inactive-button:hover {
-	background-color: #5B6676;
-	color: #ebeef2;
-}
-
-.active-button,
-.active-button:hover {
-	background-color: #334155;
-	color: #ebeef2;
-}
-
 /* https://stackoverflow.com/a/46123688 */
 .half-containers {
 	flex: 1;
