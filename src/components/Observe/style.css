@@ -12,12 +12,12 @@ h5 {
 }
 
 .horiz-align {
-	margin-left: 5px;
-	margin-right: 5px;
+	margin-left: 10px;
+	margin-right: 10px;
 }
 
-.vertically-space {
-	margin-bottom: 25px;
+.vert-space {
+	margin-bottom: 30px;
 }
 
 .button {

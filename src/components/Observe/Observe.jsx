@@ -109,11 +109,11 @@ function Observe() {
 				<h5 className="horiz-align">Start observations from here</h5>
 			</Typography>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={1}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<ImgTypeButtons />
 			</Stack>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={1}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
 					required
 					fullWidth
@@ -152,20 +152,19 @@ function Observe() {
 				</Tooltip>
 			</Stack>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row1.map(field_init)}
 			</Stack>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row2.map(field_init)}
 			</Stack>
 
-
-			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row3.map(field_init)}
 			</Stack>
 
-			<Stack className="horiz-align" direction="row" spacing={1}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<Tooltip title="Begin Observation">
 					<LoadingButton
 						className="button"
