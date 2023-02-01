@@ -40,4 +40,4 @@ function Observation() {
 	)
 }
 
-export { Observation }
+export { Observation, Item }

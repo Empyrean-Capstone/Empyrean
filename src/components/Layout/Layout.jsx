@@ -11,8 +11,8 @@ function Layout() {
                     </div>
                     <p id='main-page-title'>MAIN PAGES</p>
                     <ul id='main-links'>
-                        <li class='main-page-link'>Observe</li>
-                        <li class='main-page-link'>Logsheets</li>
+                        <li class='main-page-link'><Link class="main-link" to="/">Observe</Link></li>
+                        <li class='main-page-link'><Link class="main-link" to="">Logsheets</Link></li>
                     </ul>
                 </div>
                 <div id='main-content'>
@@ -21,10 +21,10 @@ function Layout() {
                         <hr id="footer-line-break"/>
                         <footer id='footer-section'>
                             <p id="left-info">
-                                Wanted information here
+                                Designed by students from NAU's CEIAS capstone program
                             </p>
                             <span>
-                                Version Perhaps
+                                V0.0.2
                             </span>
                                 <ul id="right-info">
                                     <li class="footer-nav-link"><Link to="/about">About</Link></li>
