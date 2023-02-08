@@ -40,8 +40,15 @@ body{
     list-style: none;
 }
 
+
+
 .main-page-link{
-    padding-bottom: 10px
+    padding-bottom: 10px;
+}
+
+.main-link{
+    color: white;
+    text-decoration: none;
 }
 
 
@@ -83,5 +90,6 @@ hr{
     justify-content: space-between;
     flex-direction: row;
     align-self: flex-end;
+    font-size: small;
 
 }

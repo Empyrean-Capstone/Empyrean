@@ -4,7 +4,6 @@ import './style.css'
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
-import Paper from '@mui/material/Paper';
 import PropTypes from 'prop-types';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -60,14 +59,14 @@ function LinearWithValueLabel() {
 
 function MakeChipRows() {
 	function createData(name, status, color) {
-		return { name, status, color};
+		return { name, status, color };
 	}
 
 	const chip_rows = [
 		createData("Mirror", "Object", "info"),
 		createData("LED", "Off", "warning"),
 		createData("Thorium Argon", "On", "success"),
-		createData("Tungston", "Off",  "warning"),
+		createData("Tungston", "Off", "warning"),
 		createData("Camera", "Idle", "info"),
 	];
 
@@ -77,7 +76,7 @@ function MakeChipRows() {
 				key={row.name}
 				sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
 			>
-				<TableCell sx={{ fontWeight: 'bold' }} component="th" scope="row">{row.name}</TableCell>
+				<TableCell sx={{ fontWeight: 'bold' }} padding="none" component="th" scope="row">{row.name}</TableCell>
 				<TableCell align="center">
 					<Chip sx={{ fontWeight: 'bold' }} size="small" color={row.color} label={row.status} />
 				</TableCell>
@@ -103,7 +102,7 @@ function MakeProgRows() {
 				key={row.name}
 				sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
 			>
-				<TableCell sx={{ fontWeight: 'bold' }} component="th" scope="row">{row.name}</TableCell>
+				<TableCell sx={{ fontWeight: 'bold' }} padding="none" component="th" scope="row">{row.name}</TableCell>
 				<TableCell>
 					<LinearWithValueLabel />
 				</TableCell>
@@ -117,13 +116,16 @@ function MakeProgRows() {
 function Status() {
 
 	return (
-		<TableContainer component={Paper}>
-			<Table sx={{ minWidth: 650 }}>
+		<TableContainer>
+			<Typography align="left">
+				<h2 className="horiz-align vert-space">Spectrograph Status</h2>
+			</Typography>
 
+			<Table sx={{ minWidth: 150 }}>
 				<TableHead>
 					<TableRow>
-						<TableCell sx={{ fontSize: "large", fontWeight: 'bold' }}>System</TableCell>
-						<TableCell sx={{ fontSize: "large", fontWeight: 'bold' }} align="center">Status</TableCell>
+						<TableCell sx={{ fontWeight: "bold" }} padding="none">SYSTEM</TableCell>
+						<TableCell sx={{ fontWeight: "bold" }} padding="none" align="center">STATUS</TableCell>
 					</TableRow>
 				</TableHead>
 
@@ -131,7 +133,6 @@ function Status() {
 					<MakeChipRows />
 					<MakeProgRows />
 				</TableBody>
-
 			</Table>
 		</TableContainer>
 	)

@@ -12,11 +12,35 @@ import { Typography } from '@mui/material';
 function ImgTypeButtons() {
 	const [active, setActive] = React.useState("Object");
 	const buttons = ["Object", "Dark", "Flat", "ThAr"]
+	const styles = {
+		"active": {
+			backgroundColor: "#334155",
+			color: "#ebeef2",
+			"&:hover": {
+				backgroundColor: "#334155",
+				color: "#ebeef2"
+			}
+		},
+		"inactive": {
+			backgroundColor: "#ebeef2",
+			color: "#334155",
+			"&:hover": {
+				backgroundColor: "#5B6676",
+				color: "#ebeef2",
+			}
+		}
+	}
 
 	function button_init(name) {
 		return (
 			<Button
-				className={active === name ? 'active-button button' : 'inactive-button button'}
+				sx={[
+					{
+						fontWeight: 'bold',
+						maxWidth: '20px',
+					},
+					active === name ? styles["active"] : styles["inactive"]
+				]}
 				variant="contained"
 				onClick={() => { setActive(name) }}
 			>
@@ -29,9 +53,7 @@ function ImgTypeButtons() {
 }
 
 function Observe() {
-	const [resolving, setResolving] = React.useState(false);
-	const [startLoading, setStartLoading] = React.useState(false);
-	const [stopLoading, setStopLoading] = React.useState(false);
+	const [isLoading, setLoading] = React.useState("");
 
 	const handleChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
@@ -87,11 +109,11 @@ function Observe() {
 				<h5 className="horiz-align">Start observations from here</h5>
 			</Typography>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={1}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<ImgTypeButtons />
 			</Stack>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={1}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
 					required
 					fullWidth
@@ -114,36 +136,35 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setResolving(!resolving);
+							setLoading("Resolve");
 							console.log(props.values.object);
 
 							setTimeout(() => {
-								setResolving(false);
+								setLoading("");
 							}, 1000);
 						}}
-						loading={resolving}
 						loadingPosition="center"
-						disabled={startLoading === true || stopLoading === true}
+						loading={isLoading === "Resolve"}
+						disabled={isLoading !== "" && isLoading !== "Resolve"}
 					>
 						Resolve
 					</LoadingButton>
 				</Tooltip>
 			</Stack>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row1.map(field_init)}
 			</Stack>
 
-			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row2.map(field_init)}
 			</Stack>
 
-
-			<Stack className="horiz-align vertically-space" direction="row" spacing={3}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row3.map(field_init)}
 			</Stack>
 
-			<Stack className="horiz-align" direction="row" spacing={1}>
+			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<Tooltip title="Begin Observation">
 					<LoadingButton
 						className="button"
@@ -153,16 +174,16 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setStartLoading(!startLoading);
+							setLoading("Start");
 							console.log(props.values);
 
 							setTimeout(() => {
-								setStartLoading(false);
+								setLoading("");
 							}, 1000);
 						}}
-						loading={startLoading}
 						loadingPosition="center"
-						disabled={stopLoading === true || resolving === true}
+						loading={isLoading === "Start"}
+						disabled={isLoading !== "" && isLoading !== "Start"}
 					>
 						Start
 					</LoadingButton>
@@ -177,16 +198,16 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setStopLoading(!stopLoading);
+							setLoading("Stop");
 
 							setTimeout(() => {
-								setStopLoading(false);
+								setLoading("");
 							}, 1000);
 						}}
 
-						loading={stopLoading}
 						loadingPosition="center"
-						disabled={startLoading === true || resolving === true}
+						loading={isLoading === "Stop"}
+						disabled={isLoading !== "" && isLoading !== "Stop"}
 					>
 						Stop
 					</LoadingButton>
