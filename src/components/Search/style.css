@@ -1,0 +1,34 @@
+h2 {
+	color: #334155;
+	margin-top: 5px;
+	margin-left: 5px;
+	margin-bottom: -5px;
+}
+
+h5 {
+  margin-top: 0px;
+	margin-left: 5px;
+	margin-bottom: 30px;
+}
+
+.horiz-align {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.vert-space {
+	margin-bottom: 30px;
+}
+
+.button {
+	max-width: 20px;
+}
+
+.short-button {
+	max-height: 38px;
+}
+
+/* https://stackoverflow.com/a/46123688 */
+.half-containers {
+	flex: 1;
+}
