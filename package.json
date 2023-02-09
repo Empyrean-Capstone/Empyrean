@@ -19,7 +19,7 @@
 	},
 	"scripts": {
 		"start": "react-scripts start",
-		"start-api": "cd api && /home/koseward/miniconda3/envs/empyrean/bin/flask run --no-debugger",
+		"start-api": "cd api && flask run --no-debugger",
 		"build": "react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject"
