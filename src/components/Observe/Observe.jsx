@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import './style.css'
 
 import Button from '@mui/material/Button';
@@ -136,7 +136,8 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setLoading("Resolve");
+							setLoading("Resolve")
+
 							console.log(props.values.object);
 
 							setTimeout(() => {
@@ -175,11 +176,21 @@ function Observe() {
 						sx={{}}
 						onClick={() => {
 							setLoading("Start");
-							console.log(props.values);
 
-							setTimeout(() => {
-								setLoading("");
-							}, 1000);
+							const settings = {
+								method: 'POST',
+								body: JSON.stringify(props.values),
+								headers: {
+									Accept: 'application/json',
+									'Content-Type': 'application/json',
+								}
+							}
+
+							fetch(`http://localhost:5000/observe/ping`, settings)
+								.then((response) => {
+									response.json()
+									setLoading("");
+								})
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Start"}
