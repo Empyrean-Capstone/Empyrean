@@ -1,6 +1,6 @@
 from main import db
 
-class Log(db.Model):
+class Observation(db.Model):
     id = db.Column( db.Integer, primary_key = True )
     owner_id = db.Column( db.Integer )
     filename = db.Column( db.String )
