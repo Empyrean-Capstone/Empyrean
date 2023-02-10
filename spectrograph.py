@@ -114,12 +114,13 @@ class Spectrograph():
 if __name__=='__main__':
     sio = socketio.Client()
     sio.connect('http://0.0.0.0:8081')
+    # TODO ask for ID based on name
+    # if ID is not found register in the database
     spectrograph = Spectrograph(simulator=True)
 
+    # this is listening for the server to emit this message 
     @sio.on('set_obs_type')
     def change_spectrograph_state(mode):
         print(mode)
         spectrograph.set_mode(mode)
-
-
 

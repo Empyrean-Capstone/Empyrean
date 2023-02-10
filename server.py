@@ -1,4 +1,5 @@
 import socketio
+# TODO look into whether or not we need this with flask or if flask replaces this
 from aiohttp import web
 from astropy.time import Time
 from datetime import datetime
@@ -30,14 +31,13 @@ def resolve_target(target):
     global sio
     return ra, dec, f"{obj_alt:.2f}", f"{obj_vis_bool:s}"
 
-
+# creates the server and allows all origins to access
 sio = socketio.AsyncServer(async_mode='aiohttp', async_handlers=True,
     cors_allowed_origins='*', origins='*', always_connect=True)
 intensityCounter = 0
 app = web.Application() 
 
-
-
+# attach the web.application object to the sio
 sio.attach(app)
  
 def print_message( message, color=None ):
@@ -53,7 +53,7 @@ def print_message( message, color=None ):
 async def index(request):
     return web.Response(text='hello', content_type='text/html')
 
-  
+# 
 @sio.on('newWebClient')
 async def newWebClient(sid, message):
     global x
@@ -83,13 +83,18 @@ async def start_observation(sid, data):
     nexp = data[1]
     texp = data[2]
     obs_types = {"obj":0, "dark":1, "flat":2, "thar":3}
+    # this is letting the spectrograph know to set the obs type
     await sio.emit('set_obs_type', obs_types[obs_type])
     await sio.emit('begin_exposure', [nexp, texp])
 
+# stopping the observation at this point doesn't make much sense
+# we should ask about providing an emergency stop function
 @sio.on('stop_observation')
 async def stop_observation(sid):
     await sio.emit('end_exposure')
 
+# are classes and global variables updated in some way that would
+# require dr. llama to do this?
 class variables():
     def __init__(self):
         self.vars = {}
@@ -115,6 +120,7 @@ async def update(sid, data):
 def emit(sid, data):
     pass
 
+# REMOVE, dr. llama created a class for variables 
 x = variables()
 
 app.router.add_get('/', index)
