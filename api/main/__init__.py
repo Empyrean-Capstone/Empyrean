@@ -35,7 +35,8 @@ POSTGRES_USER = get_env_variable("POSTGRES_USER")
 POSTGRES_PW = get_env_variable("POSTGRES_PW")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 
-from .observe.views import observe
+from .observations.views import observations
+app.register_blueprint(observations)
 
 app.register_blueprint(observe)
 

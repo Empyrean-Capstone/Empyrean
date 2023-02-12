@@ -2,10 +2,10 @@
 
 from flask import request
 from .. import sio
-from . import observe
+from . import observations
 
 
-@observe.get("/observations/", methods=["GET", "POST"])
+@observations.get("/")
 def get_observations():
     """
     Return user's open observation collection to the user.
@@ -16,7 +16,7 @@ def get_observations():
     return {}
 
 
-@observe.post("/observations/")
+@observations.post("/")
 def post_observation():
     """
     Create a new observation request for a specific user.
