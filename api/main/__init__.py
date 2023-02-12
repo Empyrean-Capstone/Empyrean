@@ -47,5 +47,7 @@ from .status.views import status
 app.register_blueprint(observations)
 app.register_blueprint( status )
 
+from .resolve.views import resolve
+app.register_blueprint(resolve)
 
 from . import views
