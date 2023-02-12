@@ -16,4 +16,15 @@ def resolve_target():
     resolution_input: dict = request.get_json()
     celestial_body: str = resolution_input["object"]
 
-    return utils.query_for_target(celestial_body)
+    utils.resolve_target(celestial_body)
+
+    # sio.emit("begin_exposure", [num_exposures, exposure_time])
+
+    # TODO: "A POST request creates a resource. The server
+    # assigns a URI for the new resource, and returns
+    # that URI to the client." Here, we need to create an
+    # order, give it a URI where the final part is the order
+    # number, e.g. "/observations/4", then return that. The
+    # order number should be the last number in the table of
+    # all past orders.
+    return {}
