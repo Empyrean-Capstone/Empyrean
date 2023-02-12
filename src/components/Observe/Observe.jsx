@@ -144,13 +144,21 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setLoading("Resolve")
+							setLoading("Resolve");
 
-							console.log(props.values.object);
+							const initResolution = async (values) => {
+								try {
+									const resp = await axios.post(`http://localhost:5000/resolve`, values);
+									console.log(resp.data);
+								} catch (err) {
+									// Handle Error Here
+									console.error(err);
+								}
 
-							setTimeout(() => {
 								setLoading("");
-							}, 1000);
+							};
+
+							initResolution(props.values);
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Resolve"}
