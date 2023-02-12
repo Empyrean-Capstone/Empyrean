@@ -1,9 +1,13 @@
+import './style.css'
+
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2'
+import { Typography } from '@mui/material';
 
 import { Observe } from '../../components/Observe'
 import { Status } from '../../components/Status'
+import { Logsheet } from '../../components/Logsheet'
 
 const Item = styled(Paper)(({ theme }) => ({
 	backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -25,14 +29,15 @@ function GridComponent({ size, Component }) {
 function Observation() {
 	return (
 		<div>
-			<Grid container spacing={2}>
+			<Typography align="left">
+				<h2 className="left-gap vert">Shelyak Control</h2>
+				<h5 className="left-gap">Use this interface to control the spectrograph</h5>
+			</Typography>
+
+			<Grid container className="grid-left-gap" spacing={2}>
 				<GridComponent size={8} Component={Observe}></GridComponent>
 				<GridComponent size={3.85} Component={Status}></GridComponent>
-
-				<Grid item xs={12}>
-					<Item>TODO: Logsheet component</Item>
-				</Grid>
-
+				<GridComponent size={11.85} Component={Logsheet}></GridComponent>
 			</Grid>
 		</div>
 	)
