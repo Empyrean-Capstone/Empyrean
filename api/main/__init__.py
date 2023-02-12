@@ -1,8 +1,14 @@
 import os
 from flask import Flask
-from .observe.views import observe
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS
 
+
+# https://github.com/miguelgrinberg/Flask-SocketIO-Chat
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "secret!"
+CORS(app, resources={r"/*": {"origins": "*"}})
+sio = SocketIO(app, cors_allowed_origins="*")
 
 
 # config helpers
@@ -29,6 +35,7 @@ POSTGRES_USER = get_env_variable("POSTGRES_USER")
 POSTGRES_PW = get_env_variable("POSTGRES_PW")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 
+from .observe.views import observe
 
 app.register_blueprint(observe)
 
