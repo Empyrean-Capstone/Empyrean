@@ -1,9 +1,9 @@
 """TODO."""
+from astropy.table import Table
+from astropy.coordinates import EarthLocation, SkyCoord, AltAz
 from astropy.time import Time
 from astroquery.simbad import Simbad
-from astropy.coordinates import EarthLocation, SkyCoord, AltAz
-import astropy.units as u
-from time import sleep
+import astropy.units as units
 
 Simbad.ROW_LIMIT = 1
 
@@ -28,7 +28,7 @@ def get_airmass(sky_coord):
     return obj_altaz.alt.value
 
 
-def resolve_target(target):
+def query_for_target(target) -> tuple | dict:
     """
     TODO.
 
@@ -38,30 +38,35 @@ def resolve_target(target):
     Returns:
 
     """
-    query = Simbad.query_object(target)
+    # https://astroquery.readthedocs.io/en/latest/api/astroquery.simbad.SimbadClass.html#astroquery.simbad.SimbadClass
+    query: Table = Simbad.query_object(target, wildcard=True)
 
-    print(query)
-    print(type(query))
+    if query is None:
+        # https://flask.palletsprojects.com/en/2.2.x/quickstart/#about-responses
+        return ({}, 502)
 
     sky_coord = SkyCoord(
-        query[0]["RA"], query[0]["DEC"], unit=(u.hourangle, u.deg)
+        query[0]["RA"], query[0]["DEC"], unit=(units.hourangle, units.deg)
     )
 
-    ra = sky_coord.ra.to_string(
-        unit=u.hourangle, sep=":", pad=True, precision=2
+    right_asc = sky_coord.ra.to_string(
+        unit=units.hourangle, sep=":", pad=True, precision=2
     )
 
     dec = sky_coord.dec.to_string(
-        unit=u.deg, sep=":", pad=True, precision=2, alwayssign=True
+        unit=units.deg, sep=":", pad=True, precision=2, alwayssign=True
     )
 
     obj_alt = get_airmass(sky_coord)
-
-    print(obj_alt)
 
     if obj_alt > 15:
         obj_vis_bool = "True"
     else:
         obj_vis_bool = "False"
 
-    return ra, dec, f"{obj_alt:.2f}", f"{obj_vis_bool:s}"
+    return {
+        "right_ascension": right_asc,
+        "declination": dec,
+        "altitude": f"{obj_alt:.2f}",
+        "visible": f"{obj_vis_bool:s}",
+    }
