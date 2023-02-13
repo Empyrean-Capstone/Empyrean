@@ -4,7 +4,8 @@ import { Layout } from './components/Layout';
 import { About } from './pages/about/about';
 import {Contact} from './pages/contact/contact'
 import {Observation} from './pages/observation'
-import {LogsheetPage} from './pages/logsheet'
+import {Logsheet} from './pages/logsheet'
+import { Login } from './pages/login'
 
 
 function App() {
@@ -15,7 +16,8 @@ function App() {
 					<Route index element={<Observation/>}/>
 					<Route path="about" element={<About/>}/>
 					<Route path="contact" element={<Contact/>}/>
-					<Route path="logsheet" element={<LogsheetPage/>}/>
+					<Route path="logsheet" element={<Logsheet/>}/>
+					<Route path="login" element={<Login/>}/>
 				</Route>
 			</Routes>
 		</BrowserRouter>
