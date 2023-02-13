@@ -5,6 +5,7 @@ import { About } from './pages/about/about';
 import {Contact} from './pages/contact/contact'
 import {Observation} from './pages/observation'
 import {Logsheet} from './pages/logsheet'
+import { Login } from './pages/login'
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
 					<Route path="about" element={<About/>}/>
 					<Route path="contact" element={<Contact/>}/>
 					<Route path="logsheet" element={<Logsheet/>}/>
+					<Route path="login" element={<Login/>}/>
 				</Route>
 			</Routes>
 		</BrowserRouter>
