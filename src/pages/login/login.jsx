@@ -1,6 +1,14 @@
 import React from 'react';
+import bcrypt from 'bcrypt';
 import axios from 'axios';
 import './style.css'
+
+// (?)
+import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { Observation } from './pages/observation'
+//
 
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
@@ -21,7 +29,7 @@ function Login() {
 	const [isLoading, setLoading] = React.useState("");
 
 	const handleChange = (prop) => (event) => {
-        setValues({ ...values, [prop]: event.target.value });}; 
+        setValues({ ...values, [prop]: event.target.value });};
 
 	const [values, setValues] = React.useState({
 		username: "",
@@ -40,6 +48,7 @@ function Login() {
 					ml: '40%',
 					}}
 			>
+
 				<TextField
 					sx={{mt: 2, mb: 2}}
 					required
@@ -76,15 +85,28 @@ function Login() {
 					type="submit"
 					onClick={() => {
 						setLoading("Login");
-						
+
+						const salt = bcrypt.genSaltSync(0);
+						values.password = bcrypt.hashSync(values.password, salt);
+
 						const initLogin = async (values) => {
 							try {
-								const resp = await axios.post('http://localhost:5000/login', values);
+								const resp = await axios.post(`http://localhost:5000/auth_login/`, values);
 								if( resp ) {
 									console.log("Logged In");
+
+									//route to observation (?)
+									return (
+										<BrowserRouter>
+											<Routes>
+												<Route path='/' element={<Layout/>}>
+													<Route index element={<Observation/>}/>
+												</Route>
+											</Routes>
+										</BrowserRouter>
+									);
 								}
 							} catch (err) {
-								// Error Handling?
 								console.error(err);
 							}
 
@@ -92,7 +114,6 @@ function Login() {
 						};
 
 						initLogin(props.values);
-
 					}}
 					loadingPosition="center"
 					loading={isLoading === "Login"}
