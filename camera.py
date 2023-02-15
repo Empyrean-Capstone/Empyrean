@@ -37,7 +37,8 @@ class Camera():
 if __name__=='__main__':
     camera = Camera(simulator=True)
     sio = socketio.Client()
-    sio.connect('http://0.0.0.0:8081')
+    sio.connect("http://0.0.0.0:5000")
+
     # TODO ask for ID based on name
     # if ID is not found register in the database
     continue_obs = True
