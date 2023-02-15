@@ -10,6 +10,7 @@ import { Layout } from './components/Layout';
 import { Observation } from './pages/observation'
 //
 
+import './style.css'
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 
