@@ -1,9 +1,10 @@
+import React from 'react';
+import './style.css'
+
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
 import { LoadingButton } from "@mui/lab"
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -14,13 +15,12 @@ const Item = styled(Paper)(({ theme }) => ({
 	color: theme.palette.text.secondary,
 }));
 
-const handleChange = (prop) => (event) => {
-        setValues({ ...values, [prop]: event.target.value });
-    }; 
-
 function Login() {
 
 	const [isLoading, setLoading] = React.useState("");
+
+	const handleChange = (prop) => (event) => {
+        setValues({ ...values, [prop]: event.target.value });}; 
 
 	const [values, setValues] = React.useState({
 		username: "",
@@ -38,7 +38,7 @@ function Login() {
 					required
 					fullWidth
 					id="outlined"
-					value=''
+					value={values.username}
 					size="small"
 					onChange={handleChange("username")}
 					label="Username"
@@ -52,7 +52,7 @@ function Login() {
 					required
 					fullWidth
 					id="outlined"
-					value=''
+					value={values.password}
 					size="small"
 					onChange={handleChange("password")}
 					label="Password"
