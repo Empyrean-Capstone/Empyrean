@@ -3,7 +3,6 @@ import './style.css'
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2'
-import { Typography } from '@mui/material';
 
 import { Observe } from '../../components/Observe'
 import { Status } from '../../components/Status'
@@ -29,10 +28,8 @@ function GridComponent({ size, Component, ...props }) {
 function Observation() {
 	return (
 		<div>
-			<Typography align="left">
-				<h2 className="left-gap vert">Shelyak Control</h2>
-				<h5 className="left-gap">Use this interface to control the spectrograph</h5>
-			</Typography>
+			<h2 className="left-gap vert">Shelyak Control</h2>
+			<h5 className="left-gap">Use this interface to control the spectrograph</h5>
 
 			<Grid container className="grid-left-gap" spacing={2}>
 				<GridComponent size={8} Component={Observe}></GridComponent>
