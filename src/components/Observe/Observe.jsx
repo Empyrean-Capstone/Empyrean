@@ -1,4 +1,9 @@
-import React from 'react';
+// resources:
+// For async posts to backend: https://medium.com/@adrianhuber17/how-to-build-a-simple-real-time-application-using-flask-react-and-socket-io-7ec2ce2da977
+//
+
+import React from 'react'
+import axios from 'axios';
 import './style.css'
 
 import Button from '@mui/material/Button';
@@ -66,7 +71,7 @@ function Observe() {
 		altitude: 0,
 		visible: 0,
 		num_exposures: 0,
-		exposure_time: 0,
+		exposure_duration: 0,
 	});
 
 	const fields_row1 = [
@@ -79,7 +84,7 @@ function Observe() {
 	]
 	const fields_row3 = [
 		{ name: "Number of Exposures", value: "num_exposures" },
-		{ name: "Exposure Time (secs)", value: "exposure_time" },
+		{ name: "Exposure Duration (secs)", value: "exposure_duration" },
 	]
 
 	function field_init(type) {
@@ -136,7 +141,8 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setLoading("Resolve");
+							setLoading("Resolve")
+
 							console.log(props.values.object);
 
 							setTimeout(() => {
@@ -175,11 +181,20 @@ function Observe() {
 						sx={{}}
 						onClick={() => {
 							setLoading("Start");
-							console.log(props.values);
 
-							setTimeout(() => {
+							const initObservation = async (values) => {
+								try {
+									const resp = await axios.post(`http://localhost:5000/observations`, values);
+									console.log(resp.data);
+								} catch (err) {
+									// Handle Error Here
+									console.error(err);
+								}
+
 								setLoading("");
-							}, 1000);
+							};
+
+							initObservation(props.values);
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Start"}
