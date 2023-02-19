@@ -1,0 +1,26 @@
+Here is how a new developer will initialize their database. 
+This will assume that the user will have basic psql and python knowledge
+
+1. Set up environment. In your .env file in the api directory, make sure the following line is present:
+    export SQLALCHEMY_DATABASE_URI="postgresql://{username}:{password}@{host}/{database_name}"
+
+    Where:
+        username is the psql username desired,
+        password is the password for that user
+        host is the host running the database (localhost for development)
+        and database name is the database holding the database
+
+2. Install flask migrate. This tool allows us to automatically run database scripts without us having to do it ourselves
+
+    $ pip install Flask-migrate
+
+3. Initialize database: In the api directory, run the following commands:
+
+    $ flask db init
+    ^ Sets up all the migration files for now and later
+
+    $ flask db migrate -m "Message here"
+    ^ initializes the database with any new migrations
+
+    $ flask db upgrade
+    ^ takes any migrations and applies them to the database
