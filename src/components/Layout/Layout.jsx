@@ -11,8 +11,8 @@ function Layout() {
                     </div>
                     <p id='main-page-title'>MAIN PAGES</p>
                     <ul id='main-links'>
-                        <li class='main-page-link'><Link class="main-link" to="/">Observe</Link></li>
-                        <li class='main-page-link'><Link class="main-link" to="">Logsheets</Link></li>
+                        <li className='main-page-link'><Link className="main-link" to="/">Observe</Link></li>
+                        <li className='main-page-link'><Link className="main-link" to="">Logsheets</Link></li>
                     </ul>
                 </div>
                 <div id='main-content'>
@@ -27,8 +27,8 @@ function Layout() {
                                 V0.0.2
                             </span>
                                 <ul id="right-info">
-                                    <li class="footer-nav-link"><Link to="/about">About</Link></li>
-                                    <li class="footer-nav-link"><Link to="/contact">Contact</Link></li>
+                                    <li className="footer-nav-link"><Link to="/about">About</Link></li>
+                                    <li className="footer-nav-link"><Link to="/contact">Contact</Link></li>
                                 </ul>
                         </footer>
                     </div>
