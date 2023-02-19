@@ -11,7 +11,6 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { LoadingButton } from "@mui/lab"
-import { Typography } from '@mui/material';
 
 function Observe() {
 	const [active, setActive] = React.useState("Dark");
@@ -112,10 +111,8 @@ function Observe() {
 
 	return (
 		<div>
-			<Typography align="left">
-				<h2 className="horiz-align">Observe</h2>
-				<h5 className="horiz-align">Start observations from here</h5>
-			</Typography>
+			<h2 className="horiz-align">Observe</h2>
+			<h5 className="horiz-align">Start observations from here</h5>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				{(buttons.map(button_init))}

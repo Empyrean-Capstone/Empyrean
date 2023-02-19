@@ -156,18 +156,8 @@ function rowContent(_index, row) {
 function Logsheet() {
 	return (
 		<TableContainer style={{ height: 400 }}>
-			<Typography sx={{
-        align: "left",
-        alignItems: 'center',
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginLeft: '25px',
-        marginTop: '20px',
-        marginRight: '25px',
-      }}>
-				<h2 className="horiz-align vertically-space">Logsheet</h2>
-				<h5>Current logsheet: 20220101.001</h5>
-			</Typography>
+			<h2 className="horiz-align">Logsheet</h2>
+			<h5 className="horiz-align">Current sheet: 20220101.001</h5>
 
 			<TableVirtuoso
 				data={rows}
