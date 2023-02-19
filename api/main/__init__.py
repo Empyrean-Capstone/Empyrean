@@ -4,6 +4,7 @@ from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from dotenv import load_dotenv
 
 # config helpers
 def get_env_variable(name: str) -> str | None:
@@ -24,7 +25,10 @@ def get_env_variable(name: str) -> str | None:
 
 # https://github.com/miguelgrinberg/Flask-SocketIO-Chat
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = get_env_variable("SQLALCHEMY_DATABASE_URI")
+print( get_env_variable("SQLALCHEMY_DATABASE_URI") )
+# loads .env file into the envrionment correctly.
+load_dotenv()
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get( "SQLALCHEMY_DATABASE_URI" )
 db = SQLAlchemy( app )
 from .models import * 
 migrate = Migrate( app, db )
@@ -35,7 +39,7 @@ sio = SocketIO(app, cors_allowed_origins="*")
 
 
 
-# Set variables
+# Set variables from .env to global scope
 POSTGRES_URL = get_env_variable("POSTGRES_URL")
 POSTGRES_USER = get_env_variable("POSTGRES_USER")
 POSTGRES_PW = get_env_variable("POSTGRES_PW")
