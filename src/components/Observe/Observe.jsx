@@ -13,10 +13,15 @@ import Tooltip from '@mui/material/Tooltip';
 import { LoadingButton } from "@mui/lab"
 import { Typography } from '@mui/material';
 
-
-function ImgTypeButtons() {
-	const [active, setActive] = React.useState("Object");
+function Observe() {
+	const [active, setActive] = React.useState("Dark");
 	const buttons = ["Object", "Dark", "Flat", "ThAr"]
+	const buttons_values = {
+		"Object" : "",
+		"Dark"   : "Dark",
+		"Flat"   : "Flat",
+		"ThAr"   : "ThAr",
+	}
 	const styles = {
 		"active": {
 			backgroundColor: "#334155",
@@ -36,28 +41,6 @@ function ImgTypeButtons() {
 		}
 	}
 
-	function button_init(name) {
-		return (
-			<Button
-				sx={[
-					{
-						fontWeight: 'bold',
-						maxWidth: '20px',
-					},
-					active === name ? styles["active"] : styles["inactive"]
-				]}
-				variant="contained"
-				onClick={() => { setActive(name) }}
-			>
-				{name}
-			</Button>
-		)
-	}
-
-	return (buttons.map(button_init))
-}
-
-function Observe() {
 	const [isLoading, setLoading] = React.useState("");
 
 	const handleChange = (prop) => (event) => {
@@ -65,7 +48,7 @@ function Observe() {
 	};
 
 	const [values, setValues] = React.useState({
-		object: "",
+		object: active,
 		right_ascension: 0,
 		declination: 0,
 		altitude: 0,
@@ -73,6 +56,8 @@ function Observe() {
 		num_exposures: 0,
 		exposure_duration: 0,
 	});
+
+	const props = { values, handleChange }
 
 	const fields_row1 = [
 		{ name: "Right Ascension (α)", value: "right_ascension" },
@@ -90,7 +75,9 @@ function Observe() {
 	function field_init(type) {
 		return (
 			<TextField
-				required
+				disabled={active !== "Object" &&
+							type.name !== "Number of Exposures" &&
+								type.name !== "Exposure Duration (secs)" ? "disabled" : ""}
 				className="half-containers"
 				id="outlined"
 				variant="outlined"
@@ -105,7 +92,23 @@ function Observe() {
 		)
 	}
 
-	const props = { values, handleChange }
+	function button_init(name) {
+		return (
+			<Button
+				sx={[
+					{
+						fontWeight: 'bold',
+						maxWidth: '20px',
+					},
+					active === name ? styles["active"] : styles["inactive"]
+				]}
+				variant="contained"
+				onClick={() => { setActive(name); values.object = buttons_values[name]; }}
+			>
+				{name}
+			</Button>
+		)
+	}
 
 	return (
 		<div>
@@ -115,12 +118,12 @@ function Observe() {
 			</Typography>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
-				<ImgTypeButtons />
+				{(buttons.map(button_init))}
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
-					required
+					disabled={active !== "Object" ? "disabled" : ""}
 					fullWidth
 					id="outlined"
 					value={values.object}
@@ -184,7 +187,7 @@ function Observe() {
 
 							const initObservation = async (values) => {
 								try {
-									const resp = await axios.post(`http://localhost:5000/observations`, values);
+									const resp = await axios.post(`http://localhost:5000/observations/`, values);
 									console.log(resp.data);
 								} catch (err) {
 									// Handle Error Here
