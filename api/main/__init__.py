@@ -48,6 +48,7 @@ app.register_blueprint(observations)
 app.register_blueprint( status )
 from .logsheet.views import logsheet
 app.register_blueprint(logsheet)
+app.register_blueprint( status )
 
 from .resolve.views import resolve
 app.register_blueprint(resolve)
