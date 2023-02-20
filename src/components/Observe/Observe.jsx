@@ -14,13 +14,12 @@ import { LoadingButton } from "@mui/lab"
 
 function Observe() {
 	const [active, setActive] = React.useState("Dark");
-	const buttons = ["Object", "Dark", "Flat", "ThAr"]
-	const buttons_values = {
-		"Object" : "",
-		"Dark"   : "Dark",
-		"Flat"   : "Flat",
-		"ThAr"   : "ThAr",
-	}
+	const buttons = [
+		{ name: "Object", value: "" },
+		{ name: "Dark", value: "Dark" },
+		{ name: "Flat", value: "Flat" },
+		{ name: "ThAr", value: "ThAr" },
+	]
 	const styles = {
 		"active": {
 			backgroundColor: "#334155",
@@ -78,6 +77,7 @@ function Observe() {
 					type.name !== "Number of Exposures" &&
 					type.name !== "Exposure Duration (secs)" ? true : false}
 				className="half-containers"
+				key={type.name}
 				id="outlined"
 				variant="outlined"
 				size="small"
@@ -91,7 +91,7 @@ function Observe() {
 		)
 	}
 
-	function button_init(name) {
+	function button_init(button) {
 		return (
 			<Button
 				sx={[
@@ -99,12 +99,13 @@ function Observe() {
 						fontWeight: 'bold',
 						maxWidth: '20px',
 					},
-					active === name ? styles["active"] : styles["inactive"]
+					active === button.name ? styles["active"] : styles["inactive"]
 				]}
+				key={button.name}
 				variant="contained"
-				onClick={() => { setActive(name); values.object = buttons_values[name]; }}
+				onClick={() => { setActive(button.name); values.object = button.value; }}
 			>
-				{name}
+				{button.name}
 			</Button>
 		)
 	}
