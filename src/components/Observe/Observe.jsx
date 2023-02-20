@@ -66,7 +66,7 @@ function Observe() {
 		right_ascension: 0,
 		declination: 0,
 		altitude: 0,
-		visible: 0,
+		visible: false,
 		num_exposures: 0,
 		exposure_duration: 0,
 	});
@@ -90,8 +90,8 @@ function Observe() {
 		return (
 			<TextField
 				disabled={active !== "Object" &&
-							type.name !== "Number of Exposures" &&
-								type.name !== "Exposure Duration (secs)" ? "disabled" : ""}
+					type.name !== "Number of Exposures" &&
+					type.name !== "Exposure Duration (secs)" ? true : false}
 				className="half-containers"
 				id="outlined"
 				variant="outlined"
@@ -135,7 +135,7 @@ function Observe() {
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
-					disabled={active !== "Object" ? "disabled" : ""}
+					disabled={active !== "Object" ? true : false}
 					fullWidth
 					id="outlined"
 					value={values.object}
