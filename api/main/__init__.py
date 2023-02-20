@@ -33,7 +33,7 @@ from .models import *
 migrate = Migrate( app, db )
 app.config["SECRET_KEY"] = "secret!"
 CORS(app, resources={r"/*": {"origins": "*"}})
-sio = SocketIO(app, cors_allowed_origins="*", logger=True, async_mode="eventlet", allow_upgrades=True)
+sio = SocketIO(app, cors_allowed_origins="*")
 
 
 # Set variables from .env to global scope
