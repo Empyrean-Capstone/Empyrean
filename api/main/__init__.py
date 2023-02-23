@@ -1,10 +1,11 @@
 import os
 from flask import Flask
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
+
 
 # config helpers
 def get_env_variable(name: str) -> str | None:
@@ -23,19 +24,20 @@ def get_env_variable(name: str) -> str | None:
         message = f"Expected env variable '{name}' not set."
         raise Exception(message) from exception
 
+
 # https://github.com/miguelgrinberg/Flask-SocketIO-Chat
 app = Flask(__name__)
-print( get_env_variable("SQLALCHEMY_DATABASE_URI") )
+print(get_env_variable("SQLALCHEMY_DATABASE_URI"))
 # loads .env file into the envrionment correctly.
 load_dotenv()
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get( "SQLALCHEMY_DATABASE_URI" )
-db = SQLAlchemy( app )
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+db = SQLAlchemy(app)
 from .models import *
-migrate = Migrate( app, db )
+
+migrate = Migrate(app, db)
 app.config["SECRET_KEY"] = "secret!"
 CORS(app, resources={r"/*": {"origins": "*"}})
 sio = SocketIO(app, cors_allowed_origins="*")
-
 
 
 
@@ -47,12 +49,12 @@ POSTGRES_DB = get_env_variable("POSTGRES_DB")
 DATA_FILEPATH = get_env_variable("DATA_FILEPATH")
 
 from .file_writing.views import file_writer
-app.register_blueprint( file_writer, url_prefix="/file-writer" )
-
 from .observations.views import observations
-app.register_blueprint(observations)
-
 from .resolve.views import resolve
+
+app.register_blueprint(file_writer, url_prefix="/file-writer")
+app.register_blueprint(observations)
 app.register_blueprint(resolve)
+
 
 from . import views

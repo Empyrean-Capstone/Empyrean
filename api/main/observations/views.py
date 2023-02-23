@@ -26,10 +26,7 @@ def post_observation():
     """
     observation_input: dict = request.get_json()
 
-    num_exposures = observation_input["num_exposures"]
-    exposure_time = observation_input["exposure_duration"]
-
-    sio.emit("begin_exposure", [num_exposures, exposure_time])
+    sio.emit("begin_exposure", observation_input)
 
     # TODO: "A POST request creates a resource. The server
     # assigns a URI for the new resource, and returns

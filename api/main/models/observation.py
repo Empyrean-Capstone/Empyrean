@@ -23,5 +23,9 @@ class Observation(db.Model):
     log_id = db.Column(db.String)
     mjdobs = db.Column(db.Float)
 
+    def __init__(self, init_dict):
+        for key, value in init_dict.items():
+            setattr(self, key, value)
+
     def __repr__(self):
         return f"{self.object_name} was observed on {self.date_obs} by {self.observer}"
