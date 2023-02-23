@@ -41,10 +41,25 @@ function Observe() {
 	}
 
 	const [isLoading, setLoading] = React.useState("");
+	const [object_field_error, setObjectFieldError] = React.useState({
+		error: false,
+		text: ""
+	})
 
 	const handleChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
 	};
+
+	const handleObjectFieldChange = (prop) => (event) => {
+		setValues({ ...values, [prop]: event.target.value });
+
+		if (object_field_error.error) {
+			setObjectFieldError({
+				error: false,
+				text: ""
+			})
+		}
+	}
 
 	const [values, setValues] = React.useState({
 		object: active,
@@ -125,9 +140,11 @@ function Observe() {
 					id="outlined"
 					value={values.object}
 					size="small"
-					onChange={handleChange("object")}
+					onChange={handleObjectFieldChange("object")}
 					label="Object"
 					type="text"
+					error={object_field_error.error}
+					helperText={object_field_error.text}
 					InputLabelProps={{
 						shrink: true,
 					}}
@@ -141,13 +158,22 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setLoading("Resolve")
+							setLoading("Resolve");
 
-							console.log(props.values.object);
+							const initResolution = async (values) => {
+								try {
+									return await axios.post(`http://localhost:5000/resolve`, values);
+								} catch (err) {
+									setObjectFieldError({
+										error: true,
+										text: "No such object found"
+									})
+								}
+							};
 
-							setTimeout(() => {
-								setLoading("");
-							}, 1000);
+							initResolution(props.values).then(res => setValues(res.data))
+
+							setLoading("");
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Resolve"}
