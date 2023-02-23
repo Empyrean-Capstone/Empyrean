@@ -79,7 +79,7 @@ class Camera:
             )
 
             # return type of exposure will be a one dim array from numpy.frombuffer()
-            return ["0", "0", "0"]
+            return []
 
     def save_image(self, image, _obstype, tstart, tend):
         global sio
