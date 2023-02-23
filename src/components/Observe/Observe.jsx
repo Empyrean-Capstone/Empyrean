@@ -14,13 +14,12 @@ import { LoadingButton } from "@mui/lab"
 
 function Observe() {
 	const [active, setActive] = React.useState("Dark");
-	const buttons = ["Object", "Dark", "Flat", "ThAr"]
-	const buttons_values = {
-		"Object" : "",
-		"Dark"   : "Dark",
-		"Flat"   : "Flat",
-		"ThAr"   : "ThAr",
-	}
+	const buttons = [
+		{ name: "Object", value: "" },
+		{ name: "Dark", value: "Dark" },
+		{ name: "Flat", value: "Flat" },
+		{ name: "ThAr", value: "ThAr" },
+	]
 	const styles = {
 		"active": {
 			backgroundColor: "#334155",
@@ -66,7 +65,7 @@ function Observe() {
 		right_ascension: 0,
 		declination: 0,
 		altitude: 0,
-		visible: 0,
+		visible: false,
 		num_exposures: 0,
 		exposure_duration: 0,
 	});
@@ -90,9 +89,10 @@ function Observe() {
 		return (
 			<TextField
 				disabled={active !== "Object" &&
-							type.name !== "Number of Exposures" &&
-								type.name !== "Exposure Duration (secs)" ? "disabled" : ""}
+					type.name !== "Number of Exposures" &&
+					type.name !== "Exposure Duration (secs)" ? true : false}
 				className="half-containers"
+				key={type.name}
 				id="outlined"
 				variant="outlined"
 				size="small"
@@ -106,7 +106,7 @@ function Observe() {
 		)
 	}
 
-	function button_init(name) {
+	function button_init(button) {
 		return (
 			<Button
 				sx={[
@@ -114,12 +114,13 @@ function Observe() {
 						fontWeight: 'bold',
 						maxWidth: '20px',
 					},
-					active === name ? styles["active"] : styles["inactive"]
+					active === button.name ? styles["active"] : styles["inactive"]
 				]}
+				key={button.name}
 				variant="contained"
-				onClick={() => { setActive(name); values.object = buttons_values[name]; }}
+				onClick={() => { setActive(button.name); values.object = button.value; }}
 			>
-				{name}
+				{button.name}
 			</Button>
 		)
 	}
@@ -135,7 +136,7 @@ function Observe() {
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
-					disabled={active !== "Object" ? "disabled" : ""}
+					disabled={active !== "Object" ? true : false}
 					fullWidth
 					id="outlined"
 					value={values.object}
