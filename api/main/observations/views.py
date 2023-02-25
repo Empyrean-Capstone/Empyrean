@@ -1,9 +1,24 @@
 """Endpoints related to observation requests."""
 
 from flask import request
+from main import db
+from ..models import Observation
 from .. import sio
 from . import observations
 
+def create_observation( dict_data: dict ):
+    new_observe = Observation( dict_data )
+
+    db.session.add(new_observe)
+    db.session.commit()
+
+    new_observe_id = new_observe.id
+
+    dict_data['date'] = str(new_observe.date_obs)
+
+#    sio.emit("new_logsheet", dict_data)
+
+    return new_observe_id
 
 @observations.get("/")
 def get_observations():
@@ -25,6 +40,8 @@ def post_observation():
         str: URI to newly created observation request.
     """
     observation_input: dict = request.get_json()
+
+    create_observation( observation_input )
 
     sio.emit("begin_exposure", observation_input)
 
