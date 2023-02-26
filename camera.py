@@ -29,7 +29,7 @@ class Camera:
             self.simulation = False
             self.device = Zwocamera()
 
-    def expose(self, nexp, itime):
+    def expose(self, request_input):
         """
         TODO.
 
@@ -41,6 +41,9 @@ class Camera:
             global sio
             global continue_obs
 
+            nexp = request_input["num_exposures"]
+            itime = request_input["exposure_duration"]
+
             continue_obs = True
 
             for kk in trange(int(nexp)):
@@ -50,7 +53,7 @@ class Camera:
                         "update",
                         {
                             "current_exposure": {
-                                "obs_id": "20220101.001.1001",
+                                "obs_id": request_input["OBSID"],
                                 "itime_elapsed": jj,
                                 "itime_total": int(itime),
                                 "exp_number": int(kk),
@@ -81,22 +84,24 @@ class Camera:
             # return type of exposure will be a one dim array from numpy.frombuffer()
             return []
 
-    def save_image(self, image, _obstype, tstart, tend):
+    def save_image(self, image, request_input, tstart, tend):
         global sio
         global global_data
         exposure_data = {}
-        filename = "test.fits"
 
         sio.emit("get_all_variables")
 
-        obstype = {"object": "Object", "dark": "Dark", "flat": "Flat", "thar": "ThAr"}[_obstype]
+        obstype = {
+            "object": "Object",
+            "dark": "Dark",
+            "flat": "Flat",
+            "thar": "ThAr",
+        }[request_input["observation_type"]]
 
-        exposure_data["OBSERVER"] = "Joe Llama"
-        exposure_data["TELESCOP"] = "Lowell Observatory"
         exposure_data["DATE-END"] = tend.fits
         exposure_data["DATE-OBS"] = tstart.fits
         exposure_data["EXPTIME"] = global_data["current_exposure"]["itime_total"]
-        exposure_data["OBSID"] = f"{os.path.basename(filename.split('.fits')[0])}"
+        exposure_data["OBSID"] = request_input["OBSID"]
         exposure_data["OBSTYPE"] = obstype
 
         if "Object" in obstype:
@@ -122,14 +127,12 @@ class Camera:
         global global_data
 
         num_exposures = int(obs_request_data["num_exposures"])
-        len_exposure = int(obs_request_data["exposure_duration"])
-        obs_type = obs_request_data["observation_type"]
 
         for kk in trange(int(num_exposures)):
             update_global_vars(
                 {
                     "current_exposure": {
-                        "obs_id": "20220101.001.1001",
+                        "obs_id": obs_request_data["OBSID"],
                         "exp_number": int(kk),
                         "nexp_total": int(num_exposures),
                     }
@@ -137,13 +140,13 @@ class Camera:
             )
 
             tstart = Time.now()
-            exposure_data = self.expose(num_exposures, len_exposure)
+            exposure_data = self.expose(obs_request_data)
             tend = Time.now()
 
             sio.emit("get_next_file")
 
             time.sleep(1)
-            self.save_image(exposure_data, obs_type, tstart, tend)
+            self.save_image(exposure_data, obs_request_data, tstart, tend)
             time.sleep(1)
 
         update_global_vars({"ccd_status": 0})
