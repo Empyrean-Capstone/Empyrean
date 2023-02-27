@@ -58,4 +58,7 @@ app.register_blueprint(resolve)
 app.register_blueprint(logsheet)
 app.register_blueprint(status)
 
+from .login.views import login
+app.register_blueprint(login)
+
 from . import views
