@@ -15,6 +15,10 @@ class SpectrographStatus( Enum ):
 
 @sio.on( 'get_id' )
 def get_object_id( object_type ):
+<<<<<<< HEAD
+=======
+    id = 0
+>>>>>>> 799125c9 (feat: initial status presentation done)
 
     # make query to recieve the id of the requested object
     instrument = Instrument.query.filter_by( instrumentName = object_type ).first()
@@ -45,6 +49,7 @@ def index():
     for index in range(len( result )): 
         result[ index ] = result[ index ].serialize()
     return result
+<<<<<<< HEAD
 
 
 @sio.on( "update_status" )
@@ -59,6 +64,8 @@ def update_status( instrument_id, update_dict ):
     db.session.commit()
     sio.emit( "frontend_update_status")
 
+=======
+>>>>>>> 799125c9 (feat: initial status presentation done)
 """
 Defines the camera Instrument, 
 then gives statuses based on type,
