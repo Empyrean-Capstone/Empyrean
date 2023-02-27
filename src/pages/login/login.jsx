@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import './style.css'
 
 import { styled } from '@mui/material/styles';
@@ -32,9 +33,15 @@ function Login() {
 	return (
 		<div>
 			<Item
-				sx={{}}
+				sx={{ width: 400,
+					height: 300,
+					display: 'center',
+					mt: '40%',
+					ml: '40%',
+					}}
 			>
 				<TextField
+					sx={{mt: 2, mb: 2}}
 					required
 					fullWidth
 					id="outlined"
@@ -49,6 +56,7 @@ function Login() {
 				/>
 
 				<TextField
+					sx={{mt: 2, mb: 2}}
 					required
 					fullWidth
 					id="outlined"
@@ -63,21 +71,32 @@ function Login() {
 				/>
 
 				<LoadingButton
+					sx={{mt: 2, mb: 2}}
 					variant="contained"
 					type="submit"
-					sx={{}}
 					onClick={() => {
 						setLoading("Login");
-						console.log(props.values.username);
-						console.log(props.values.password);
+						
+						const initLogin = async (values) => {
+							try {
+								const resp = await axios.post('http://localhost:5000/login', values);
+								if( resp ) {
+									console.log("Logged In");
+								}
+							} catch (err) {
+								// Error Handling?
+								console.error(err);
+							}
 
-						setTimeout(() => {
 							setLoading("");
-						}, 1000);
+						};
+
+						initLogin(props.values);
+
 					}}
 					loadingPosition="center"
-					//loading={}
-					//disabled={}
+					loading={isLoading === "Login"}
+					disabled={isLoading !== "" && isLoading !== "Login"}
 				>
 					Login
 				</LoadingButton>
