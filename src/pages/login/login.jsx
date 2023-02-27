@@ -1,5 +1,8 @@
 import React from 'react';
+<<<<<<< HEAD
 import axios from 'axios';
+=======
+>>>>>>> d96357252c6ea9c73d143d90e71a0fdc29b059da
 import './style.css'
 
 import { styled } from '@mui/material/styles';
@@ -40,6 +43,7 @@ function Login() {
 					ml: '40%',
 					}}
 			>
+	
 				<TextField
 					sx={{mt: 2, mb: 2}}
 					required
@@ -97,6 +101,21 @@ function Login() {
 					loadingPosition="center"
 					loading={isLoading === "Login"}
 					disabled={isLoading !== "" && isLoading !== "Login"}
+					variant="contained"
+					type="submit"
+					sx={{}}
+					onClick={() => {
+						setLoading("Login");
+						console.log(props.values.username);
+						console.log(props.values.password);
+
+						setTimeout(() => {
+							setLoading("");
+						}, 1000);
+					}}
+					loadingPosition="center"
+					//loading={}
+					//disabled={}
 				>
 					Login
 				</LoadingButton>
