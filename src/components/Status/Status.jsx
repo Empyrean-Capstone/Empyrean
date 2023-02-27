@@ -13,7 +13,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Typography } from '@mui/material';
 
-
 function LinearProgressWithLabel(props) {
 	return (
 		<Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -62,7 +61,7 @@ function MakeChipRows() {
 		return { name, status, color };
 	}
 
-	const chip_rows = [
+	let chip_rows = [
 		createData("Mirror", "Object", "info"),
 		createData("LED", "Off", "warning"),
 		createData("Thorium Argon", "On", "success"),
@@ -114,7 +113,7 @@ function MakeProgRows() {
 }
 
 function Status() {
-
+	console.log( "I am inside the Status page, this is great news" )
 	return (
 		<TableContainer>
 			<Typography align="left">
@@ -130,7 +129,7 @@ function Status() {
 				</TableHead>
 
 				<TableBody>
-					<MakeChipRows />
+					<MakeChipRows/>
 					<MakeProgRows />
 				</TableBody>
 			</Table>
