@@ -1,14 +1,20 @@
 
 
-from flask import request
-from main import db
+from flask import request, jsonify
+from main import db, app
 from .. import sio
 from . import status
 from ..models import Status, Instrument
+from enum import Enum
+
+class SpectrographStatus( Enum ):
+    Mirror = 0
+    LED = 1
+    ThAr = 2
+    Tungsten = 3
 
 @sio.on( 'get_id' )
 def get_object_id( object_type ):
-    print( "made it here" )
     id = 0
 
     # make query to recieve the id of the requested object
@@ -23,6 +29,23 @@ def get_object_id( object_type ):
     # return the id to the object
     return id
 
+@sio.on( 'spectrograph_made_change' )
+def change_spctrograph_mode( mode, id ):
+
+    # update each of their statuses
+    for key, value in mode.items():
+        update = Status.query.filter_by( instrumentID = id, statusName = SpectrographStatus(key).name )
+        update.statusValue = "On" if value == 1 else "Off"
+
+    #commit the changes
+    db.session.commit()
+
+@status.get('/index')
+def index():
+    result = Status.query.all()
+    for index in range(len( result )): 
+        result[ index ] = result[ index ].serialize()
+    return result
 """
 Defines the camera Instrument, 
 then gives statuses based on type,

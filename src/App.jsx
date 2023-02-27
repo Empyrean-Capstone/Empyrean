@@ -6,7 +6,7 @@ import {Contact} from './pages/contact/contact'
 import {Observation} from './pages/observation'
 import {LogsheetPage} from './pages/logsheet'
 import React from 'react';
-import {SocketContext, socket} from 'context/socket';
+import {SocketContext, socket} from './context/socket';
 import { defaultListboxReducer } from '@mui/base';
 
 function App() {

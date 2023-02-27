@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import './style.css'
 
 import Box from '@mui/material/Box';
@@ -12,6 +12,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Typography } from '@mui/material';
+import {SocketContext} from '../../context/socket';
+import { useActionData } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 function LinearProgressWithLabel(props) {
 	return (
@@ -61,13 +65,36 @@ function MakeChipRows() {
 		return { name, status, color };
 	}
 
-	let chip_rows = [
-		createData("Mirror", "Object", "info"),
-		createData("LED", "Off", "warning"),
-		createData("Thorium Argon", "On", "success"),
-		createData("Tungston", "Off", "warning"),
-		createData("Camera", "Idle", "info"),
-	];
+	const [stateData, setState ] = useState({
+		isLoading: true,
+		data: {}
+	})
+	
+
+	useEffect( () => {
+
+			fetch('/status/index').then( res => res.json()).then( ( result ) => {
+				for( const index in result ){
+					const name = result[index]["statusName"]
+					const status = result[index]["statusValue"]
+					const color = "info"
+					result[ index ] = createData( name, status, color )
+				}
+				setState({isLoading: false, data: result} );
+			})
+	}, [stateData.isLoading]);
+
+	// const socket = useContext( SocketContext );
+
+
+
+	// let chip_rows = [
+	// 	createData("Mirror", "Object", "info"),
+	// 	createData("LED", "Off", "warning"),
+	// 	createData("Thorium Argon", "On", "success"),
+	// 	createData("Tungston", "Off", "warning"),
+	// 	createData("Camera", "Idle", "info"),
+	// ];
 
 	function makeChipRow(row) {
 		return (
@@ -83,7 +110,10 @@ function MakeChipRows() {
 		)
 	}
 
-	return (chip_rows.map(makeChipRow))
+	if( stateData.isLoading ){
+		return <div>Data is loading </div>
+	}
+	return (stateData.data.map(makeChipRow))
 }
 
 function MakeProgRows() {
@@ -113,7 +143,7 @@ function MakeProgRows() {
 }
 
 function Status() {
-	console.log( "I am inside the Status page, this is great news" )
+
 	return (
 		<TableContainer>
 			<Typography align="left">
@@ -130,7 +160,7 @@ function Status() {
 
 				<TableBody>
 					<MakeChipRows/>
-					<MakeProgRows />
+					{/* <MakeProgRows/> */}
 				</TableBody>
 			</Table>
 		</TableContainer>
