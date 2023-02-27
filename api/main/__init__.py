@@ -30,7 +30,7 @@ print( get_env_variable("SQLALCHEMY_DATABASE_URI") )
 load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get( "SQLALCHEMY_DATABASE_URI" )
 db = SQLAlchemy( app )
-from .models import * 
+from .models import *
 migrate = Migrate( app, db )
 app.config["SECRET_KEY"] = "secret!"
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -50,5 +50,8 @@ app.register_blueprint(observations)
 
 from .resolve.views import resolve
 app.register_blueprint(resolve)
+
+from .login.views import login
+app.register_blueprint(login)
 
 from . import views

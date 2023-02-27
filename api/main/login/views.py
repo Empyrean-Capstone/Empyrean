@@ -1,20 +1,10 @@
 from flask import request
-from .. import sio
+from main import db
 from . import login
+from ..models.user import User
 
 
-@observations.get("/")
-def get_login():
-    """
-    Return user's open observation collection to the user.
-
-    returns:
-        dict: dictionary of open observation requests
-    """
-    return {}
-
-
-@observations.post("/")
+@login.post("/")
 def post_login():
     """
     Create a new observation request for a specific user.
@@ -27,5 +17,12 @@ def post_login():
     username = login_input["username"]
     password = login_input["password"]
 
-    # TODO: Login Logic
-    return {}
+    # TODO:
+    # 1. hash in the frontend
+    # 2. only create a User object and write to database if creating new user, NOT logging in
+    user_obj = User(username, password)
+
+    db.session.add(user_obj)
+    db.session.commit()
+
+    return {"response": True}

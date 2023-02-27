@@ -1,8 +1,5 @@
 import React from 'react';
-<<<<<<< HEAD
 import axios from 'axios';
-=======
->>>>>>> d96357252c6ea9c73d143d90e71a0fdc29b059da
 import './style.css'
 
 import { styled } from '@mui/material/styles';
@@ -24,7 +21,7 @@ function Login() {
 	const [isLoading, setLoading] = React.useState("");
 
 	const handleChange = (prop) => (event) => {
-        setValues({ ...values, [prop]: event.target.value });}; 
+        setValues({ ...values, [prop]: event.target.value });};
 
 	const [values, setValues] = React.useState({
 		username: "",
@@ -43,7 +40,7 @@ function Login() {
 					ml: '40%',
 					}}
 			>
-	
+
 				<TextField
 					sx={{mt: 2, mb: 2}}
 					required
@@ -80,15 +77,14 @@ function Login() {
 					type="submit"
 					onClick={() => {
 						setLoading("Login");
-						
+
 						const initLogin = async (values) => {
 							try {
-								const resp = await axios.post('http://localhost:5000/login', values);
+								const resp = await axios.post(`http://localhost:5000/auth_login/`, values);
 								if( resp ) {
 									console.log("Logged In");
 								}
 							} catch (err) {
-								// Error Handling?
 								console.error(err);
 							}
 
@@ -96,26 +92,10 @@ function Login() {
 						};
 
 						initLogin(props.values);
-
 					}}
 					loadingPosition="center"
 					loading={isLoading === "Login"}
 					disabled={isLoading !== "" && isLoading !== "Login"}
-					variant="contained"
-					type="submit"
-					sx={{}}
-					onClick={() => {
-						setLoading("Login");
-						console.log(props.values.username);
-						console.log(props.values.password);
-
-						setTimeout(() => {
-							setLoading("");
-						}, 1000);
-					}}
-					loadingPosition="center"
-					//loading={}
-					//disabled={}
 				>
 					Login
 				</LoadingButton>
