@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 
 # config helpers
-def get_env_variable(name: str) -> str | None:
+def get_env_variable(name: str) -> str:
     """
     Return Flask environment vars.
 
@@ -46,6 +46,8 @@ from .observations.views import observations
 from .status.views import status
 app.register_blueprint(observations)
 app.register_blueprint( status )
+from .logsheet.views import logsheet
+app.register_blueprint(logsheet)
 
 from .resolve.views import resolve
 app.register_blueprint(resolve)
