@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 
 # config helpers
-def get_env_variable(name: str) -> str | None:
+def get_env_variable(name: str) -> str:
     """
     Return Flask environment vars.
 
@@ -46,7 +46,9 @@ POSTGRES_PW = get_env_variable("POSTGRES_PW")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 
 from .observations.views import observations
+from .logsheet.views import logsheet
 app.register_blueprint(observations)
+app.register_blueprint(logsheet)
 
 
 from . import views
