@@ -15,10 +15,6 @@ class SpectrographStatus( Enum ):
 
 @sio.on( 'get_id' )
 def get_object_id( object_type ):
-<<<<<<< HEAD
-=======
-    id = 0
->>>>>>> 799125c9 (feat: initial status presentation done)
 
     # make query to recieve the id of the requested object
     instrument = Instrument.query.filter_by( instrumentName = object_type ).first()
@@ -62,7 +58,7 @@ def update_status( instrument_id, update_dict ):
         else:
             status.statusValue = value
     db.session.commit()
-    sio.emit( "frontend_update_status")
+    sio.emit( "frontend_update_status", update_dict)
 
 =======
 >>>>>>> 799125c9 (feat: initial status presentation done)
