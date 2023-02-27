@@ -55,7 +55,7 @@ def update_status( instrument_id, update_dict ):
             status = Status(instrumentID=instrument_id, statusName=key, statusValue=value )
             db.session.add( status )
         else:
-            status.status_value = value
+            status.statusValue = value
     db.session.commit()
     sio.emit( "frontend_status_update")
 

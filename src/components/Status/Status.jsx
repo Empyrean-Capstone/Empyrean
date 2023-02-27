@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import './style.css'
 
 import Box from '@mui/material/Box';
@@ -13,8 +13,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Typography } from '@mui/material';
 import {SocketContext} from '../../context/socket';
-import { useEffect } from 'react';
-import { useState } from 'react';
 import { color } from '@mui/system';
 
 function LinearProgressWithLabel(props) {
@@ -163,7 +161,6 @@ function Status() {
 	function createData(name, status, color) {
 		return { name, status, color };
 	}
-
 	
 	const [stateData, setState ] = useState({
 		isLoading: true,
@@ -191,8 +188,6 @@ function Status() {
 		}
 		setState({isLoading: false, data: tempData})
 	}, [stateData.data]);
-
-
 	
 	useEffect( () => {
 		socket.on('frontend_update_status', updateData );
