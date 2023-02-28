@@ -49,7 +49,7 @@ def index():
 
 @sio.on( "update_status" )
 def update_status( instrument_id, update_dict ):
-    for key, value in update_dict:
+    for key, value in update_dict.items():
         status = Status.query.filter_by( instrumentID=instrument_id, statusName=key).first()
         if status == None:
             status = Status(instrumentID=instrument_id, statusName=key, statusValue=value )
@@ -57,6 +57,7 @@ def update_status( instrument_id, update_dict ):
         else:
             status.status_value = value
     db.session.commit()
+    sio.emit( "frontend_status_update")
 
 """
 Defines the camera Instrument, 
