@@ -25,27 +25,8 @@ class Observation(db.Model):
     mjdobs = db.Column( db.Float )
 
     def __init__(self, init_dict):
-        self.exp_time = init_dict['exposure_duration']
-
-        self.owner_id = 0
-        
-        self.ccd_temp = 0.0
-        self.gain = 0.0
-        self.offset = 0.0
-        self.gamma = 0.0
-        self.airm = 0.0
-        self.mjdobs = 0.0
-
-        self.filename = ""
-        self.image_typ = ""
-        self.instrume = ""
-        self.reworder = ""
-        self.obs_type = ""
-        self.observer = ""
-        self.obs_id = ""
-        self.log_id = ""
-
-
+        for key, value in init_dict.items():
+            setattr(self, key, value)
 
     def __repr__(self):
         return f'{self.object_name} was observed on {self.date_obs} by {self.observer}'
