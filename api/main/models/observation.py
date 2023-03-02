@@ -14,7 +14,7 @@ class Observation(db.Model):
     date_obs = db.Column( db.DateTime )
     instrume = db.Column( db.String )
     reworder = db.Column( db.String )
-    object_name = db.Column( db.String )
+    object_name = db.Column( 'object', db.String )
     obs_type = db.Column( db.String )
     airm = db.Column( db.Float )
     observer = db.Column( db.String )
