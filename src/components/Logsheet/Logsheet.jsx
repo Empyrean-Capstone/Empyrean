@@ -118,22 +118,19 @@ function rowContent(_index, row) {
 	);
 }
 
-function requestData() {
-	socket.emit("retrieveLogsheetData", {name: "test"});
-}
-
-
 function Logsheet() {
     const [messages, setMessages] = useState([]);
 
     useEffect(() => {
-        // open socket connection
-        // create websocket
         socket = io();
 
-        socket.on("retrieveLogsheetData", (chat) => {
-            setMessages(chat)
+        socket.on("retrieveLogsheetData", (logsheetData) => {
+            setMessages(logsheetData)
         })
+
+		socket.on("newObservation", (logsheetData) => {
+			setMessages([logsheetData, ...messages])
+		})
 
 		socket.emit("retrieveLogsheetData", {});
         // when component unmounts, disconnect
@@ -150,7 +147,6 @@ function Logsheet() {
 	
 	return (
 		<TableContainer style={{ height: 400 }}>
-			<button onClick={requestData}>Request Data</button>
 			<h2 className="horiz-align">Logsheet</h2>
 			<h5 className="horiz-align">Current sheet: 20220101.001</h5>
 

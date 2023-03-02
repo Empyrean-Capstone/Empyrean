@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 
 # config helpers
-def get_env_variable(name: str) -> str:
+def get_env_variable(name: str) -> str | None:
     """
     Return Flask environment vars.
 
