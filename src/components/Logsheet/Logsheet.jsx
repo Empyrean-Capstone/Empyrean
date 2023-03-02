@@ -119,7 +119,18 @@ function rowContent(_index, row) {
 }
 
 function Logsheet() {
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([
+		['ORD.00925', 'VY Canis Majoris', 'Complete', '19 min ago', '$209,465'],
+		['ORD.10000', 'Mu Cephei', 'Complete', '1 day, 3 hours ago', '$0.50'],
+		['ORD.12345', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12346', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12347', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12348', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12349', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12350', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12351', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12352', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+	]);
 
     useEffect(() => {
         socket = io();
@@ -137,7 +148,7 @@ function Logsheet() {
         return (() => {
             socket.disconnect()
         })
-    }, [])
+    }, [messages])
 
 	const rows = Array.from({ length: messages.length }, (_, index) => {
 		const row = messages[index];
