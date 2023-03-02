@@ -1,7 +1,6 @@
 from flask_socketio import SocketIO, emit
 from . import logsheet
 from .. import sio
-from .. import db
 from ..models.observation import Observation
 
 
