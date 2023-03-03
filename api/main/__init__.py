@@ -46,7 +46,9 @@ POSTGRES_PW = get_env_variable("POSTGRES_PW")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 
 from .observations.views import observations
+from .logsheet.views import logsheet
 app.register_blueprint(observations)
+app.register_blueprint(logsheet)
 
 from .resolve.views import resolve
 app.register_blueprint(resolve)

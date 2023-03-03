@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import './style.css'
 
 import Box from '@mui/material/Box';
@@ -12,6 +12,10 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { TableVirtuoso } from 'react-virtuoso';
 import { Typography } from '@mui/material';
+
+import { io } from 'socket.io-client';
+
+let socket;
 
 function LinearProgressWithLabel(props) {
 	return (
@@ -35,38 +39,6 @@ LinearProgressWithLabel.propTypes = {
 	 */
 	value: PropTypes.number.isRequired,
 };
-
-function LinearWithValueLabel() {
-	const [progress, setProgress] = React.useState(0);
-
-	React.useEffect(() => {
-		const timer = setInterval(() => {
-			setProgress((prevProgress) => (prevProgress >= 100 ? 0 : prevProgress + 5));
-		}, 800);
-		return () => {
-			clearInterval(timer);
-		};
-	}, []);
-
-	return (
-		<Box sx={{ width: '100%' }}>
-			<LinearProgressWithLabel value={progress} />
-		</Box>
-	);
-}
-
-const sample = [
-	['ORD.00925', 'VY Canis Majoris', <LinearWithValueLabel />, '19 min ago', '$209,465'],
-	['ORD.10000', 'Mu Cephei', 'Complete', '1 day, 3 hours ago', '$0.50'],
-	['ORD.12345', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	['ORD.12346', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	['ORD.12347', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	['ORD.12348', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	['ORD.12349', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	['ORD.12350', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	['ORD.12351', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	['ORD.12352', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-]
 
 function initNames(obsId, target, progress, date, sigToNoise) {
 	return { obsId, target, progress, date, sigToNoise };
@@ -99,13 +71,6 @@ const columns = [
 		dataKey: 'sigToNoise',
 	},
 ];
-
-const rows = Array.from({ length: sample.length }, (_, index) => {
-	const row = sample[index];
-	return initNames(...row);
-});
-
-
 
 const VirtuosoTableComponents = {
 	Scroller: React.forwardRef((props, ref) => (
@@ -154,6 +119,43 @@ function rowContent(_index, row) {
 }
 
 function Logsheet() {
+    const [messages, setMessages] = useState([
+		['ORD.00925', 'VY Canis Majoris', 'Complete', '19 min ago', '$209,465'],
+		['ORD.10000', 'Mu Cephei', 'Complete', '1 day, 3 hours ago', '$0.50'],
+		['ORD.12345', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12346', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12347', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12348', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12349', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12350', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12351', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+		['ORD.12352', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
+	]);
+
+    useEffect(() => {
+        socket = io();
+
+        socket.on("retrieveLogsheetData", (logsheetData) => {
+            setMessages(logsheetData)
+        })
+
+		socket.on("newObservation", (logsheetData) => {
+			setMessages([logsheetData, ...messages])
+		})
+
+		socket.emit("retrieveLogsheetData", {});
+        // when component unmounts, disconnect
+        return (() => {
+            socket.disconnect()
+        })
+    }, [messages])
+
+	const rows = Array.from({ length: messages.length }, (_, index) => {
+		const row = messages[index];
+		return initNames(...row);
+	});
+
+	
 	return (
 		<TableContainer style={{ height: 400 }}>
 			<h2 className="horiz-align">Logsheet</h2>

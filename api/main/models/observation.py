@@ -25,6 +25,7 @@ class Observation(db.Model):
     def __init__(self, init_dict):
         for key, value in init_dict.items():
             setattr( self, key, value )
-
+    
+    # TODO the incorrect items are currently being sent back, needs to change
     def __repr__(self):
-        return f'{self.object_name} was observed on {self.date_obs} by {self.observer}'
+        return f'{self.id}|{self.object_name}|{self.airm}|{self.date_obs}|{self.mjdobs}'
