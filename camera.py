@@ -25,9 +25,11 @@ class Camera:
         if simulator:
             self.simulation = True
             self.device = None  # Replace with instance of K8056
+            self.id = "5"
         else:
             self.simulation = False
             self.device = Zwocamera()
+            self.id = sio.emit("get_id", "camera")
 
     def expose(self, request_input):
         """
@@ -40,6 +42,7 @@ class Camera:
         if self.simulation:
             global sio
             global continue_obs
+            data: dict = {}
 
             nexp = request_input["num_exposures"]
             itime = request_input["exposure_duration"]
@@ -48,75 +51,53 @@ class Camera:
 
             for kk in trange(int(nexp)):
                 for jj in trange(int(itime)):
-                    update_global_vars({"camera": "Busy"})
-                    sio.emit(
-                        "update",
-                        {
-                            "current_exposure": {
-                                "obs_id": request_input["OBSID"],
-                                "itime_elapsed": jj,
-                                "itime_total": int(itime),
-                                "exp_number": int(kk),
-                                "nexp_total": int(nexp),
-                            }
-                        },
-                    )
+                    self.emit_status({"camera": "Busy"})
+
+                    data = {
+                        "obs_id": request_input["OBSID"],
+                        "itime_elapsed": jj,
+                        "itime_total": int(itime),
+                        "exp_number": int(kk),
+                        "nexp_total": int(nexp),
+                    }
+
+                    update_global_vars(data)
+                    self.emit_status(data)
 
                     time.sleep(1)
 
                 if continue_obs == False:
                     break
 
-            update_global_vars({"camera": "Idle"})
+            self.emit_status({"camera": "Idle"})
             sio.emit("set_obs_type", 0)
-            update_global_vars(
-                {
-                    "current_exposure": {
-                        "obs_id": 0,
-                        "itime_elapsed": 0,
-                        "exp_number": 0,
-                        "itime_total": 1,
-                        "nexp_total": 1,
-                    }
-                },
-            )
+
+            data = {
+                "obs_id": request_input["OBSID"],
+                "itime_elapsed": 0,
+                "exp_number": 0,
+                "itime_total": 1,
+                "nexp_total": 1,
+            }
+
+            update_global_vars(data)
+            self.emit_status(data)
 
             # return type of exposure will be a one dim array from numpy.frombuffer()
             return []
 
-    def save_image(self, image, request_input, tstart, tend):
+    def return_image_data(self, image, request_input, tstart, tend):
         global sio
         global global_data
-        exposure_data = {}
-
         sio.emit("get_all_variables")
 
-        obstype = {
-            "object": "Object",
-            "dark": "Dark",
-            "flat": "Flat",
-            "thar": "ThAr",
-        }[request_input["observation_type"]]
+        request_input["DATE-END"] = tend.fits
+        request_input["DATE-OBS"] = tstart.fits
+        request_input["EXPTIME"] = global_data["itime_total"]
 
-        exposure_data["DATE-END"] = tend.fits
-        exposure_data["DATE-OBS"] = tstart.fits
-        exposure_data["EXPTIME"] = global_data["current_exposure"]["itime_total"]
-        exposure_data["OBSID"] = request_input["OBSID"]
-        exposure_data["OBSTYPE"] = obstype
+        sio.emit("save_img", {"image": image, "exposure_data": request_input})
 
-        if "Object" in obstype:
-            exposure_data["OBJECT"] = "TARGET NAME"
-            exposure_data["RA"] = global_data["target"]["ra"]
-            exposure_data["DEC"] = global_data["target"]["dec"]
-            exposure_data["ALT"] = global_data["target"]["alt"]
-        else:
-            exposure_data["RA"] = "+00:00:00.00"
-            exposure_data["DEC"] = "00:00:00.00"
-            exposure_data["ALT"] = 0
-
-        sio.emit("save_img", {"image": image, "exposure_data": exposure_data})
-
-    def sequence(self, obs_request_data):
+    def sequence(self, request_input):
         """
         TODO.
 
@@ -125,32 +106,35 @@ class Camera:
         """
         global sio
         global global_data
+        data: dict = {}
 
-        num_exposures = int(obs_request_data["num_exposures"])
+        num_exposures = int(request_input["num_exposures"])
 
         for kk in trange(int(num_exposures)):
-            update_global_vars(
-                {
-                    "current_exposure": {
-                        "obs_id": obs_request_data["OBSID"],
-                        "exp_number": int(kk),
-                        "nexp_total": int(num_exposures),
-                    }
-                },
-            )
+            data = {
+                "obs_id": request_input["OBSID"],
+                "exp_number": int(kk),
+                "nexp_total": int(num_exposures),
+            }
+
+            update_global_vars(data)
+            self.emit_status(data)
 
             tstart = Time.now()
-            exposure_data = self.expose(obs_request_data)
+            image = self.expose(request_input)
             tend = Time.now()
 
             sio.emit("get_next_file")
 
             time.sleep(1)
-            self.save_image(exposure_data, obs_request_data, tstart, tend)
+            self.return_image_data(image, request_input, tstart, tend)
             time.sleep(1)
 
         update_global_vars({"ccd_status": 0})
         sio.emit("set_obs_type", 0)
+
+    def emit_status(self, status: dict) -> None:
+        sio.emit("update_status", data=(self.id, status))
 
 
 class Zwocamera:
@@ -222,13 +206,13 @@ class Zwocamera:
         global global_data
         sio.emit("get_all_variables")
         hdu = fits.PrimaryHDU(image, uint=True)
-        hdu.header["OBSERVER"] = "Joe Llama"
-        hdu.header["TELESCOP"] = "Lowell Observatory"
         hdu.header["OBSID"] = f"{os.path.basename(global_data['logsheet']['obs_fh'].split('.fits')[0])}"
         obstype = {"obj": "Object", "dark": "Dark", "flat": "Flat", "thar": "ThAr"}[_obstype]
         hdu.header["OBSTYPE"] = obstype
         print(f"obs_type: {obstype}")
+
         hdu.header["EXPTIME"] = global_data["current_exposure"]["itime_total"]
+
         if "Object" in obstype:
             hdu.header["OBJECT"] = "TARGET NAME"
             hdu.header["RA"] = global_data["target"]["ra"]
@@ -238,12 +222,16 @@ class Zwocamera:
             hdu.header["RA"] = "+00:00:00.00"
             hdu.header["DEC"] = "00:00:00.00"
             hdu.header["ALT"] = 0
+
         hdu.header["DATE-OBS"] = tstart.fits
         hdu.header["DATE-END"] = tend.fits
+
         for k, v in self.camera.get_control_values().items():
             hdu.header[k.upper()[:8]] = v
+
         if not os.path.exists(os.path.dirname(global_data["logsheet"]["obs_fh"])):
             os.makedirs(os.path.dirname(global_data["logsheet"]["obs_fh"]))
+
         hdu.writeto(global_data["logsheet"]["obs_fh"], overwrite=True, output_verify="silentfix")
 
     @staticmethod
