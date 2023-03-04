@@ -1,13 +1,11 @@
 """TODO."""
 
-import datetime
+from datetime import datetime, timedelta, timezone
 import os
 from astropy.io import fits
-from flask import jsonify, request
 from . import file_writer
 from .. import DATA_FILEPATH, db, sio
-from ..models.observation import Observation
-from ..models.user import User
+from ..models.observation import Observation, headers_to_db_cols
 
 
 @file_writer.route("/")
@@ -28,79 +26,94 @@ def submit_data(image_data: dict):
     """
     if DATA_FILEPATH is None:
         print("ERR: Path to FITS file directory is unset. Set this env variable before attempting an exposure.")
+
+        # TODO: return error message
         return
+
+    timestr_fmt = "%Y-%m-%d %X:%f"
 
     image = image_data["image"]
     exposure_data = image_data["exposure_data"]
 
     # calculate needed headers
-    filename_const = f"{datetime.date.today()}_{exposure_data['OBSID']}.fits"
-    time_difference = datetime.timedelta(weeks=26)
-    currentDate = datetime.datetime.now()
-    open_source_date = currentDate + time_difference
+    time_difference = timedelta(weeks=26)
+    cur_date = datetime.now(timezone.utc)
+    filename_prefix = f"{cur_date}_{exposure_data['OBSID']}.fits"
+    exposure_data["date_obs"] = cur_date.strftime(timestr_fmt)
+    exposure_data["date_made_open_source"] = (cur_date + time_difference).strftime(timestr_fmt)
 
     fits_dir = os.path.dirname(DATA_FILEPATH)
 
     if not os.path.exists(fits_dir):
         os.makedirs(fits_dir)
 
-    fits_path = f"{fits_dir}/{filename_const}"
-
-    # TODO: requires database access
-    #
-    # find owner id
-    # observer_record = User.query.filter_by(username=request_data["OBSERVER"])
-    # observer_id = observer_record.first()
+    fits_path = f"{fits_dir}/{filename_prefix}"
 
     # make fits file - add headers and such
     hdu = fits.PrimaryHDU(image)
 
-    # assuming the exposure_data from the camera has the correct
-    # headers, we can simply update the fits header dict
-    hdu.header.update(exposure_data)
+    # airmass: will compute; 1/cos(altitude)
+    # can use astropy.units, "45*units.deg.to(u.rad)"
+    # NOTE: make sure that altitude in radians, NOT DEGREES
+    hdu.header["AIRM"] = 0
 
-    hdu.header["SIMPLE"] = True
-    hdu.header["BITPIX"] = 16  # change
-    hdu.header["NAXIS"] = 2  # number of data axis
-    hdu.header["NAXIS1"] = 1600  # length of data axis 1
-    hdu.header["NAXIS2"] = 1200  # length of data axis 2
-    hdu.header["EXTEND"] = True
-    hdu.header["BZERO"] = 32768
-    hdu.header["BSCALE"] = 1
-    hdu.header["XBINNING"] = 1
-    hdu.header["YBINNING"] = 1
-    hdu.header["XPIXSZ"] = 5.20
-    hdu.header["YPIXSZ"] = 5.20
+    # from camera
+    hdu.header["CCD-TEMP"] = 0
+    hdu.header["GAIN"] = 0
+    hdu.header["GAMMA"] = 0
 
-    #  hdu.header["AIRM"] = exposure_data["airm"]
-    #  hdu.header["CCD-TEMP"] = exposure_data["ccd_temp"]
-    #  hdu.header["DATE-OBS"] = currentDate
-    #  hdu.header["GAIN"] = exposure_data["gain"]
-    #  hdu.header["GAMMA"] = exposure_data["gamma"]
-    #  hdu.header["IMAGETYP"] = exposure_data["image_typ"]
-    #  hdu.header["INSTRUME"] = exposure_data["instrume"]
-    #  hdu.header["LOGID"] = request_data["log_id"]
-    #  hdu.header["MJDOBS"] = exposure_data["mjdobs"]
-    #  hdu.header["OBJECT"] = exposure_data["object"]
-    #  hdu.header["OFFSET"] = exposure_data["offset"]
-    #  hdu.header["ROWORDER"] = exposure_data["roworder"]
+    # selected at user interface, e.g. dark, flat
+    hdu.header["IMAGETYP"] = 0
 
-    #  hdu.header["OBSERVER"] = exposure_data["OBSERVER"]
-    #  hdu.header["OBSID"] = exposure_data["OBSID"]
-    #  hdu.header["OBSTYPE"] = exposure_data["OBSTYPE"]
+    # Shelyak
+    hdu.header["INSTRUME"] = 0
 
-    for k, v in hdu.header.items():
-        print(f"{k}: {v}")
+    # name of file without fits extension
+    hdu.header["LOGID"] = 0
+
+    # DATE-OBS in numerical form: will receive script
+    hdu.header["MJDOBS"] = 0
+
+    # potentially camera
+    hdu.header["OFFSET"] = 0
+
+    # camera
+    hdu.header["ROWORDER"] = 0
+
+
+    hdu.header["OBSERVER"] = "Joe Llama"
+    hdu.header["OBSID"] = exposure_data["OBSID"]
+    hdu.header["OBSTYPE"] = {
+        "object": "Object",
+        "dark": "Dark",
+        "flat": "Flat",
+        "thar": "ThAr",
+    }[exposure_data["observation_type"]]
+
+    if hdu.header["OBSTYPE"] == "Object":
+        hdu.header["OBJECT"] = exposure_data["object"]
+        hdu.header["RA"] = exposure_data["right_ascension"]
+        hdu.header["DEC"] = exposure_data["declination"]
+        hdu.header["ALT"] = exposure_data["altitude"]
+    else:
+        hdu.header["RA"] = "+00:00:00.00"
+        hdu.header["DEC"] = "00:00:00.00"
+        hdu.header["ALT"] = 0
 
     # write this fits file to disk
     hdu.writeto(fits_path)
 
-    # commit this fits file to its log
-    new_log = Observation(exposure_data)
+    # At this point, there is a row in the database for
+    # this observation, but it is essentially a receipt
+    # that indicates an observation is in action. We must
+    # update that row with the data gained from the finished
+    # observation.
+    db_data: dict = headers_to_db_cols(hdu.header)
 
-    print(new_log)
+    cur_observation = Observation.query.filter_by(id=exposure_data["OBSID"]).first()
+    cur_observation.set_attrs(db_data)
 
-    #  db.session.add(new_log)
-    #  db.session.commit()
+    db.session.commit()
 
-    # TODO: add success message?
+    # TODO: return success message
+    return {}
