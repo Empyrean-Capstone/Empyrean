@@ -45,7 +45,6 @@ def index():
     for index in range(len( result )): 
         result[ index ] = result[ index ].serialize()
     return result
-<<<<<<< HEAD
 
 
 @sio.on( "update_status" )
@@ -60,8 +59,6 @@ def update_status( instrument_id, update_dict ):
     db.session.commit()
     sio.emit( "frontend_update_status", update_dict )
 
-=======
->>>>>>> 799125c9 (feat: initial status presentation done)
 """
 Defines the camera Instrument, 
 then gives statuses based on type,
