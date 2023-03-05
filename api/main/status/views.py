@@ -58,7 +58,7 @@ def update_status( instrument_id, update_dict ):
         else:
             status.statusValue = value
     db.session.commit()
-    sio.emit( "frontend_update_status", update_dict)
+    sio.emit( "frontend_update_status", update_dict )
 
 =======
 >>>>>>> 799125c9 (feat: initial status presentation done)

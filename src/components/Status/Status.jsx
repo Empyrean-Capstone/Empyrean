@@ -174,10 +174,8 @@ function Status() {
 			let updatedKey = false;
 			for( let index in tempData ){
 				if( tempData[index].name === key ){
-					console.log( 'Made it to the update' );
 					// TODO, find interesting color picking 
-					color = "info";
-					tempData[index] = createData( key, updates[key], color )
+					tempData[index] = createData( key, updates[key], "info" )
 					updatedKey = true;
 					break;
 				}
@@ -192,6 +190,9 @@ function Status() {
 	
 	useEffect( () => {
 		socket.on('frontend_update_status', updateData );
+	}, [socket, updateData] );
+	
+	useEffect( () => {
 		fetch('/status/index').then( res => res.json()).then( ( result ) => {
 				for( const index in result ){
 					const name = result[index]["statusName"]
@@ -203,7 +204,7 @@ function Status() {
 				
 				setState({isLoading: false, data: result} );
 			})
-	}, [socket, updateData]);
+	}, []);
 
 	return (
 		<TableContainer>
