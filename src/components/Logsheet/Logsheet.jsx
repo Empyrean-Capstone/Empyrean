@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, {useState, useEffect, useContext} from 'react';
+=======
+import React, {useState, useEffect} from 'react';
+>>>>>>> main
 import './style.css'
 
 import Box from '@mui/material/Box';
@@ -14,6 +18,10 @@ import { TableVirtuoso } from 'react-virtuoso';
 import { Typography } from '@mui/material';
 import {SocketContext} from '../../context/socket';
 
+
+import { io } from 'socket.io-client';
+
+let socket;
 
 function LinearProgressWithLabel(props) {
 	return (
