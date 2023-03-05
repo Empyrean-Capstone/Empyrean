@@ -57,7 +57,7 @@ def update_status( instrument_id, update_dict ):
         else:
             status.statusValue = value
     db.session.commit()
-    sio.emit( "frontend_status_update")
+    sio.emit( "frontend_update_status")
 
 """
 Defines the camera Instrument, 

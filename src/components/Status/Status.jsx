@@ -154,6 +154,7 @@ function makeChipRow(row) {
 	)
 }
 
+
 function Status() {
 	
 	const socket = useContext( SocketContext );
@@ -202,7 +203,7 @@ function Status() {
 				
 				setState({isLoading: false, data: result} );
 			})
-	}, []);
+	}, [socket, updateData]);
 
 	return (
 		<TableContainer>
