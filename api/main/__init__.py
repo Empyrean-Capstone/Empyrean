@@ -50,11 +50,11 @@ DATA_FILEPATH = get_env_variable("DATA_FILEPATH")
 
 from .file_writing.views import file_writer
 from .observations.views import observations
+app.register_blueprint(logsheet)
 from .resolve.views import resolve
 
 app.register_blueprint(file_writer, url_prefix="/file-writer")
 app.register_blueprint(observations)
 app.register_blueprint(resolve)
-
 
 from . import views
