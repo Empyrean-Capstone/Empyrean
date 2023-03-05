@@ -44,10 +44,9 @@ POSTGRES_DB = get_env_variable("POSTGRES_DB")
 
 from .observations.views import observations
 from .status.views import status
-app.register_blueprint(observations)
-app.register_blueprint( status )
 from .logsheet.views import logsheet
 app.register_blueprint(logsheet)
+app.register_blueprint(observations)
 app.register_blueprint( status )
 
 from .resolve.views import resolve
