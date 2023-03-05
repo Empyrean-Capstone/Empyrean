@@ -143,7 +143,7 @@ function MakeProgRows() {
 }
 
 function Status() {
-
+	console.log( "I am inside the Status page, this is great news" )
 	return (
 		<TableContainer>
 			<h2 className="horiz-align vert-space">Spectrograph Status</h2>

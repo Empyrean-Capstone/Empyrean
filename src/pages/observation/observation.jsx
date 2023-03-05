@@ -26,6 +26,7 @@ function GridComponent({ size, Component, ...props }) {
 }
 
 function Observation() {
+	console.log( "I am inside of the Observation page" )
 	return (
 		<div>
 			<h2 className="left-gap vert">Shelyak Control</h2>
