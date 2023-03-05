@@ -1,4 +1,9 @@
-import React from 'react';
+// resources:
+// For async posts to backend: https://medium.com/@adrianhuber17/how-to-build-a-simple-real-time-application-using-flask-react-and-socket-io-7ec2ce2da977
+//
+
+import React from 'react'
+import axios from 'axios';
 import './style.css'
 
 import Button from '@mui/material/Button';
@@ -6,12 +11,11 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { LoadingButton } from "@mui/lab"
-import { Typography } from '@mui/material';
 
+function Observe() {
+	const [active, setActive] = React.useState("object");
+	const buttons = ["object", "dark", "flat", "thar"]
 
-function ImgTypeButtons() {
-	const [active, setActive] = React.useState("Object");
-	const buttons = ["Object", "Dark", "Flat", "ThAr"]
 	const styles = {
 		"active": {
 			backgroundColor: "#334155",
@@ -31,43 +35,41 @@ function ImgTypeButtons() {
 		}
 	}
 
-	function button_init(name) {
-		return (
-			<Button
-				sx={[
-					{
-						fontWeight: 'bold',
-						maxWidth: '20px',
-					},
-					active === name ? styles["active"] : styles["inactive"]
-				]}
-				variant="contained"
-				onClick={() => { setActive(name) }}
-			>
-				{name}
-			</Button>
-		)
-	}
-
-	return (buttons.map(button_init))
-}
-
-function Observe() {
 	const [isLoading, setLoading] = React.useState("");
+	const [object_field_error, setObjectFieldError] = React.useState({
+		error: false,
+		text: ""
+	})
 
 	const handleChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
 	};
 
+	function reset_object_err() {
+		setObjectFieldError({
+			error: false,
+			text: ""
+		})
+	}
+
+	const handleObjectFieldChange = (prop) => (event) => {
+		setValues({ ...values, [prop]: event.target.value });
+
+		reset_object_err()
+	}
+
 	const [values, setValues] = React.useState({
 		object: "",
+		observation_type: active,
 		right_ascension: 0,
 		declination: 0,
 		altitude: 0,
-		visible: 0,
+		visible: false,
 		num_exposures: 0,
-		exposure_time: 0,
+		exposure_duration: 0,
 	});
+
+	const props = { values, handleChange }
 
 	const fields_row1 = [
 		{ name: "Right Ascension (α)", value: "right_ascension" },
@@ -79,20 +81,23 @@ function Observe() {
 	]
 	const fields_row3 = [
 		{ name: "Number of Exposures", value: "num_exposures" },
-		{ name: "Exposure Time (secs)", value: "exposure_time" },
+		{ name: "Exposure Duration (secs)", value: "exposure_duration" },
 	]
 
 	function field_init(type) {
 		return (
 			<TextField
-				required
+				disabled={active !== "object" &&
+					type.name !== "Number of Exposures" &&
+					type.name !== "Exposure Duration (secs)" ? true : false}
 				className="half-containers"
+				key={type.name}
 				id="outlined"
 				variant="outlined"
 				size="small"
 				value={values[type.value]}
 				onChange={handleChange(type.value)}
-				label={type.name}
+				label={type.name === "object" ? values.object : type.name}
 				InputLabelProps={{
 					shrink: true,
 				}}
@@ -100,29 +105,46 @@ function Observe() {
 		)
 	}
 
-	const props = { values, handleChange }
+	function button_init(name) {
+		return (
+			<Button
+				sx={[
+					{
+						fontWeight: 'bold',
+						maxWidth: '20px',
+					},
+					active === name ? styles["active"] : styles["inactive"]
+				]}
+				key={name}
+				variant="contained"
+				onClick={() => { setActive(name); values.observation_type = name; }}
+			>
+				{name}
+			</Button>
+		)
+	}
 
 	return (
 		<div>
-			<Typography align="left">
-				<h2 className="horiz-align">Observe</h2>
-				<h5 className="horiz-align">Start observations from here</h5>
-			</Typography>
+			<h2 className="horiz-align">Observe</h2>
+			<h5 className="horiz-align">Start observations from here</h5>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
-				<ImgTypeButtons />
+				{(buttons.map(button_init))}
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
-					required
+					disabled={active !== "object" ? true : false}
 					fullWidth
 					id="outlined"
-					value={values.object}
+					value={values.observation_type === "object" ? values.object : values.observation_type}
 					size="small"
-					onChange={handleChange("object")}
-					label="Object"
+					onChange={handleObjectFieldChange("object")}
+					label="object"
 					type="text"
+					error={active !== "object" ? false : object_field_error.error}
+					helperText={active !== "object" ? "" : object_field_error.text}
 					InputLabelProps={{
 						shrink: true,
 					}}
@@ -137,11 +159,21 @@ function Observe() {
 						sx={{}}
 						onClick={() => {
 							setLoading("Resolve");
-							console.log(props.values.object);
 
-							setTimeout(() => {
-								setLoading("");
-							}, 1000);
+							const initResolution = async (values) => {
+								try {
+									return await axios.post(`http://localhost:5000/resolve`, values);
+								} catch (err) {
+									setObjectFieldError({
+										error: true,
+										text: "No such object found"
+									})
+								}
+							};
+
+							initResolution(props.values).then(res => setValues(res.data))
+
+							setLoading("");
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Resolve"}
@@ -175,11 +207,20 @@ function Observe() {
 						sx={{}}
 						onClick={() => {
 							setLoading("Start");
-							console.log(props.values);
 
-							setTimeout(() => {
+							const initObservation = async (values) => {
+								try {
+									const resp = await axios.post(`http://localhost:5000/observations/`, values);
+									console.log(resp.data);
+								} catch (err) {
+									// Handle Error Here
+									console.error(err);
+								}
+
 								setLoading("");
-							}, 1000);
+							};
+
+							initObservation(props.values);
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Start"}

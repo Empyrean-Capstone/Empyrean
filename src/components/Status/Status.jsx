@@ -117,9 +117,7 @@ function Status() {
 
 	return (
 		<TableContainer>
-			<Typography align="left">
-				<h2 className="horiz-align vert-space">Spectrograph Status</h2>
-			</Typography>
+			<h2 className="horiz-align vert-space">Spectrograph Status</h2>
 
 			<Table sx={{ minWidth: 150 }}>
 				<TableHead>

@@ -1,29 +1,60 @@
-from flask import Flask
 import os
-from file_writing import file_writer
+from flask import Flask
+from flask_socketio import SocketIO
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-
-basedir = os.getcwd()
-
-app = Flask( __name__ )
-db = SQLAlchemy( app )
+from flask_migrate import Migrate
+from dotenv import load_dotenv
 
 
 # config helpers
-def get_env_variable( name ):
+def get_env_variable(name: str) -> str | None:
+    """
+    Return Flask environment vars.
+
+    Args:
+        name (str): environment variable to retrieve.
+
+    Returns:
+        str or None: environment var or exception
+    """
     try:
         return os.environ.get(name)
-    except KeyError:
-        message = "Expected env variable '{}' not set.".format( name )
-        raise Exception( message )
+    except KeyError as exception:
+        message = f"Expected env variable '{name}' not set."
+        raise Exception(message) from exception
 
-# Set variables
+
+# https://github.com/miguelgrinberg/Flask-SocketIO-Chat
+app = Flask(__name__)
+print(get_env_variable("SQLALCHEMY_DATABASE_URI"))
+# loads .env file into the envrionment correctly.
+load_dotenv()
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+db = SQLAlchemy(app)
+from .models import *
+
+migrate = Migrate(app, db)
+app.config["SECRET_KEY"] = "secret!"
+CORS(app, resources={r"/*": {"origins": "*"}})
+sio = SocketIO(app, cors_allowed_origins="*")
+
+
+
+# Set variables from .env to global scope
 POSTGRES_URL = get_env_variable("POSTGRES_URL")
 POSTGRES_USER = get_env_variable("POSTGRES_USER")
 POSTGRES_PW = get_env_variable("POSTGRES_PW")
 POSTGRES_DB = get_env_variable("POSTGRES_DB")
 DATA_FILEPATH = get_env_variable("DATA_FILEPATH")
 
-import main.views as views
-#app.register_blueprint( example_blueprint, url_prefix="/buyer" )
-app.register_blueprint( file_writer, url_prefix="/file-writer" )
+from .file_writing.views import file_writer
+from .observations.views import observations
+from .resolve.views import resolve
+
+app.register_blueprint(file_writer, url_prefix="/file-writer")
+app.register_blueprint(observations)
+app.register_blueprint(resolve)
+
+
+from . import views

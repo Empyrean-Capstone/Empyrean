@@ -3,26 +3,21 @@ h2 {
 	margin-top: 5px;
 	margin-left: 5px;
 	margin-bottom: -5px;
-	font-family: Arial, Helvetica, sans-serif;
 }
 
 h5 {
-	color: #797979;
   margin-top: 0px;
 	margin-left: 5px;
 	margin-bottom: 30px;
-	font-family: Arial, Helvetica, sans-serif;
 }
 
 .horiz-align {
-	text-align: left;
 	margin-left: 10px;
 	margin-right: 10px;
 }
 
-.vert {
-	margin-top: 30px;
-	margin-bottom: 5px;
+.vert-space {
+	margin-bottom: 30px;
 }
 
 .button {
