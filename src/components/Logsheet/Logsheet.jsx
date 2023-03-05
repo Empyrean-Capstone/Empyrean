@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, {useState, useEffect, useContext} from 'react';
-=======
-import React, {useState, useEffect} from 'react';
->>>>>>> main
 import './style.css'
 
 import Box from '@mui/material/Box';
