@@ -132,6 +132,7 @@ class Camera:
 
         update_global_vars({"ccd_status": 0})
         sio.emit("set_obs_type", 0)
+        self.emit_status({"camera": "Finished"})
 
     def emit_status(self, status: dict) -> None:
         sio.emit("update_status", data=(self.id, status))
