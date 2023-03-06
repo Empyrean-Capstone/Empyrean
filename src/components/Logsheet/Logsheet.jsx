@@ -14,11 +14,6 @@ import { TableVirtuoso } from 'react-virtuoso';
 import { Typography } from '@mui/material';
 import {SocketContext} from '../../context/socket';
 
-
-import { io } from 'socket.io-client';
-
-let socket;
-
 function LinearProgressWithLabel(props) {
 	return (
 		<Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -142,7 +137,12 @@ function Logsheet() {
         })
 
 		socket.on("newObservation", (logsheetData) => {
-			setMessages([logsheetData, ...messages])
+			// setMessages([logsheetData, ...messages])
+			// https://reactjs.org/docs/hooks-reference.html
+			// Look at functional updates, this is where I'm getting this
+			setMessages( formerMessages => {
+				formerMessages = [formerMessages, ...logsheetData]
+			})
 		})
 
 		socket.emit("retrieveLogsheetData", {});
