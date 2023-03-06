@@ -1,7 +1,9 @@
 from main import db
+from . import logsheet
 
 class Observation(db.Model):
     id = db.Column( db.Integer, primary_key = True )
+    logsheet_id = db.Column( db.Integer, db.ForeignKey('logsheet.id') )
     owner_id = db.Column( db.Integer )
     filename = db.Column( db.String )
     date_made_open_source = db.Column( db.DateTime )
