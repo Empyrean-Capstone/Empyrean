@@ -13,13 +13,9 @@ import Tooltip from '@mui/material/Tooltip';
 import { LoadingButton } from "@mui/lab"
 
 function Observe() {
-	const [active, setActive] = React.useState("Dark");
-	const buttons = [
-		{ name: "Object", value: "" },
-		{ name: "Dark", value: "Dark" },
-		{ name: "Flat", value: "Flat" },
-		{ name: "ThAr", value: "ThAr" },
-	]
+	const [active, setActive] = React.useState("object");
+	const buttons = ["object", "dark", "flat", "thar"]
+
 	const styles = {
 		"active": {
 			backgroundColor: "#334155",
@@ -49,19 +45,22 @@ function Observe() {
 		setValues({ ...values, [prop]: event.target.value });
 	};
 
+	function reset_object_err() {
+		setObjectFieldError({
+			error: false,
+			text: ""
+		})
+	}
+
 	const handleObjectFieldChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
 
-		if (object_field_error.error) {
-			setObjectFieldError({
-				error: false,
-				text: ""
-			})
-		}
+		reset_object_err()
 	}
 
 	const [values, setValues] = React.useState({
-		object: active,
+		object: "",
+		observation_type: active,
 		right_ascension: 0,
 		declination: 0,
 		altitude: 0,
@@ -88,7 +87,7 @@ function Observe() {
 	function field_init(type) {
 		return (
 			<TextField
-				disabled={active !== "Object" &&
+				disabled={active !== "object" &&
 					type.name !== "Number of Exposures" &&
 					type.name !== "Exposure Duration (secs)" ? true : false}
 				className="half-containers"
@@ -98,7 +97,7 @@ function Observe() {
 				size="small"
 				value={values[type.value]}
 				onChange={handleChange(type.value)}
-				label={type.name}
+				label={type.name === "object" ? values.object : type.name}
 				InputLabelProps={{
 					shrink: true,
 				}}
@@ -106,7 +105,7 @@ function Observe() {
 		)
 	}
 
-	function button_init(button) {
+	function button_init(name) {
 		return (
 			<Button
 				sx={[
@@ -114,13 +113,13 @@ function Observe() {
 						fontWeight: 'bold',
 						maxWidth: '20px',
 					},
-					active === button.name ? styles["active"] : styles["inactive"]
+					active === name ? styles["active"] : styles["inactive"]
 				]}
-				key={button.name}
+				key={name}
 				variant="contained"
-				onClick={() => { setActive(button.name); values.object = button.value; }}
+				onClick={() => { setActive(name); values.observation_type = name; }}
 			>
-				{button.name}
+				{name}
 			</Button>
 		)
 	}
@@ -136,16 +135,16 @@ function Observe() {
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
-					disabled={active !== "Object" ? true : false}
+					disabled={active !== "object" ? true : false}
 					fullWidth
 					id="outlined"
-					value={values.object}
+					value={values.observation_type === "object" ? values.object : values.observation_type}
 					size="small"
 					onChange={handleObjectFieldChange("object")}
-					label="Object"
+					label="object"
 					type="text"
-					error={object_field_error.error}
-					helperText={object_field_error.text}
+					error={active !== "object" ? false : object_field_error.error}
+					helperText={active !== "object" ? "" : object_field_error.text}
 					InputLabelProps={{
 						shrink: true,
 					}}
