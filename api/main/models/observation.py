@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from main import db
+from . import logsheet
 
 
 def headers_to_db_cols(obs_data) -> dict:
@@ -55,6 +56,7 @@ class Observation(db.Model):
     offset = db.Column(db.Float)
     owner_id = db.Column(db.Integer)
     reworder = db.Column(db.String)
+
 
     def __init__(self, init_dict):
         self.set_attrs(init_dict)
