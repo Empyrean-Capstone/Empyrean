@@ -57,7 +57,14 @@ def update_status( instrument_id, update_dict ):
         else:
             status.statusValue = value
     db.session.commit()
+
     sio.emit( "frontend_update_status", update_dict )
+
+    try:
+        sio.emit( "update_request_form", update_dict["camera"] )
+    except KeyError:
+        pass
+
 
 """
 Defines the camera Instrument, 
