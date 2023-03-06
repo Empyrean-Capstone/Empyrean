@@ -172,26 +172,27 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setLoading("Resolve");
-
 							const initResolution = async (values) => {
+								let res = null
+
 								try {
-									return await axios.post(`http://localhost:5000/resolve/`, values);
+									res = await axios.post(`http://localhost:5000/resolve/`, values);
+									setValues(res.data)
 								} catch (err) {
 									setObjectFieldError({
 										error: true,
 										text: "No such object found"
 									})
 								}
+
+								setLoading("");
 							};
 
-							initResolution(props.values).then(res => setValues(res.data))
-
-							setLoading("");
+							setLoading("Resolve")
+							initResolution(props.values)
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Resolve"}
-						disabled={isLoading !== "" && isLoading !== "Resolve"}
 					>
 						Resolve
 					</LoadingButton>
@@ -247,27 +248,29 @@ function Observe() {
 				</Tooltip>
 
 				<Tooltip title="End Observation">
-					<LoadingButton
-						className="button"
-						color="error"
-						variant="contained"
-						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
-						type="submit"
-						sx={{}}
-						onClick={() => {
-							setLoading("Stop");
+					<span>
+						<LoadingButton
+							className="button"
+							color="error"
+							variant="contained"
+							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+							type="submit"
+							sx={{}}
+							onClick={() => {
+								setLoading("Stop");
 
-							setTimeout(() => {
-								setLoading("");
-							}, 1000);
-						}}
+								setTimeout(() => {
+									setLoading("");
+								}, 1000);
+							}}
 
-						loadingPosition="center"
-						loading={isLoading === "Stop"}
-						disabled={isFormEnabled}
-					>
-						Stop
-					</LoadingButton>
+							loadingPosition="center"
+							loading={isLoading === "Stop"}
+							disabled={isFormEnabled}
+						>
+							Stop
+						</LoadingButton>
+					</span>
 				</Tooltip>
 			</Stack>
 
