@@ -162,7 +162,7 @@ function Observe() {
 
 							const initResolution = async (values) => {
 								try {
-									return await axios.post(`http://localhost:5000/resolve`, values);
+									return await axios.post(`http://localhost:5000/resolve/`, values);
 								} catch (err) {
 									setObjectFieldError({
 										error: true,

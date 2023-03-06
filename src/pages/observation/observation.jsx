@@ -17,10 +17,10 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 // interesting reading: https://www.developerway.com/posts/react-component-as-prop-the-right-way
-function GridComponent({ size, Component }) {
+function GridComponent({ size, Component, ...props }) {
 	return (
 		<Grid containers item xs={size}>
-			<Item><Component /></Item>
+			<Item><Component {...props}/></Item>
 		</Grid>
 	)
 }

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import './style.css'
 
 import Box from '@mui/material/Box';
@@ -12,10 +12,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { TableVirtuoso } from 'react-virtuoso';
 import { Typography } from '@mui/material';
-
-import { io } from 'socket.io-client';
-
-let socket;
+import {SocketContext} from '../../context/socket';
 
 function LinearProgressWithLabel(props) {
 	return (
@@ -132,23 +129,25 @@ function Logsheet() {
 		['ORD.12352', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
 	]);
 
+	const socket = useContext( SocketContext );
     useEffect(() => {
-        socket = io();
 
         socket.on("retrieveLogsheetData", (logsheetData) => {
             setMessages(logsheetData)
         })
 
 		socket.on("newObservation", (logsheetData) => {
-			setMessages([logsheetData, ...messages])
+			// setMessages([logsheetData, ...messages])
+			// https://reactjs.org/docs/hooks-reference.html
+			// Look at functional updates, this is where I'm getting this
+			setMessages( formerMessages => {
+				formerMessages = [formerMessages, ...logsheetData]
+			})
 		})
 
 		socket.emit("retrieveLogsheetData", {});
-        // when component unmounts, disconnect
-        return (() => {
-            socket.disconnect()
-        })
-    }, [messages])
+		
+    }, [socket])
 
 	const rows = Array.from({ length: messages.length }, (_, index) => {
 		const row = messages[index];

@@ -1,4 +1,5 @@
 from main import db, app
+import json
 
 class Status(db.Model):
     __tablename__ = 'status'
@@ -12,5 +13,11 @@ class Status(db.Model):
         self.instrumentID = instrumentID
         self.statusName = statusName
         self.statusValue = statusValue
+
+    def serialize( self ):
+        return {"id": self.id,
+                "instrumentID": self.instrumentID,
+                "statusName": self.statusName,
+                "statusValue": self.statusValue }
 
     

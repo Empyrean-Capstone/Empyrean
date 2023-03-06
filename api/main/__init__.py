@@ -27,7 +27,7 @@ def get_env_variable(name: str) -> str | None:
 
 # https://github.com/miguelgrinberg/Flask-SocketIO-Chat
 app = Flask(__name__)
-print(get_env_variable("SQLALCHEMY_DATABASE_URI"))
+
 # loads .env file into the envrionment correctly.
 load_dotenv()
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
@@ -37,9 +37,7 @@ from .models import *
 migrate = Migrate(app, db)
 app.config["SECRET_KEY"] = "secret!"
 CORS(app, resources={r"/*": {"origins": "*"}})
-sio = SocketIO(app, cors_allowed_origins="*")
-
-
+sio = SocketIO(app, cors_allowed_origins="*", logger=True, async_mode="eventlet", allow_upgrades=True)
 
 # Set variables from .env to global scope
 POSTGRES_URL = get_env_variable("POSTGRES_URL")
@@ -50,12 +48,14 @@ DATA_FILEPATH = get_env_variable("DATA_FILEPATH")
 
 from .file_writing.views import file_writer
 from .observations.views import observations
-from .resolve.views import resolve
+from .status.views import status
 from .logsheet.views import logsheet
+from .resolve.views import resolve
 
 app.register_blueprint(file_writer, url_prefix="/file-writer")
 app.register_blueprint(observations)
 app.register_blueprint(resolve)
 app.register_blueprint(logsheet)
+app.register_blueprint(status)
 
 from . import views
