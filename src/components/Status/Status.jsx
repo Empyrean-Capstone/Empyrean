@@ -13,7 +13,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Typography } from '@mui/material';
 import {SocketContext} from '../../context/socket';
-import { color } from '@mui/system';
 
 function LinearProgressWithLabel(props) {
 	return (
