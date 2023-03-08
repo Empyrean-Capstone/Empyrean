@@ -6,23 +6,27 @@ from ..models.user import User
 
 @login.post("/")
 def post_login():
-    """
-    Create a new observation request for a specific user.
-
-    returns:
-        str: URI to newly created observation request.
-    """
     login_input: dict = request.get_json()
 
-    username = login_input["username"]
-    password = login_input["password"]
+    username_req = login_input["username"]
+    password_req = login_input["password"]
 
-    # TODO:
-    # 1. hash in the frontend
-    # 2. only create a User object and write to database if creating new user, NOT logging in
-    user_obj = User(username, password)
+    if( db.session.query( func.count(User)) == 0) {
+    	user_obj = User(username_req, password_req)
 
-    db.session.add(user_obj)
-    db.session.commit()
+    	db.session.add(user_obj)
+    	db.session.commit()
 
-    return {"response": True}
+	return {"response": True}
+    }
+    else {
+    	check_pass = db.session.query(User.password).\
+		filter(User.username == username_req)
+
+	if( check_pass == password_req ) {
+		return {"response": True}
+	}
+	
+    return {"response": False}
+
+    
