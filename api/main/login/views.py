@@ -28,5 +28,3 @@ def post_login():
 	}
 	
     return {"response": False}
-
-    

@@ -33,8 +33,8 @@ load_dotenv()
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
 db = SQLAlchemy(app)
 from .models import *
-
 migrate = Migrate(app, db)
+
 app.config["SECRET_KEY"] = "secret!"
 CORS(app, resources={r"/*": {"origins": "*"}})
 sio = SocketIO(app, cors_allowed_origins="*", logger=True, async_mode="eventlet", allow_upgrades=True)
@@ -57,6 +57,9 @@ app.register_blueprint(observations)
 app.register_blueprint(resolve)
 app.register_blueprint(logsheet)
 app.register_blueprint(status)
+
+from .login.views import login
+app.register_blueprint(login)
 
 from .login.views import login
 app.register_blueprint(login)
