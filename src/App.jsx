@@ -16,16 +16,23 @@ function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route path='/' element={<Layout/>}>
-						<Route index element={<Login/>}/>
+						<Route index element={<Observation/>} onEnter={requireAuth}/>
 						<Route path="about" element={<About/>}/>
 						<Route path="contact" element={<Contact/>}/>
-						<Route path="logsheet" element={<LogsheetPage/>}/>
-						<Route path="observation" element={<Observation/>}/>
+						<Route path="logsheet" element={<LogsheetPage/>} onEnter={requireAuth}/>
 					</Route>
 				</Routes>
 			</BrowserRouter>
 		</SocketContext.Provider>
 	);
+}
+
+function requireAuth() {
+  //check if auth context is true 
+  
+  	//replace path with /login and send user, await t/f
+  
+  //if auth context is true, send to observation
 }
 
 export default App;
