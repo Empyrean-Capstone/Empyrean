@@ -1,8 +1,11 @@
 """TODO."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+import math
+import pickle
 import os
 from astropy.io import fits
+
 from . import file_writer
 from .. import DATA_FILEPATH, db, sio
 from ..models.observation import Observation, headers_to_db_cols
@@ -14,7 +17,7 @@ def index():
 
 
 @sio.on("save_img")
-def submit_data(image_data: dict):
+def submit_data(serial_image, exposure_data: dict):
     """
     Save observation image data to FITS file format.
 
@@ -30,56 +33,56 @@ def submit_data(image_data: dict):
         # TODO: return error message
         return
 
-    timestr_fmt = "%Y-%m-%d %X:%f"
+    timestr_fmt = "%Y-%m-%dT%X.%f"
+    file_date_fmt = "%Y%m%d"
 
-    image = image_data["image"]
-    exposure_data = image_data["exposure_data"]
+    image = pickle.loads(serial_image)
 
     # calculate needed headers
     time_difference = timedelta(weeks=26)
-    cur_date = datetime.now(timezone.utc)
-    filename_prefix = f"{cur_date}_{exposure_data['OBSID']}.fits"
-    exposure_data["date_obs"] = cur_date.strftime(timestr_fmt)
-    exposure_data["date_made_open_source"] = (cur_date + time_difference).strftime(timestr_fmt)
+    date_obs: datetime = datetime.strptime(exposure_data["DATE-OBS"], timestr_fmt)
+    exposure_data["date_made_open_source"] = (date_obs + time_difference).strftime(timestr_fmt)
 
+    # create specialized FITS file name
+    date_obs_file_prefix = datetime.strftime(date_obs, file_date_fmt)
+    padded_id = str(exposure_data['OBSID']).zfill(4)
+    fits_path_head = f"{date_obs_file_prefix}.{padded_id}"
+
+
+    # ensure path to fits directory exists
     fits_dir = os.path.dirname(DATA_FILEPATH)
 
     if not os.path.exists(fits_dir):
         os.makedirs(fits_dir)
 
-    fits_path = f"{fits_dir}/{filename_prefix}"
+    fits_path = f"{fits_dir}/{fits_path_head}.fits"
+
 
     # make fits file - add headers and such
-    hdu = fits.PrimaryHDU(image)
+    hdu = fits.PrimaryHDU(image, uint=True)
 
-    # airmass: will compute; 1/cos(altitude)
-    # can use astropy.units, "45*units.deg.to(u.rad)"
-    # NOTE: make sure that altitude in radians, NOT DEGREES
-    hdu.header["AIRM"] = 0
+    hdu = populate_headers(hdu, exposure_data, fits_path_head)
 
-    # from camera
-    hdu.header["CCD-TEMP"] = 0
-    hdu.header["GAIN"] = 0
-    hdu.header["GAMMA"] = 0
+    # write this fits file to disk
+    hdu.writeto(fits_path, overwrite=True)
 
-    # selected at user interface, e.g. dark, flat
-    hdu.header["IMAGETYP"] = 0
+    # At this point, there is a row in the database for
+    # this observation, but it is essentially a receipt
+    # that indicates an observation is in action. We must
+    # update that row with the data gained from the finished
+    # observation.
+    db_data: dict = headers_to_db_cols(hdu.header, exposure_data)
 
-    # Shelyak
-    hdu.header["INSTRUME"] = 0
+    cur_observation = Observation.query.filter_by(id=exposure_data["OBSID"]).first()
+    cur_observation.set_attrs(db_data)
 
-    # name of file without fits extension
-    hdu.header["LOGID"] = 0
+    db.session.commit()
 
-    # DATE-OBS in numerical form: will receive script
-    hdu.header["MJDOBS"] = 0
+    # TODO: return success message
+    return "Success"
 
-    # potentially camera
-    hdu.header["OFFSET"] = 0
 
-    # camera
-    hdu.header["ROWORDER"] = 0
-
+def populate_headers(hdu, exposure_data, filename):
 
     hdu.header["OBSERVER"] = "Joe Llama"
     hdu.header["OBSID"] = exposure_data["OBSID"]
@@ -89,6 +92,8 @@ def submit_data(image_data: dict):
         "flat": "Flat",
         "thar": "ThAr",
     }[exposure_data["observation_type"]]
+    hdu.header["DATE-OBS"] = exposure_data["DATE-OBS"]
+    hdu.header["DATE-END"] = exposure_data["DATE-END"]
 
     if hdu.header["OBSTYPE"] == "Object":
         hdu.header["OBJECT"] = exposure_data["object"]
@@ -100,20 +105,26 @@ def submit_data(image_data: dict):
         hdu.header["DEC"] = "00:00:00.00"
         hdu.header["ALT"] = 0
 
-    # write this fits file to disk
-    hdu.writeto(fits_path)
+    # airmass
+    hdu.header["AIRM"] = 1 / math.cos(exposure_data["altitude"])
+    hdu.header["INSTRUME"] = "Shelyak"
 
-    # At this point, there is a row in the database for
-    # this observation, but it is essentially a receipt
-    # that indicates an observation is in action. We must
-    # update that row with the data gained from the finished
-    # observation.
-    db_data: dict = headers_to_db_cols(hdu.header)
+    # TODO: from camera, currently unset
+    hdu.header["GAMMA"] = 0
+    hdu.header["ROWORDER"] = 0
 
-    cur_observation = Observation.query.filter_by(id=exposure_data["OBSID"]).first()
-    cur_observation.set_attrs(db_data)
+    # TODO: confirm that "Temperature" in ZWO ASI is CCD-TEMP
+    hdu.header["CCD-TEMP"] = exposure_data["CCD-TEMP"]
+    hdu.header["GAIN"] = exposure_data["GAIN"]
+    hdu.header["IMAGETYP"] = exposure_data["IMAGETYP"]
+    hdu.header["OFFSET"] = exposure_data["OFFSET"]
 
-    db.session.commit()
+    # name of file without fits extension
+    hdu.header["LOGID"] = filename
 
-    # TODO: return success message
-    return {}
+    # TODO: DATE-OBS in numerical form: will receive script
+    hdu.header["MJDOBS"] = 0
+
+    hdu.header["EXPTIME"] = exposure_data["exposure_duration"]
+
+    return hdu
