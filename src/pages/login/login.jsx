@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import axios from 'axios';
 import './style.css'
 
+import { AuthContext, auth } from './context/auth';
 import { useNavigate } from "react-router-dom";
 
 import { styled } from '@mui/material/styles';
@@ -22,6 +23,8 @@ const Item = styled(Paper)(({ theme }) => ({
 function Login() {
 	const navigate = useNavigate();
 
+	const { auth, setAuth } = React.useContext(LanguageContext);
+	
 	const [isLoading, setLoading] = React.useState("");
 
 	const handleChange = (prop) => (event) => {
@@ -89,14 +92,14 @@ function Login() {
 							try {
 								const resp = await axios.post(`http://localhost:5000/auth_login/`, values);
 								
-								//set context
+								setAuth( resp );
 								
 								if( resp ) {
 									console.log("Logged In");									
 									navigate("/observation");
 								}
 								
-								//Error auth password message
+								console.log("Wrong Password");
 								
 							} catch (err) {
 								console.error(err);
