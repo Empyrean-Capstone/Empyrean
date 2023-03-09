@@ -14,5 +14,6 @@ def handle_chat(data):
     dbQuery = Observation.query.all()
     
     for row in dbQuery:
-        data.append(str(row).split("|"))
+        data.insert(0, list(row))
+
     emit("retrieveLogsheetData", data)

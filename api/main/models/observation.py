@@ -63,7 +63,12 @@ class Observation(db.Model):
 
     def __repr__(self):
         return f"{self.object_name} was observed on {self.date_obs} by {self.observer}"
+    
+    def __iter__(self):
+        return iter([self.id, self.object_name, "In Progress", str(self.date_obs), "None"])
 
     def set_attrs(self, attrs: dict):
+        self.object_name = attrs["object"]
+
         for key, val in attrs.items():
             setattr(self, key.lower(), val)
