@@ -76,13 +76,13 @@ function Observe() {
 
 	const socket = useContext(SocketContext);
 
-	const updateCameraStatus = useCallback((curStatus) => {
-		setFormEnabled(curStatus === "Finished")
+	const enableCameraStatus = useCallback(() => {
+		setFormEnabled(true)
 	}, [setFormEnabled]);
 
 	useEffect(() => {
-		socket.on("update_request_form", updateCameraStatus)
-	}, [socket, updateCameraStatus])
+		socket.on("enable_request_form", enableCameraStatus)
+	}, [socket, enableCameraStatus])
 
 
 	const fields_row1 = [

@@ -47,23 +47,25 @@ def index():
     return result
 
 
-@sio.on( "update_status" )
-def update_status( instrument_id, update_dict ):
+@sio.on("update_status")
+def update_status(instrument_id, update_dict):
     for key, value in update_dict.items():
-        status = Status.query.filter_by( instrumentID=instrument_id, statusName=key).first()
+        status = Status.query.filter_by(instrumentID=instrument_id, statusName=key).first()
+
         if status == None:
-            status = Status(instrumentID=instrument_id, statusName=key, statusValue=value )
-            db.session.add( status )
+            status = Status(instrumentID=instrument_id, statusName=key, statusValue=value)
+            db.session.add(status)
         else:
             status.statusValue = value
+
     db.session.commit()
 
-    sio.emit( "frontend_update_status", update_dict )
+    sio.emit("frontend_update_status", update_dict)
 
-    try:
-        sio.emit( "update_request_form", update_dict["camera"] )
-    except KeyError:
-        pass
+
+@sio.on("observation_complete")
+def update_request_form():
+    sio.emit("enable_request_form")
 
 
 """
