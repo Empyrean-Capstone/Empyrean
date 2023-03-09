@@ -3,13 +3,6 @@ import bcrypt from 'bcrypt';
 import axios from 'axios';
 import './style.css'
 
-// (?)
-import './App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Layout } from './components/Layout';
-import { Observation } from './pages/observation'
-//
-
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 
@@ -95,16 +88,8 @@ function Login() {
 								if( resp ) {
 									console.log("Logged In");
 
-									//route to observation (?)
-									return (
-										<BrowserRouter>
-											<Routes>
-												<Route path='/' element={<Layout/>}>
-													<Route index element={<Observation/>}/>
-												</Route>
-											</Routes>
-										</BrowserRouter>
-									);
+									//set global variable
+									
 								}
 							} catch (err) {
 								console.error(err);
