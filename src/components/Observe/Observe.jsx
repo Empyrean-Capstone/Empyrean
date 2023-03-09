@@ -2,9 +2,11 @@
 // For async posts to backend: https://medium.com/@adrianhuber17/how-to-build-a-simple-real-time-application-using-flask-react-and-socket-io-7ec2ce2da977
 //
 
-import React from 'react'
+import React, { useCallback, useContext, useEffect } from 'react';
 import axios from 'axios';
+
 import './style.css'
+import { SocketContext } from '../../context/socket';
 
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -36,27 +38,7 @@ function Observe() {
 	}
 
 	const [isLoading, setLoading] = React.useState("");
-	const [object_field_error, setObjectFieldError] = React.useState({
-		error: false,
-		text: ""
-	})
 
-	const handleChange = (prop) => (event) => {
-		setValues({ ...values, [prop]: event.target.value });
-	};
-
-	function reset_object_err() {
-		setObjectFieldError({
-			error: false,
-			text: ""
-		})
-	}
-
-	const handleObjectFieldChange = (prop) => (event) => {
-		setValues({ ...values, [prop]: event.target.value });
-
-		reset_object_err()
-	}
 
 	const [values, setValues] = React.useState({
 		object: "",
@@ -69,7 +51,39 @@ function Observe() {
 		exposure_duration: 0,
 	});
 
+	const [object_field_error, setObjectFieldError] = React.useState({
+		error: false,
+		text: ""
+	})
+
+	const handleChange = (prop) => (event) => {
+		setValues({ ...values, [prop]: event.target.value });
+	};
+
+	const handleObjectFieldChange = (prop) => (event) => {
+		setValues({ ...values, [prop]: event.target.value });
+
+		setObjectFieldError({
+			error: false,
+			text: ""
+		})
+	}
+
 	const props = { values, handleChange }
+
+
+	const [isFormEnabled, setFormEnabled] = React.useState(true)
+
+	const socket = useContext(SocketContext);
+
+	const enableCameraStatus = useCallback(() => {
+		setFormEnabled(true)
+	}, [setFormEnabled]);
+
+	useEffect(() => {
+		socket.on("enable_request_form", enableCameraStatus)
+	}, [socket, enableCameraStatus])
+
 
 	const fields_row1 = [
 		{ name: "Right Ascension (α)", value: "right_ascension" },
@@ -158,26 +172,27 @@ function Observe() {
 						type="submit"
 						sx={{}}
 						onClick={() => {
-							setLoading("Resolve");
-
 							const initResolution = async (values) => {
+								let res = null
+
 								try {
-									return await axios.post(`http://localhost:5000/resolve/`, values);
+									res = await axios.post(`http://localhost:5000/resolve/`, values);
+									setValues(res.data)
 								} catch (err) {
 									setObjectFieldError({
 										error: true,
 										text: "No such object found"
 									})
 								}
+
+								setLoading("");
 							};
 
-							initResolution(props.values).then(res => setValues(res.data))
-
-							setLoading("");
+							setLoading("Resolve")
+							initResolution(props.values)
 						}}
 						loadingPosition="center"
 						loading={isLoading === "Resolve"}
-						disabled={isLoading !== "" && isLoading !== "Resolve"}
 					>
 						Resolve
 					</LoadingButton>
@@ -198,60 +213,64 @@ function Observe() {
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<Tooltip title="Begin Observation">
-					<LoadingButton
-						className="button"
-						color="success"
-						variant="contained"
-						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
-						type="submit"
-						sx={{}}
-						onClick={() => {
-							setLoading("Start");
+					<span>
+						<LoadingButton
+							className="button"
+							color="success"
+							variant="contained"
+							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+							type="submit"
+							sx={{}}
+							onClick={() => {
+								const initObservation = async (values) => {
+									try {
+										const resp = await axios.post(`http://localhost:5000/observations/`, values);
+										console.log(resp.data);
+									} catch (err) {
+										// TODO: Handle Error Here
+										console.error(err);
+									}
 
-							const initObservation = async (values) => {
-								try {
-									const resp = await axios.post(`http://localhost:5000/observations/`, values);
-									console.log(resp.data);
-								} catch (err) {
-									// Handle Error Here
-									console.error(err);
-								}
+									setLoading("");
+									setFormEnabled(false)
+								};
 
-								setLoading("");
-							};
-
-							initObservation(props.values);
-						}}
-						loadingPosition="center"
-						loading={isLoading === "Start"}
-						disabled={isLoading !== "" && isLoading !== "Start"}
-					>
-						Start
-					</LoadingButton>
+								setLoading("Start");
+								initObservation(props.values);
+							}}
+							loadingPosition="center"
+							loading={isLoading === "Start"}
+							disabled={!isFormEnabled || (isLoading !== "" && isLoading !== "Start")}
+						>
+							Start
+						</LoadingButton>
+					</span>
 				</Tooltip>
 
 				<Tooltip title="End Observation">
-					<LoadingButton
-						className="button"
-						color="error"
-						variant="contained"
-						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
-						type="submit"
-						sx={{}}
-						onClick={() => {
-							setLoading("Stop");
+					<span>
+						<LoadingButton
+							className="button"
+							color="error"
+							variant="contained"
+							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
+							type="submit"
+							sx={{}}
+							onClick={() => {
+								setLoading("Stop");
 
-							setTimeout(() => {
-								setLoading("");
-							}, 1000);
-						}}
+								setTimeout(() => {
+									setLoading("");
+								}, 1000);
+							}}
 
-						loadingPosition="center"
-						loading={isLoading === "Stop"}
-						disabled={isLoading !== "" && isLoading !== "Stop"}
-					>
-						Stop
-					</LoadingButton>
+							loadingPosition="center"
+							loading={isLoading === "Stop"}
+							disabled={isFormEnabled}
+						>
+							Stop
+						</LoadingButton>
+					</span>
 				</Tooltip>
 			</Stack>
 
