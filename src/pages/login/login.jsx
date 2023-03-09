@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import axios from 'axios';
 import './style.css'
 
+import { useNavigate } from "react-router-dom";
+
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 
@@ -18,6 +20,7 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 function Login() {
+	const navigate = useNavigate();
 
 	const [isLoading, setLoading] = React.useState("");
 
@@ -85,12 +88,16 @@ function Login() {
 						const initLogin = async (values) => {
 							try {
 								const resp = await axios.post(`http://localhost:5000/auth_login/`, values);
+								
+								//set context
+								
 								if( resp ) {
-									console.log("Logged In");
-
-									//set global variable
-									
+									console.log("Logged In");									
+									navigate("/observation");
 								}
+								
+								//Error auth password message
+								
 							} catch (err) {
 								console.error(err);
 							}
