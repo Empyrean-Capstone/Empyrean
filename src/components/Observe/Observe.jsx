@@ -227,19 +227,13 @@ function Observe() {
 										const resp = await axios.post(`http://localhost:5000/observations/`, values);
 										console.log(resp.data);
 									} catch (err) {
-										// TODO: Handle Error Here
 										console.error(err);
 									}
-
-									setLoading("");
-									setFormEnabled(false)
 								};
 
-								setLoading("Start");
+								setFormEnabled(false)
 								initObservation(props.values);
 							}}
-							loadingPosition="center"
-							loading={isLoading === "Start"}
 							disabled={!isFormEnabled || (isLoading !== "" && isLoading !== "Start")}
 						>
 							Start
@@ -257,11 +251,17 @@ function Observe() {
 							type="submit"
 							sx={{}}
 							onClick={() => {
-								setLoading("Stop");
+								const endObservation = async () => {
+									try {
+										const resp = await axios.post(`http://localhost:5000/observations/end`);
+										console.log(resp.data);
+									} catch (err) {
+										console.error(err);
+									}
+								};
 
-								setTimeout(() => {
-									setLoading("");
-								}, 1000);
+								setFormEnabled(true)
+								endObservation();
 							}}
 
 							loadingPosition="center"

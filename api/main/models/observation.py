@@ -47,7 +47,7 @@ class Observation(db.Model):
     instrume = db.Column(db.String)
     log_id = db.Column(db.String)
     mjdobs = db.Column(db.Float)
-    object_name = db.Column("object", db.String)
+    object = db.Column(db.String)
     obs_id = db.Column(db.String)
     obs_type = db.Column(db.String)
     observer = db.Column(db.String)
@@ -59,13 +59,11 @@ class Observation(db.Model):
         self.set_attrs(init_dict)
 
     def __repr__(self):
-        return f"{self.object_name} was observed on {self.date_obs} by {self.observer}"
-    
+        return f"{self.object} was observed on {self.date_obs} by {self.observer}"
+
     def __iter__(self):
-        return iter([self.id, self.object_name, "In Progress", str(self.date_obs), "None"])
+        return iter([self.id, self.object, "In Progress", str(self.date_obs), "None"])
 
     def set_attrs(self, attrs: dict):
-        self.object_name = attrs["object"]
-
         for key, val in attrs.items():
             setattr(self, key.lower(), val)

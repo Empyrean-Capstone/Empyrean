@@ -37,7 +37,15 @@ from .models import *
 migrate = Migrate(app, db)
 app.config["SECRET_KEY"] = "secret!"
 CORS(app, resources={r"/*": {"origins": "*"}})
-sio = SocketIO(app, cors_allowed_origins="*", logger=True, async_mode="eventlet", allow_upgrades=True)
+sio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    allow_upgrades=True,
+    async_mode="eventlet",
+    logger=True,
+    max_http_buffer_size=10**20,
+    ping_timeout=60
+)
 
 # Set variables from .env to global scope
 POSTGRES_URL = get_env_variable("POSTGRES_URL")
