@@ -190,6 +190,7 @@ class Zwocamera:
     def sequence(self, request_input):
         global global_data
 
+        camera.exposure_terminated = False
         num_exposures = int(request_input["num_exposures"])
         exposure_duration = int(request_input["exposure_duration"])
 
@@ -222,8 +223,8 @@ class Zwocamera:
         #  update_global_vars({"ccd_status": 0})
         #  sio.emit("set_obs_type", 0)
 
-        sio.emit("observation_complete")
         self.exposure_terminated = False
+        self.conclude_observation()
 
     def expose(self, exptime=30):
         global global_data
@@ -345,9 +346,9 @@ if __name__ == "__main__":
 
     @sio.on("end_exposure")
     def end_exp():
+        camera.exposure_terminated = True
+
         try:
             camera.camera.stop_exposure()
         except:
             pass
-
-        camera.exposure_terminated = True
