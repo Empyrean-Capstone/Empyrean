@@ -51,17 +51,13 @@ from .observations.views import observations
 from .status.views import status
 from .logsheet.views import logsheet
 from .resolve.views import resolve
+from .login.views import login
 
 app.register_blueprint(file_writer, url_prefix="/file-writer")
 app.register_blueprint(observations)
 app.register_blueprint(resolve)
 app.register_blueprint(logsheet)
 app.register_blueprint(status)
-
-from .login.views import login
-app.register_blueprint(login)
-
-from .login.views import login
 app.register_blueprint(login)
 
 from . import views
