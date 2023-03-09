@@ -1,33 +1,31 @@
 from datetime import datetime, timedelta, timezone
 from main import db
-from . import logsheet
 
 
-def headers_to_db_cols(obs_data) -> dict:
+def headers_to_db_cols(headers, obs_data) -> dict:
     headers = {
-        "id": obs_data["OBSID"],
-        "observer": obs_data["OBSERVER"],
-        "obs_type": obs_data["OBSTYPE"],
+        "id": headers["OBSID"],
+        "observer": headers["OBSERVER"],
+        "obs_type": headers["OBSTYPE"],
+        "date_made_open_source": obs_data["date_made_open_source"],
+        "exp_time": headers["EXPTIME"],
+        "ccd_temp": headers["CCD-TEMP"],
+        "image_typ": headers["IMAGETYP"],
+        "gain": headers["GAIN"],
+        "offset": headers["OFFSET"],
+        "date_obs": headers["DATE-OBS"],
+        "instrume": headers["INSTRUME"],
+        "roworder": headers["ROWORDER"],
+        "object_name": headers["OBJECT"],
+        "airm": headers["AIRM"],
+        "obs_id": headers["OBSID"],
+        "log_id": headers["LOGID"],
+        "mjdobs": headers["MJDOBS"],
+
+        # TODO: need to determine if we need these and get them
+        #  "owner_id" = obs_data[""],
+        #  "gamma": headers[""],
     }
-
-    #  owner_id = obs_data[""]
-    #
-    #  date_made_open_source = obs_data[""]
-    #  exp_time = obs_data[""]
-    #  ccd_temp = obs_data[""]
-    #  image_typ = obs_data[""]
-    #  gain = obs_data[""]
-    #  offset = obs_data[""]
-    #  gamma = obs_data[""]
-    #  date_obs = obs_data[""]
-    #  instrume = obs_data[""]
-    #  roworder = obs_data["ROWORDER"]
-    #  object_name = obs_data[""]
-
-    #  airm = obs_data[""]
-    #  obs_id = obs_data[""]
-    #  log_id = obs_data[""]
-    #  mjdobs = obs_data[""]
 
     return headers
 
@@ -56,7 +54,6 @@ class Observation(db.Model):
     offset = db.Column(db.Float)
     owner_id = db.Column(db.Integer)
     reworder = db.Column(db.String)
-
 
     def __init__(self, init_dict):
         self.set_attrs(init_dict)
