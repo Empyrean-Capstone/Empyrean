@@ -20,15 +20,15 @@ const Item = styled(Paper)(({ theme }) => ({
 	color: theme.palette.text.secondary,
 }));
 
+const handleChange = (prop) => (event) => {
+        setValues({ ...values, [prop]: event.target.value });};
+
 function Login() {
 	const navigate = useNavigate();
 
 	const { auth, setAuth } = React.useContext(LanguageContext);
 	
 	const [isLoading, setLoading] = React.useState("");
-
-	const handleChange = (prop) => (event) => {
-        setValues({ ...values, [prop]: event.target.value });};
 
 	const [values, setValues] = React.useState({
 		username: "",
