@@ -1,16 +1,13 @@
 """TODO."""
 
-import os
+import pickle
 import socketio
 import sys
 import time
 
-from astropy.io import fits
 from astropy.time import Time
-from tqdm.auto import tqdm, trange
+import astropy.units as u
 from tqdm.auto import trange
-import astropy.units as units
-import matplotlib.pyplot as plt
 import numpy as np
 
 # source and docs: https://github.com/python-zwoasi/python-zwoasi
@@ -40,7 +37,6 @@ class Camera:
             itime ():
         """
         if self.simulation:
-            global sio
             global continue_obs
             data: dict = {}
 
@@ -61,7 +57,6 @@ class Camera:
                         "nexp_total": int(nexp),
                     }
 
-                    update_global_vars(data)
                     self.emit_status(data)
 
                     time.sleep(1)
@@ -80,16 +75,13 @@ class Camera:
                 "nexp_total": 1,
             }
 
-            update_global_vars(data)
             self.emit_status(data)
 
             # return type of exposure will be a one dim array from numpy.frombuffer()
             return []
 
     def return_image_data(self, image, request_input, tstart, tend):
-        global sio
         global global_data
-        sio.emit("get_all_variables")
 
         request_input["DATE-END"] = tend.fits
         request_input["DATE-OBS"] = tstart.fits
@@ -104,7 +96,6 @@ class Camera:
         Args:
             data ():
         """
-        global sio
         global global_data
         data: dict = {}
 
@@ -117,20 +108,16 @@ class Camera:
                 "nexp_total": int(num_exposures),
             }
 
-            update_global_vars(data)
             self.emit_status(data)
 
             tstart = Time.now()
             image = self.expose(request_input)
             tend = Time.now()
 
-            sio.emit("get_next_file")
-
             time.sleep(1)
             self.return_image_data(image, request_input, tstart, tend)
             time.sleep(1)
 
-        update_global_vars({"ccd_status": 0})
         sio.emit("set_obs_type", 0)
         self.emit_status({"camera": "Finished"})
 
@@ -148,7 +135,10 @@ class Zwocamera:
     """
 
     def __init__(self, device="ZWO ASI2600MM Pro"):
-        env_filename = "/Users/joellama/ASI_linux_mac_SDK_V1.28/lib/mac/libASICamera2.dylib"
+        # TODO: remove
+        env_filename = "../ASI_linux_mac_SDK_V1.28/lib/x64/libASICamera2.so.1.27"
+        #  env_filename = "/Users/joellama/ASI_linux_mac_SDK_V1.28/lib/mac/libASICamera2.dylib"
+
         asi.init(env_filename)
 
         num_cameras = asi.get_num_cameras()
@@ -157,86 +147,29 @@ class Zwocamera:
             print("No cameras found")
             sys.exit(0)
 
-        idx = None
+        cameras_found = asi.list_cameras()  # Models names of the connected cameras
 
-        for jj in range(len(asi.list_cameras())):
-            if device in asi.list_cameras()[jj]:
-                idx = jj
+        if num_cameras == 1:
+            print("Found one camera: %s" % cameras_found[0])
 
-        if idx is None:
-            print("Couldn't find specified camera")
+        # In list of cameras, find index of given device
+        try:
+            idx = cameras_found.index(device)
+        except ValueError:
+            print(f"ERR: Couldn't find specified camera '{device}' in list of connected cameras. Exiting...")
             sys.exit(0)
 
         self.camera = asi.Camera(idx)
         self.camera_info = self.camera.get_camera_property()
+        self.id = sio.call("get_instrument_id", device)
+        self.exposure_terminated = False
+
         self.camera.set_control_value(asi.ASI_BANDWIDTHOVERLOAD, self.camera.get_controls()["BandWidth"]["MinValue"])
         self.camera.disable_dark_subtract()
 
-    def get_values(self):
-        global sio
-        global continue_obs
-        global global_data
-        values = self.camera.get_control_values()
-        update_global_vars({"ccd_status": values})
-
-    def sequence(self, meta):
-        global sio
-        global global_data
-        print(meta)
-        nexp = meta["nexp"]
-        texp = meta["texp"]
-        obs_type = meta["obs_type"]
-        for kk in trange(nexp):
-            sio.emit(
-                "update",
-                {"current_exposure": {"obs_id": "20220101.001.1001", "exp_number": int(kk), "nexp_total": int(nexp)}},
-            )
-            tstart = Time.now()
-            data = self.expose(exptime=texp)
-            tend = Time.now()
-            sio.emit("get_next_file")
-            time.sleep(1)
-            self.save_image(data, obs_type, tstart, tend)
-            # print(f"Saving data to {x['logsheet']['obs_fh']}")
-            time.sleep(1)
-        update_global_vars({"ccd_status": 0})
-        sio.emit("set_obs_type", 0)
-
-    def save_image(self, image, _obstype, tstart, tend):
-        global sio
-        global global_data
-        sio.emit("get_all_variables")
-        hdu = fits.PrimaryHDU(image, uint=True)
-        hdu.header["OBSID"] = f"{os.path.basename(global_data['logsheet']['obs_fh'].split('.fits')[0])}"
-        obstype = {"obj": "Object", "dark": "Dark", "flat": "Flat", "thar": "ThAr"}[_obstype]
-        hdu.header["OBSTYPE"] = obstype
-        print(f"obs_type: {obstype}")
-
-        hdu.header["EXPTIME"] = global_data["current_exposure"]["itime_total"]
-
-        if "Object" in obstype:
-            hdu.header["OBJECT"] = "TARGET NAME"
-            hdu.header["RA"] = global_data["target"]["ra"]
-            hdu.header["DEC"] = global_data["target"]["dec"]
-            hdu.header["ALT"] = global_data["target"]["alt"]
-        else:
-            hdu.header["RA"] = "+00:00:00.00"
-            hdu.header["DEC"] = "00:00:00.00"
-            hdu.header["ALT"] = 0
-
-        hdu.header["DATE-OBS"] = tstart.fits
-        hdu.header["DATE-END"] = tend.fits
-
-        for k, v in self.camera.get_control_values().items():
-            hdu.header[k.upper()[:8]] = v
-
-        if not os.path.exists(os.path.dirname(global_data["logsheet"]["obs_fh"])):
-            os.makedirs(os.path.dirname(global_data["logsheet"]["obs_fh"]))
-
-        hdu.writeto(global_data["logsheet"]["obs_fh"], overwrite=True, output_verify="silentfix")
-
+    # Helper Methods (private, internal usage only)
     @staticmethod
-    def convert_camera_status(status):
+    def __convert_camera_status(status):
         if status == 0:
             return "Idle"
         elif status == 1:
@@ -246,14 +179,62 @@ class Zwocamera:
         else:
             return "Unknown"
 
-    def expose(self, exptime=30, filename="test.fits"):
-        global sio
+    def __emit_status(self, status: dict) -> None:
+        sio.emit("update_status", data=(self.id, status))
+
+    def __get_camera_status_str(self) -> str:
+        status = self.camera.get_exposure_status()
+        return self.__convert_camera_status(status)
+
+    # Public Methods
+    def sequence(self, request_input):
         global global_data
+
+        num_exposures = int(request_input["num_exposures"])
+        exposure_duration = int(request_input["exposure_duration"])
+
+        self.__emit_status({"nexp_total": num_exposures, "itime_total": exposure_duration})
+
+        kk: int = 0
+
+        while kk < num_exposures and not self.exposure_terminated:
+            cur_status = {
+                "obs_id": request_input["OBSID"],
+                "exp_number": int(kk),
+            }
+
+            self.__emit_status(cur_status)
+
+            tstart = Time.now()
+            image = self.expose(exptime=exposure_duration)
+            tend = Time.now()
+
+            # FIXME: what does this do?
+            #  sio.emit("get_next_file")
+
+            if not self.exposure_terminated:
+                time.sleep(1)
+                self.return_image_data(image, request_input, tstart, tend)
+                time.sleep(1)
+
+            kk += 1
+
+        #  update_global_vars({"ccd_status": 0})
+        #  sio.emit("set_obs_type", 0)
+
+        sio.emit("observation_complete")
+        self.exposure_terminated = False
+
+    def expose(self, exptime=30):
+        global global_data
+
         self.camera.set_control_value(asi.ASI_EXPOSURE, int(exptime * 1e6))
-        self.camera.set_control_value(asi.ASI_GAIN, 150)
+        self.camera.set_control_value(asi.ASI_GAIN, 46)
         self.camera.set_image_type(asi.ASI_IMG_RAW16)
+
         poll = 0.2
         initial_sleep = 1
+
         try:
             # Force any single exposure to be halted
             self.camera.stop_video_capture()
@@ -263,34 +244,43 @@ class Zwocamera:
             raise
         except:
             pass
-        print(f"Camera status: {self.camera.get_exposure_status()}")
+
         while self.camera.get_exposure_status() == asi.ASI_EXP_WORKING:
             # make sure we actually are not already exposing
             time.sleep(poll)
+
         self.camera.start_exposure()
+
         if initial_sleep:
             time.sleep(initial_sleep)
-        tstart = Time.now()
+
+        #  tstart = Time.now()
         status = self.camera.get_exposure_status()
-        print(f"Camera status: {status}")
+
         while status == asi.ASI_EXP_WORKING:
-            tnow = Time.now()
-            tdiff = int((tnow - tstart).to(units.s).value)
-            sio.emit(
-                "update",
-                {
-                    "camera": self.convert_camera_status(status),
-                    "current_exposure": {"itime_elapsed": tdiff, "itime_total": int(exptime)},
-                },
-            )
+            #  # FIXME: remove, will update itime on the frontend
+            #  tnow = Time.now()
+            #  tdiff = int((tnow - tstart).to(u.s).value)
+
+            #  cur_status: dict = {
+            #      "camera": self.__get_camera_status_str(),
+            #      "itime_elapsed": tdiff,
+            #  }
+
+            #  self.__emit_status(cur_status)
+
             status = self.camera.get_exposure_status()
-            print(status)
-        update_global_vars({"camera": self.convert_camera_status(status)})
+
+        self.__emit_status({"camera": self.__convert_camera_status(status), "itime_elapsed": 0})
+
         buffer_ = None
         data = self.camera.get_data_after_exposure(buffer_)
-        update_global_vars({"camera": self.convert_camera_status(self.camera.get_exposure_status())})
+
+        self.__emit_status({"camera": self.__get_camera_status_str()})
+
         whbi = self.camera.get_roi_format()
         shape = [whbi[1], whbi[0]]
+
         if whbi[3] == asi.ASI_IMG_RAW8 or whbi[3] == asi.ASI_IMG_Y8:
             img = np.frombuffer(data, dtype=np.uint8)
         elif whbi[3] == asi.ASI_IMG_RAW16:
@@ -300,24 +290,64 @@ class Zwocamera:
             shape.append(3)
         else:
             raise ValueError("Unsupported image type")
+
         img = img.reshape(shape)
-        update_global_vars({"camera": self.convert_camera_status(self.camera.get_exposure_status())})
+
+        self.__emit_status({"camera": self.__get_camera_status_str()})
+
         return img
+
+    def return_image_data(self, image: np.ndarray, request_input, tstart, tend):
+        global global_data
+
+        request_input["DATE-END"] = tend.fits
+        request_input["DATE-OBS"] = tstart.fits
+        request_input["IMAGETYP"] = self.camera.get_image_type()
+        request_input["CCD-TEMP"] = self.camera.get_image_type()
+
+        for k, v in self.camera.get_control_values().items():
+            request_input[k.upper()[:8]] = v
+
+        sio.emit("save_img", data=(pickle.dumps(image), request_input))
+
+    def conclude_observation(self):
+        self.__emit_status(
+            {
+                "exp_number": 0,
+                "exp_number": 0,
+                "itime_elapsed": 0,
+                "itime_elapsed": 0,
+                "nexp_total": 0,
+            }
+        )
+
+        sio.emit("observation_complete")
 
 
 if __name__ == "__main__":
-    sio = socketio.Client()
-    sio.connect("http://0.0.0.0:5000")
-    camera = Camera(simulator=True)
+    sio = socketio.Client(
+        request_timeout=60,
+        logger=True,
+        engineio_logger=True,
+    )
+    sio.connect("http://localhost:5000")
+    camera = Zwocamera(device="ZWO ASI120MM-S")
 
     global_data = {}
-    sio.emit("get_all_variables")
 
     @sio.on("begin_exposure")
-    def sequence(data):
-        camera.sequence(data)
+    def sequence(obs_request):
+        camera.sequence(obs_request)
 
-    @sio.on("update")
-    def update_global_vars(data: dict):
-        for key in data.keys():
-            global_data[key] = data[key]
+    @sio.event
+    def disconnect():
+        sio.emit("observation_complete")
+
+    @sio.on("end_exposure")
+    def end_exp():
+        try:
+            camera.camera.stop_exposure()
+        except:
+            pass
+
+        camera.exposure_terminated = True
