@@ -7,13 +7,17 @@ from .. import sio
 from . import observations
 
 
+def get_newest_observation():
+    return Observation.query.order_by(-Observation.id).limit(1).first()
+
+
 def create_observation_entry(dict_data: dict):
     new_observe = Observation(dict_data)
 
     db.session.add(new_observe)
     db.session.commit()
 
-    sio.emit("prependNewObservation", [row for row in new_observe])
+    sio.emit("prependNewObservation", [field for field in new_observe])
 
     return new_observe
 
@@ -62,13 +66,18 @@ def post_observation():
 def end_observation():
     sio.emit("end_exposure")
 
-    last_observation = Observation.query.order_by(-Observation.id).limit(1).first()
-    db.session.delete(last_observation)
+    new_observe = get_newest_observation()
+    db.session.delete(new_observe)
     db.session.commit()
+
+    sio.emit("removeNewObservation")
 
     return {}
 
 
-@sio.on("observation_complete")
+@sio.on("exposure_complete")
 def update_request_form():
+    new_observe = get_newest_observation()
+
+    sio.emit("updateNewObservation", [field for field in new_observe])
     sio.emit("enable_request_form")

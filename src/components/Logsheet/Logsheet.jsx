@@ -16,7 +16,7 @@ const columns = [
 	{
 		field: 'progress',
 		headerName: 'Progress',
-		width: 300,
+		width: 240,
 	},
 	{
 		field: 'target',
@@ -26,7 +26,7 @@ const columns = [
 	{
 		field: 'date',
 		headerName: 'Date',
-		width: 600,
+		width: 300,
 	},
 	{
 		field: 'sigToNoise',
@@ -37,15 +37,18 @@ const columns = [
 
 
 function Logsheet() {
-	const tableHeight = 800
+	const tableHeight = 1000
 	const [logMatrix, setLogMatrix] = useState([]);
+	const [isLogLoading, setLogLoading] = useState(false);
 	const socket = useContext(SocketContext);
 
 	useEffect(() => {
 		socket.on("setObservations", (logsheetData) => {
 			setLogMatrix(logsheetData)
+			setLogLoading(false)
 		})
 
+		setLogLoading(true)
 		socket.emit("retrieveObservations", {});
 	}, [socket])
 
@@ -55,11 +58,17 @@ function Logsheet() {
 		setLogMatrix([newLogArr, ...logMatrix])
 	})
 
-	socket.on("updateNewObservation", (updatedLog) => {
+	socket.on("updateNewObservation", (updatedLogArr) => {
 		let updatedMatrix = [...logMatrix]
-		updatedMatrix[0] = updatedLog
+		updatedMatrix[0] = updatedLogArr
 
 		setLogMatrix(updatedMatrix)
+	})
+
+	socket.on("removeNewObservation", () => {
+		// https://reactjs.org/docs/hooks-reference.html#functional-updates
+		let rmMatrix = logMatrix.slice(1)
+		setLogMatrix(rmMatrix)
 	})
 
 	function initNames(id, target, progress, date, sigToNoise) {
@@ -72,14 +81,25 @@ function Logsheet() {
 	});
 
 	return (
-		<TableContainer style={{ height: tableHeight }}>
+		<TableContainer>
 			<h2 className="horiz-align">Logsheet</h2>
 			<h5 className="horiz-align">Current sheet: 20220101.001</h5>
 
-			<div style={{ height: tableHeight * .9, width: '100%' }}>
-				<DataGrid rows={rows} columns={columns} slots={{ toolbar: GridToolbar }}/>
-			</div>
-		</TableContainer>
+			<DataGrid
+				sx={{ height: tableHeight * .9 }}
+				autoPageSize={true}
+				sortingOrder={["asc", "desc"]}
+				rows={rows}
+				columns={columns}
+				slots={{ toolbar: GridToolbar }}
+				initialState={{
+					sorting: {
+						sortModel: [{ field: 'id', sort: 'desc' }],
+					},
+				}}
+				loading={isLogLoading}
+			/>
+		</TableContainer >
 	);
 }
 
