@@ -2,7 +2,7 @@
 // For async posts to backend: https://medium.com/@adrianhuber17/how-to-build-a-simple-real-time-application-using-flask-react-and-socket-io-7ec2ce2da977
 //
 
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import axios from 'axios';
 
 import './style.css'
@@ -38,7 +38,6 @@ function Observe() {
 	}
 
 	const [isLoading, setLoading] = React.useState("");
-
 
 	const [values, setValues] = React.useState({
 		object: "",
@@ -76,13 +75,11 @@ function Observe() {
 
 	const socket = useContext(SocketContext);
 
-	const enableCameraStatus = useCallback(() => {
-		setFormEnabled(true)
-	}, [setFormEnabled]);
-
 	useEffect(() => {
-		socket.on("enable_request_form", enableCameraStatus)
-	}, [socket, enableCameraStatus])
+		socket.on("enable_request_form", () => {
+			setFormEnabled(true)
+		})
+	}, [socket, setFormEnabled])
 
 
 	const fields_row1 = [
@@ -170,7 +167,7 @@ function Observe() {
 						variant="contained"
 						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
 						type="submit"
-						sx={{}}
+						sx={{ fontSize: "9pt" }}
 						onClick={() => {
 							const initResolution = async (values) => {
 								let res = null

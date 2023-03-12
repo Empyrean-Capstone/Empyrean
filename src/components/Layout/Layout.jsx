@@ -12,7 +12,7 @@ function Layout() {
                     <p id='main-page-title'>MAIN PAGES</p>
                     <ul id='main-links'>
                         <li className='main-page-link'><Link className="main-link" to="/">Observe</Link></li>
-                        <li className='main-page-link'><Link className="main-link" to="">Logsheets</Link></li>
+                        <li className='main-page-link'><Link className="main-link" to="/logsheet">Logsheets</Link></li>
                     </ul>
                 </div>
                 <div id='main-content'>
