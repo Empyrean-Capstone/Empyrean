@@ -106,7 +106,7 @@ def populate_headers(hdu, exposure_data, filename):
         hdu.header["ALT"] = 0
 
     # airmass
-    hdu.header["AIRM"] = 1 / math.cos(exposure_data["altitude"])
+    hdu.header["AIRM"] = 1 / math.cos(float(exposure_data["altitude"]))
     hdu.header["INSTRUME"] = "Shelyak"
 
     # TODO: from camera, currently unset
