@@ -1,9 +1,6 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './style.css'
 
-import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
-import PropTypes from 'prop-types';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -11,31 +8,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { TableVirtuoso } from 'react-virtuoso';
-import { Typography } from '@mui/material';
-import {SocketContext} from '../../context/socket';
-
-function LinearProgressWithLabel(props) {
-	return (
-		<Box sx={{ display: 'flex', alignItems: 'center' }}>
-			<Box sx={{ minWidth: 35 }}>
-				<Typography variant="body2" color="text.secondary">{`${Math.round(
-					props.value,
-				)}%`}</Typography>
-			</Box>
-			<Box sx={{ width: '55%', mr: 1 }}>
-				<LinearProgress variant="determinate" {...props} />
-			</Box>
-		</Box>
-	);
-}
-
-LinearProgressWithLabel.propTypes = {
-	/**
-	 * The value of the progress indicator for the determinate and buffer variants.
-	 * Value between 0 and 100.
-	 */
-	value: PropTypes.number.isRequired,
-};
+import { SocketContext } from '../../context/socket';
 
 function initNames(obsId, target, progress, date, sigToNoise) {
 	return { obsId, target, progress, date, sigToNoise };
@@ -116,45 +89,29 @@ function rowContent(_index, row) {
 }
 
 function Logsheet() {
-    const [messages, setMessages] = useState([
-		['ORD.00925', 'VY Canis Majoris', 'Complete', '19 min ago', '$209,465'],
-		['ORD.10000', 'Mu Cephei', 'Complete', '1 day, 3 hours ago', '$0.50'],
-		['ORD.12345', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12346', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12347', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12348', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12349', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12350', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12351', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12352', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	]);
+	const [logMatrix, setLogMatrix] = useState([]);
 
-	const socket = useContext( SocketContext );
-    useEffect(() => {
+	const socket = useContext(SocketContext);
 
-        socket.on("retrieveLogsheetData", (logsheetData) => {
-            setMessages(logsheetData)
-        })
-
-		socket.on("newObservation", (logsheetData) => {
-			// setMessages([logsheetData, ...messages])
-			// https://reactjs.org/docs/hooks-reference.html
-			// Look at functional updates, this is where I'm getting this
-			setMessages( formerMessages => {
-				formerMessages = [formerMessages, ...logsheetData]
-			})
+	useEffect(() => {
+		socket.on("setObservations", (logsheetData) => {
+			setLogMatrix(logsheetData)
 		})
 
-		socket.emit("retrieveLogsheetData", {});
-		
-    }, [socket])
+		socket.emit("retrieveObservations", {});
+	}, [socket])
 
-	const rows = Array.from({ length: messages.length }, (_, index) => {
-		const row = messages[index];
+	socket.on("prependObservation", (newLogArr) => {
+		// https://reactjs.org/docs/hooks-reference.html#functional-updates
+
+		setLogMatrix([newLogArr, ...logMatrix])
+	})
+
+	const rows = Array.from({ length: logMatrix.length }, (_, index) => {
+		const row = logMatrix[index];
 		return initNames(...row);
 	});
 
-	
 	return (
 		<TableContainer style={{ height: 400 }}>
 			<h2 className="horiz-align">Logsheet</h2>

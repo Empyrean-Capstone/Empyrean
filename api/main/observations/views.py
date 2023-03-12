@@ -6,15 +6,17 @@ from ..models import Observation
 from .. import sio
 from . import observations
 
-def create_observation_entry( dict_data: dict ):
-    new_observe = Observation( dict_data )
+
+def create_observation_entry(dict_data: dict):
+    new_observe = Observation(dict_data)
 
     db.session.add(new_observe)
     db.session.commit()
 
-#    sio.emit("new_logsheet", dict_data)
+    sio.emit("prependObservation", [row for row in new_observe])
 
     return new_observe
+
 
 @observations.get("/")
 def get_observations():
