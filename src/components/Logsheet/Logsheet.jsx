@@ -1,96 +1,44 @@
 import React, { useState, useEffect, useContext } from 'react';
+
+import { SocketContext } from '../../context/socket';
 import './style.css'
 
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import { TableVirtuoso } from 'react-virtuoso';
-import { SocketContext } from '../../context/socket';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 
-function initNames(obsId, target, progress, date, sigToNoise) {
-	return { obsId, target, progress, date, sigToNoise };
-}
 
 const columns = [
 	{
-		width: 80,
-		label: 'Observation ID',
-		dataKey: 'obsId',
+		field: 'id',
+		headerName: 'Observation ID',
+		width: 300,
 	},
 	{
-		width: 100,
-		label: 'Target',
-		dataKey: 'target',
+		field: 'progress',
+		headerName: 'Progress',
+		width: 300,
 	},
 	{
-		width: 120,
-		label: 'Progress',
-		dataKey: 'progress',
+		field: 'target',
+		headerName: 'Target',
+		width: 600,
 	},
 	{
-		width: 100,
-		label: 'Date',
-		dataKey: 'date',
+		field: 'date',
+		headerName: 'Date',
+		width: 600,
 	},
 	{
-		width: 60,
-		label: 'Signal-to-Noise',
-		dataKey: 'sigToNoise',
+		field: 'sigToNoise',
+		headerName: 'Signal-to-Noise',
+		width: 300
 	},
 ];
 
-const VirtuosoTableComponents = {
-	Scroller: React.forwardRef((props, ref) => (
-		<TableContainer {...props} ref={ref} />
-	)),
-	Table: (props) => <Table {...props} style={{ borderCollapse: 'separate' }} />,
-	TableHead,
-	TableRow: ({ item: _item, ...props }) => <TableRow {...props} />,
-	TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-};
-
-function fixedHeaderContent() {
-	return (
-		<TableRow>
-			{columns.map((column) => (
-				<TableCell
-					key={column.dataKey}
-					variant="head"
-					align={column.numeric || false ? 'right' : 'left'}
-					style={{ width: column.width }}
-					sx={{
-						backgroundColor: 'background.paper',
-						fontWeight: 'bold'
-					}}
-				>
-					{column.label}
-				</TableCell>
-			))}
-		</TableRow>
-	);
-}
-
-function rowContent(_index, row) {
-	return (
-		<React.Fragment>
-			{columns.map((column) => (
-				<TableCell
-					key={column.dataKey}
-					align={column.numeric || false ? 'right' : 'left'}
-				>
-					{row[column.dataKey]}
-				</TableCell>
-			))}
-		</React.Fragment>
-	);
-}
 
 function Logsheet() {
+	const tableHeight = 800
 	const [logMatrix, setLogMatrix] = useState([]);
-
 	const socket = useContext(SocketContext);
 
 	useEffect(() => {
@@ -101,11 +49,22 @@ function Logsheet() {
 		socket.emit("retrieveObservations", {});
 	}, [socket])
 
-	socket.on("prependObservation", (newLogArr) => {
+	socket.on("prependNewObservation", (newLogArr) => {
 		// https://reactjs.org/docs/hooks-reference.html#functional-updates
 
 		setLogMatrix([newLogArr, ...logMatrix])
 	})
+
+	socket.on("updateNewObservation", (updatedLog) => {
+		let updatedMatrix = [...logMatrix]
+		updatedMatrix[0] = updatedLog
+
+		setLogMatrix(updatedMatrix)
+	})
+
+	function initNames(id, target, progress, date, sigToNoise) {
+		return { id, target, progress, date, sigToNoise };
+	}
 
 	const rows = Array.from({ length: logMatrix.length }, (_, index) => {
 		const row = logMatrix[index];
@@ -113,16 +72,13 @@ function Logsheet() {
 	});
 
 	return (
-		<TableContainer style={{ height: 400 }}>
+		<TableContainer style={{ height: tableHeight }}>
 			<h2 className="horiz-align">Logsheet</h2>
 			<h5 className="horiz-align">Current sheet: 20220101.001</h5>
 
-			<TableVirtuoso
-				data={rows}
-				components={VirtuosoTableComponents}
-				fixedHeaderContent={fixedHeaderContent}
-				itemContent={rowContent}
-			/>
+			<div style={{ height: tableHeight * .9, width: '100%' }}>
+				<DataGrid rows={rows} columns={columns} slots={{ toolbar: GridToolbar }}/>
+			</div>
 		</TableContainer>
 	);
 }

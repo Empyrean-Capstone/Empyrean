@@ -13,7 +13,7 @@ def create_observation_entry(dict_data: dict):
     db.session.add(new_observe)
     db.session.commit()
 
-    sio.emit("prependObservation", [row for row in new_observe])
+    sio.emit("prependNewObservation", [row for row in new_observe])
 
     return new_observe
 
