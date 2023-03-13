@@ -2,9 +2,10 @@
 
 from flask import request
 from main import db
-from ..models import Observation
-from .. import sio
+
 from . import observations
+from ..models import Observation
+from .. import sio, DATA_FILEPATH
 
 
 def get_newest_observation():
@@ -50,7 +51,7 @@ def post_observation():
     observation_input["OBSID"] = cur_observation.id
     observation_input['date'] = str(cur_observation.date_obs)
 
-    sio.emit("begin_exposure", observation_input)
+    sio.emit("begin_exposure", data=(observation_input, DATA_FILEPATH))
 
     # TODO: "A POST request creates a resource. The server
     # assigns a URI for the new resource, and returns

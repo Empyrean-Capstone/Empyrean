@@ -1,10 +1,11 @@
 """TODO."""
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import math
-import pickle
 import os
+
 from astropy.io import fits
+import numpy as np
 
 from . import file_writer
 from .. import DATA_FILEPATH, db, sio
@@ -17,7 +18,7 @@ def index():
 
 
 @sio.on("save_img")
-def submit_data(serial_image, exposure_data: dict):
+def submit_data(image_path, exposure_data: dict):
     """
     Save observation image data to FITS file format.
 
@@ -36,7 +37,7 @@ def submit_data(serial_image, exposure_data: dict):
     timestr_fmt = "%Y-%m-%dT%X.%f"
     file_date_fmt = "%Y%m%d"
 
-    image = pickle.loads(serial_image)
+    image = cleanup_image_transmission(image_path)
 
     # calculate needed headers
     time_difference = timedelta(weeks=26)
@@ -45,18 +46,10 @@ def submit_data(serial_image, exposure_data: dict):
 
     # create specialized FITS file name
     date_obs_file_prefix = datetime.strftime(date_obs, file_date_fmt)
-    padded_id = str(exposure_data['OBSID']).zfill(4)
+    padded_id = str(exposure_data["OBSID"]).zfill(4)
     fits_path_head = f"{date_obs_file_prefix}.{padded_id}"
 
-
-    # ensure path to fits directory exists
-    fits_dir = os.path.dirname(DATA_FILEPATH)
-
-    if not os.path.exists(fits_dir):
-        os.makedirs(fits_dir)
-
-    fits_path = f"{fits_dir}/{fits_path_head}.fits"
-
+    fits_path = make_fits_abspath(DATA_FILEPATH, fits_path_head)
 
     # make fits file - add headers and such
     hdu = fits.PrimaryHDU(image, uint=True)
@@ -82,8 +75,25 @@ def submit_data(serial_image, exposure_data: dict):
     return "Success"
 
 
-def populate_headers(hdu, exposure_data, filename):
+def cleanup_image_transmission(image_path: str) -> np.ndarray:
+    image = np.load(image_path)
+    os.unlink(image_path)
 
+    return image
+
+
+def make_fits_abspath(fits_dir: str, fits_file_head: str) -> str:
+    fits_dir = os.path.abspath(fits_dir)
+
+    if not os.path.exists(fits_dir):
+        os.makedirs(fits_dir)
+
+    fits_path = f"{fits_dir}/{fits_file_head}.fits"
+
+    return fits_path
+
+
+def populate_headers(hdu, exposure_data: dict, filename: str) -> fits.PrimaryHDU:
     hdu.header["OBSERVER"] = "Joe Llama"
     hdu.header["OBSID"] = exposure_data["OBSID"]
     hdu.header["OBSTYPE"] = {
@@ -101,6 +111,7 @@ def populate_headers(hdu, exposure_data, filename):
         hdu.header["DEC"] = exposure_data["declination"]
         hdu.header["ALT"] = exposure_data["altitude"]
     else:
+        hdu.header["OBJECT"] = "None"
         hdu.header["RA"] = "+00:00:00.00"
         hdu.header["DEC"] = "00:00:00.00"
         hdu.header["ALT"] = 0
@@ -114,9 +125,9 @@ def populate_headers(hdu, exposure_data, filename):
     hdu.header["ROWORDER"] = 0
 
     # TODO: confirm that "Temperature" in ZWO ASI is CCD-TEMP
-    hdu.header["CCD-TEMP"] = exposure_data["CCD-TEMP"]
+    hdu.header["CCD-TEMP"] = exposure_data["TEMPERAT"]
     hdu.header["GAIN"] = exposure_data["GAIN"]
-    hdu.header["IMAGETYP"] = exposure_data["IMAGETYP"]
+    hdu.header["IMAGETYP"] = exposure_data["observation_type"]
     hdu.header["OFFSET"] = exposure_data["OFFSET"]
 
     # name of file without fits extension
