@@ -4,18 +4,19 @@
 
 import React, { useContext, useEffect } from 'react';
 import axios from 'axios';
-
-import './style.css'
-import { SocketContext } from '../../context/socket';
-
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { LoadingButton } from "@mui/lab"
 
+import './style.css'
+import { requestFormSchema } from '../../validations/Observe'
+import { SocketContext } from '../../context/socket'
+
+
 function Observe() {
-	const [active, setActive] = React.useState("object");
+	const [activeButton, setActiveButton] = React.useState("object");
 	const buttons = ["object", "dark", "flat", "thar"]
 
 	const styles = {
@@ -41,35 +42,33 @@ function Observe() {
 
 	const [values, setValues] = React.useState({
 		object: "",
-		observation_type: active,
-		right_ascension: 0,
-		declination: 0,
-		altitude: 0,
+		observation_type: activeButton,
+		right_ascension: "0",
+		declination: "0",
+		altitude: "0",
 		visible: false,
 		num_exposures: 0,
 		exposure_duration: 0,
 	});
 
-	const [object_field_error, setObjectFieldError] = React.useState({
-		error: false,
-		text: ""
+	const [errs, setErrs] = React.useState({
+		object: "",
+		observation_type: "",
+		right_ascension: "",
+		declination: "",
+		altitude: "",
+		visible: "",
+		num_exposures: "",
+		exposure_duration: ""
 	})
 
-	const handleChange = (prop) => (event) => {
-		setValues({ ...values, [prop]: event.target.value });
-	};
-
-	const handleObjectFieldChange = (prop) => (event) => {
+	const handleFieldChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
 
-		setObjectFieldError({
-			error: false,
-			text: ""
-		})
+		setErrs({ ...errs, [prop]: "" })
 	}
 
-	const props = { values, handleChange }
-
+	const props = { values, handleFieldChange }
 
 	const [isFormEnabled, setFormEnabled] = React.useState(true)
 
@@ -98,7 +97,7 @@ function Observe() {
 	function field_init(type) {
 		return (
 			<TextField
-				disabled={active !== "object" &&
+				disabled={activeButton !== "object" &&
 					type.name !== "Number of Exposures" &&
 					type.name !== "Exposure Duration (secs)" ? true : false}
 				className="half-containers"
@@ -107,8 +106,10 @@ function Observe() {
 				variant="outlined"
 				size="small"
 				value={values[type.value]}
-				onChange={handleChange(type.value)}
-				label={type.name === "object" ? values.object : type.name}
+				onChange={handleFieldChange(type.value)}
+				label={type.name}
+				error={errs[type.value] === "" ? false : true}
+				helperText={errs[type.value]}
 				InputLabelProps={{
 					shrink: true,
 				}}
@@ -124,11 +125,11 @@ function Observe() {
 						fontWeight: 'bold',
 						maxWidth: '20px',
 					},
-					active === name ? styles["active"] : styles["inactive"]
+					activeButton === name ? styles["active"] : styles["inactive"]
 				]}
 				key={name}
 				variant="contained"
-				onClick={() => { setActive(name); values.observation_type = name; }}
+				onClick={() => { setActiveButton(name); values.observation_type = name; }}
 			>
 				{name}
 			</Button>
@@ -146,16 +147,16 @@ function Observe() {
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<TextField
-					disabled={active !== "object" ? true : false}
+					disabled={activeButton !== "object" ? true : false}
 					fullWidth
 					id="outlined"
 					value={values.observation_type === "object" ? values.object : values.observation_type}
 					size="small"
-					onChange={handleObjectFieldChange("object")}
+					onChange={handleFieldChange("object")}
 					label="object"
 					type="text"
-					error={active !== "object" ? false : object_field_error.error}
-					helperText={active !== "object" ? "" : object_field_error.text}
+					error={(activeButton !== "object" || errs["object"] === "") ? false : true}
+					helperText={activeButton !== "object" ? "" : errs["object"]}
 					InputLabelProps={{
 						shrink: true,
 					}}
@@ -170,16 +171,20 @@ function Observe() {
 						sx={{ fontSize: "9pt" }}
 						onClick={() => {
 							const initResolution = async (values) => {
-								let res = null
-
 								try {
-									res = await axios.post(`http://localhost:5000/resolve/`, values);
+									let res = await axios.post(`http://localhost:5000/resolve/`, values);
 									setValues(res.data)
-								} catch (err) {
-									setObjectFieldError({
-										error: true,
-										text: "No such object found"
+									setErrs({
+										...errs,
+										object: "",
+										observation_type: "",
+										right_ascension: "",
+										declination: "",
+										altitude: "",
+										visible: "",
 									})
+								} catch (err) {
+									setErrs({ ...errs, object: "No such object found" })
 								}
 
 								setLoading("");
@@ -219,6 +224,26 @@ function Observe() {
 							type="submit"
 							sx={{}}
 							onClick={() => {
+								function validateObservationRequest(values) {
+									try {
+										requestFormSchema.validateSync(values, { abortEarly: false })
+										return true
+									} catch (validation_err) {
+										let errors = {}
+
+										validation_err.inner.forEach(error => {
+											if (error.path) {
+												errors[error.path] = error.message;
+											}
+										});
+
+										console.log(errors)
+
+										setErrs({ ...errs, ...errors })
+										return false
+									}
+								}
+
 								const initObservation = async (values) => {
 									try {
 										const resp = await axios.post(`http://localhost:5000/observations/`, values);
@@ -229,7 +254,15 @@ function Observe() {
 								};
 
 								setFormEnabled(false)
-								initObservation(props.values);
+
+								let isFormValid = validateObservationRequest(props.values)
+
+								if (isFormValid) {
+									initObservation(props.values);
+								}
+
+								setFormEnabled(true)
+
 							}}
 							disabled={!isFormEnabled || (isLoading !== "" && isLoading !== "Start")}
 						>
@@ -271,7 +304,7 @@ function Observe() {
 				</Tooltip>
 			</Stack>
 
-		</div>
+		</div >
 	)
 }
 
