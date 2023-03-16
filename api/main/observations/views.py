@@ -54,3 +54,19 @@ def post_observation():
     # order number should be the last number in the table of
     # all past orders.
     return {}
+
+
+@observations.post("/end")
+def end_observation():
+    sio.emit("end_exposure")
+
+    last_observation = Observation.query.order_by(-Observation.id).limit(1).first()
+    db.session.delete(last_observation)
+    db.session.commit()
+
+    return {}
+
+
+@sio.on("observation_complete")
+def update_request_form():
+    sio.emit("enable_request_form")

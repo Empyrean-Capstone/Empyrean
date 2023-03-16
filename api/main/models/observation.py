@@ -1,33 +1,31 @@
 from datetime import datetime, timedelta, timezone
 from main import db
-from . import logsheet
 
 
-def headers_to_db_cols(obs_data) -> dict:
+def headers_to_db_cols(headers, obs_data) -> dict:
     headers = {
-        "id": obs_data["OBSID"],
-        "observer": obs_data["OBSERVER"],
-        "obs_type": obs_data["OBSTYPE"],
+        "id": headers["OBSID"],
+        "observer": headers["OBSERVER"],
+        "obs_type": headers["OBSTYPE"],
+        "date_made_open_source": obs_data["date_made_open_source"],
+        "exp_time": headers["EXPTIME"],
+        "ccd_temp": headers["CCD-TEMP"],
+        "image_typ": headers["IMAGETYP"],
+        "gain": headers["GAIN"],
+        "offset": headers["OFFSET"],
+        "date_obs": headers["DATE-OBS"],
+        "instrume": headers["INSTRUME"],
+        "roworder": headers["ROWORDER"],
+        "object_name": headers["OBJECT"],
+        "airm": headers["AIRM"],
+        "obs_id": headers["OBSID"],
+        "log_id": headers["LOGID"],
+        "mjdobs": headers["MJDOBS"],
+
+        # TODO: need to determine if we need these and get them
+        #  "owner_id" = obs_data[""],
+        #  "gamma": headers[""],
     }
-
-    #  owner_id = obs_data[""]
-    #
-    #  date_made_open_source = obs_data[""]
-    #  exp_time = obs_data[""]
-    #  ccd_temp = obs_data[""]
-    #  image_typ = obs_data[""]
-    #  gain = obs_data[""]
-    #  offset = obs_data[""]
-    #  gamma = obs_data[""]
-    #  date_obs = obs_data[""]
-    #  instrume = obs_data[""]
-    #  roworder = obs_data["ROWORDER"]
-    #  object_name = obs_data[""]
-
-    #  airm = obs_data[""]
-    #  obs_id = obs_data[""]
-    #  log_id = obs_data[""]
-    #  mjdobs = obs_data[""]
 
     return headers
 
@@ -49,7 +47,7 @@ class Observation(db.Model):
     instrume = db.Column(db.String)
     log_id = db.Column(db.String)
     mjdobs = db.Column(db.Float)
-    object_name = db.Column("object", db.String)
+    object = db.Column(db.String)
     obs_id = db.Column(db.String)
     obs_type = db.Column(db.String)
     observer = db.Column(db.String)
@@ -57,12 +55,14 @@ class Observation(db.Model):
     owner_id = db.Column(db.Integer)
     reworder = db.Column(db.String)
 
-
     def __init__(self, init_dict):
         self.set_attrs(init_dict)
 
     def __repr__(self):
-        return f"{self.object_name} was observed on {self.date_obs} by {self.observer}"
+        return f"{self.object} was observed on {self.date_obs} by {self.observer}"
+
+    def __iter__(self):
+        return iter([self.id, self.object, "In Progress", str(self.date_obs), "None"])
 
     def set_attrs(self, attrs: dict):
         for key, val in attrs.items():

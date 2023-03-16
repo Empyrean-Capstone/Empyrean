@@ -51,7 +51,7 @@ sio = SocketIO(
     async_mode="eventlet",
     logger=True,
     max_http_buffer_size=10**20,
-    ping_timeout=60,
+    ping_timeout=60
 )
 
 # Set variables from .env to global scope
