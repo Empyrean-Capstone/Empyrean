@@ -1,12 +1,68 @@
+import React, { useLayoutEffect, useState } from 'react';
+import axios from 'axios';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+
 import './App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Layout } from './components/Layout';
+import { SocketContext, socket } from './context/socket';
 import { About } from './pages/about/about';
-import {Contact} from './pages/contact/contact'
-import {Observation} from './pages/observation'
-import {LogsheetPage} from './pages/logsheet'
-import React from 'react';
-import {SocketContext, socket} from './context/socket';
+import { Contact } from './pages/contact/contact'
+import { Layout } from './components/Layout';
+import { Login } from './pages/login'
+import { LogsheetPage } from './pages/logsheet'
+import { Observation } from './pages/observation'
+
+
+
+// https://stackoverflow.com/a/71414958
+const AuthWrapper = () => {
+	const location = useLocation();
+	const [auth, setAuth] = useState();
+	const [isLoading, setLoading] = useState(true);
+
+	useLayoutEffect(() => {
+		let cancelToken;
+
+		const authCheck = async () => {
+			setLoading(true);
+
+			try {
+				const auth = await axios.post(
+					`http://localhost:5000/auth_login/validate/`,
+					{},
+					{
+						withCredentials: true
+					}
+				)
+
+				setAuth(auth.status === 200);
+			}
+			catch (error) {
+				console.log(error)
+				setAuth(false);
+			}
+			finally {
+				setLoading(false);
+			}
+		}
+
+		authCheck();
+
+		return () => clearTimeout(cancelToken);
+	}, [location.pathname]);
+
+	if (isLoading) {
+		return (
+			<Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
+				<CircularProgress color="inherit" />
+			</Backdrop>
+		)
+	}
+
+	return auth ? <Outlet /> : <Navigate to="/" replace />; // or auth property if object
+}
+
 
 function App() {
 
@@ -14,11 +70,17 @@ function App() {
 		<SocketContext.Provider value={socket}>
 			<BrowserRouter>
 				<Routes>
-					<Route path='/' element={<Layout/>}>
-						<Route index element={<Observation/>}/>
-						<Route path="about" element={<About/>}/>
-						<Route path="contact" element={<Contact/>}/>
-						<Route path="logsheet" element={<LogsheetPage/>}/>
+					<Route index element={<Login />} />
+
+					<Route path='/' element={<Layout />} >
+						<Route path="about" element={<About />} />
+						<Route path="contact" element={<Contact />} />
+
+						<Route element={<AuthWrapper />}>
+							<Route path="observation" element={<Observation />} />
+							<Route path="logsheet" element={<LogsheetPage />} />
+						</Route>
+
 					</Route>
 				</Routes>
 			</BrowserRouter>
