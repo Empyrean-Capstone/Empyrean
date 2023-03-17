@@ -1,12 +1,11 @@
 """TODO."""
 
-import pickle
 import socketio
 import sys
+import tempfile
 import time
 
 from astropy.time import Time
-import astropy.units as u
 from tqdm.auto import trange
 import numpy as np
 
@@ -80,13 +79,7 @@ class Camera:
             # return type of exposure will be a one dim array from numpy.frombuffer()
             return []
 
-    def return_image_data(self, image, request_input, tstart, tend):
-        global global_data
-
-        request_input["DATE-END"] = tend.fits
-        request_input["DATE-OBS"] = tstart.fits
-        request_input["EXPTIME"] = global_data["itime_total"]
-
+    def return_image_data(self, image, request_input):
         sio.emit("save_img", {"image": image, "exposure_data": request_input})
 
     def sequence(self, request_input):
@@ -96,7 +89,6 @@ class Camera:
         Args:
             data ():
         """
-        global global_data
         data: dict = {}
 
         num_exposures = int(request_input["num_exposures"])
@@ -115,7 +107,7 @@ class Camera:
             tend = Time.now()
 
             time.sleep(1)
-            self.return_image_data(image, request_input, tstart, tend)
+            self.return_image_data(image, request_input)
             time.sleep(1)
 
         sio.emit("set_obs_type", 0)
@@ -188,8 +180,6 @@ class Zwocamera:
 
     # Public Methods
     def sequence(self, request_input):
-        global global_data
-
         camera.exposure_terminated = False
         num_exposures = int(request_input["num_exposures"])
         exposure_duration = int(request_input["exposure_duration"])
@@ -210,26 +200,36 @@ class Zwocamera:
             image = self.expose(exptime=exposure_duration)
             tend = Time.now()
 
-            # FIXME: what does this do?
-            #  sio.emit("get_next_file")
-
             if not self.exposure_terminated:
+                request_input["DATE-END"] = tend.fits
+                request_input["DATE-OBS"] = tstart.fits
+                request_input["EXPTIME"] = exposure_duration
+
                 time.sleep(1)
-                self.return_image_data(image, request_input, tstart, tend)
+                self.write_image_data(image, request_input)
                 time.sleep(1)
 
             kk += 1
 
         #  update_global_vars({"ccd_status": 0})
-        #  sio.emit("set_obs_type", 0)
 
         self.exposure_terminated = False
-        self.conclude_observation()
+
+        self.__emit_status(
+            {
+                "exp_number": 0,
+                "exp_number": 0,
+                "itime_elapsed": 0,
+                "itime_elapsed": 0,
+                "nexp_total": 0,
+            }
+        )
+
+        if not self.exposure_terminated:
+            self.complete()
 
     def expose(self, exptime=30):
-        global global_data
-
-        self.camera.set_control_value(asi.ASI_EXPOSURE, int(exptime * 1e6))
+        self.camera.set_control_value(asi.ASI_EXPOSURE, int(exptime * 1e-6))
         self.camera.set_control_value(asi.ASI_GAIN, 46)
         self.camera.set_image_type(asi.ASI_IMG_RAW16)
 
@@ -255,21 +255,9 @@ class Zwocamera:
         if initial_sleep:
             time.sleep(initial_sleep)
 
-        #  tstart = Time.now()
         status = self.camera.get_exposure_status()
 
         while status == asi.ASI_EXP_WORKING:
-            #  # FIXME: remove, will update itime on the frontend
-            #  tnow = Time.now()
-            #  tdiff = int((tnow - tstart).to(u.s).value)
-
-            #  cur_status: dict = {
-            #      "camera": self.__get_camera_status_str(),
-            #      "itime_elapsed": tdiff,
-            #  }
-
-            #  self.__emit_status(cur_status)
-
             status = self.camera.get_exposure_status()
 
         self.__emit_status({"camera": self.__convert_camera_status(status), "itime_elapsed": 0})
@@ -298,31 +286,17 @@ class Zwocamera:
 
         return img
 
-    def return_image_data(self, image: np.ndarray, request_input, tstart, tend):
-        global global_data
-
-        request_input["DATE-END"] = tend.fits
-        request_input["DATE-OBS"] = tstart.fits
-        request_input["IMAGETYP"] = self.camera.get_image_type()
-        request_input["CCD-TEMP"] = self.camera.get_image_type()
-
+    def write_image_data(self, image: np.ndarray, request_input):
         for k, v in self.camera.get_control_values().items():
             request_input[k.upper()[:8]] = v
 
-        sio.emit("save_img", data=(pickle.dumps(image), request_input))
+        tmp = tempfile.NamedTemporaryFile(delete=False, mode="w", prefix="empyrean", suffix=".npy")
+        np.save(tmp.name, image)
 
-    def conclude_observation(self):
-        self.__emit_status(
-            {
-                "exp_number": 0,
-                "exp_number": 0,
-                "itime_elapsed": 0,
-                "itime_elapsed": 0,
-                "nexp_total": 0,
-            }
-        )
+        sio.emit("save_img", data=(tmp.name, request_input))
 
-        sio.emit("observation_complete")
+    def complete(self):
+        sio.emit("exposure_complete")
 
 
 if __name__ == "__main__":
@@ -334,18 +308,16 @@ if __name__ == "__main__":
     sio.connect("http://localhost:5000")
     camera = Zwocamera(device="ZWO ASI120MM-S")
 
-    global_data = {}
-
     @sio.on("begin_exposure")
     def sequence(obs_request):
         camera.sequence(obs_request)
 
     @sio.event
     def disconnect():
-        sio.emit("observation_complete")
+        camera.complete()
 
     @sio.on("end_exposure")
-    def end_exp():
+    def end_exposure():
         camera.exposure_terminated = True
 
         try:
