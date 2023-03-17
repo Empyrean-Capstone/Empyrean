@@ -2,19 +2,26 @@
 
 from flask import request
 from main import db
+
+from . import observations
 from ..models import Observation
 from .. import sio
-from . import observations
 
-def create_observation_entry( dict_data: dict ):
-    new_observe = Observation( dict_data )
+
+def get_newest_observation():
+    return Observation.query.order_by(-Observation.id).limit(1).first()
+
+
+def create_observation_entry(dict_data: dict):
+    new_observe = Observation(dict_data)
 
     db.session.add(new_observe)
     db.session.commit()
 
-#    sio.emit("new_logsheet", dict_data)
+    sio.emit("prependNewObservation", [field for field in new_observe])
 
     return new_observe
+
 
 @observations.get("/")
 def get_observations():
@@ -42,7 +49,7 @@ def post_observation():
     # "OBSID" is the key used in the FITS file
     # format, so naming it so here is convenient
     observation_input["OBSID"] = cur_observation.id
-    observation_input['date'] = str(cur_observation.date_obs)
+    observation_input["date"] = str(cur_observation.date_obs)
 
     sio.emit("begin_exposure", observation_input)
 
@@ -60,13 +67,18 @@ def post_observation():
 def end_observation():
     sio.emit("end_exposure")
 
-    last_observation = Observation.query.order_by(-Observation.id).limit(1).first()
-    db.session.delete(last_observation)
+    new_observe = get_newest_observation()
+    db.session.delete(new_observe)
     db.session.commit()
+
+    sio.emit("removeNewObservation")
 
     return {}
 
 
-@sio.on("observation_complete")
+@sio.on("exposure_complete")
 def update_request_form():
+    new_observe = get_newest_observation()
+
+    sio.emit("updateNewObservation", [field for field in new_observe])
     sio.emit("enable_request_form")
