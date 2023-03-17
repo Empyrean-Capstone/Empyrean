@@ -5,7 +5,7 @@ from main import db
 
 from . import observations
 from ..models import Observation
-from .. import sio, DATA_FILEPATH
+from .. import sio
 
 
 def get_newest_observation():
@@ -49,9 +49,9 @@ def post_observation():
     # "OBSID" is the key used in the FITS file
     # format, so naming it so here is convenient
     observation_input["OBSID"] = cur_observation.id
-    observation_input['date'] = str(cur_observation.date_obs)
+    observation_input["date"] = str(cur_observation.date_obs)
 
-    sio.emit("begin_exposure", data=(observation_input, DATA_FILEPATH))
+    sio.emit("begin_exposure", observation_input)
 
     # TODO: "A POST request creates a resource. The server
     # assigns a URI for the new resource, and returns
