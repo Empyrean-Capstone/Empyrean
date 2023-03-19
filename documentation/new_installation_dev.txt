@@ -1,0 +1,133 @@
+
+Step 1: Installation of web interface 
+
+1. Download Code:
+    In a repository that you want the project, run:
+    $ git clone https://github.com/Empyrean-Capstone/Empyrean.git
+    Ensure that a repository name Empyrean has been correctly copied into this directory
+
+    Now, move into the repository with:
+    $ cd Empyrean
+
+2. install, npm, pip, python yarn, postgres:
+    Ensure that the following tools are installed: 
+
+    On Ubuntu Linux:
+    $ sudo apt install -y npm python pip yarn postgresql
+
+    On mac:
+    $ brew install npm
+    $ brew install python
+    $ brew install pip
+    $ brew install yarn
+    $ brew install postgresql
+
+2.5: Make a python virtual environment: 
+
+    We need a virtual environment so that we can install packages without version management.
+    This is so the installation does not ruin other packages that have been installed.
+
+    If conda is installed:
+    $ conda create --name {name of environment, i.e. empyrean} python=3.9
+    Then type 'y' in response to the question
+
+    This environment can be activated, and needs to be active for correct function with:
+    $ conda activate {name chosen earlier}
+
+    From here, packages can be installed like normal with 'pip install' or with conda with 'conda install'
+
+    If not using conda, a venv (virtual environment) can be used with pip to generate the same results:
+    This is conceptually more complicated, but not that much harder
+    To create a venve, run:
+    $ python -m venv /path/to/new/environment
+
+    To activate this venv, run:
+    $ source path/to/venv/bin/activate
+
+    After this, new packages should be able to be install with 'pip install'
+
+3. Install python requirements:
+
+    We need to move into the directory in which the file requirements.txt is:
+    $ cd api
+    Then, we can install based on this file with:
+    $ pip install -r requirements.txt
+
+    This will install all the python packages needed for production
+
+3.5. Configure python variables:
+
+    In this directory main, there should be a file called .env. Move to this directory with:
+    $ cd main
+
+    After this, open the .env file, and configure the following:
+        change DATA_FILEPATH to a location that should hold the FITS files that will be generated
+
+4. Install npm requirements: 
+
+    Move back to the root directory of the project with:
+    $ cd ../../
+
+    Now, to install the node packages needed for react, run:
+    $ npm install
+
+4.5. Configure react variables: 
+
+    TODO: configure later 
+
+
+9. Configure database 
+    This app is less interesting without data, so now we will set up postgresql so that we can have data. 
+
+    Open postgresql with:
+    $ psql -U postgres
+        Then, create a new user for the app with:
+        > CREATE USER empyrean WITH PASSWORD '{chosen password}' CREATEDB;
+
+        Now, let's create the database we need with:
+        > CREATE DATABASE {name of database}; 
+
+        Now, exit psql:
+        > \q
+
+    Next, we need to edit the .env file from before. First, cd into the database:
+    $ cd /path/to/project/root/Empyrean/api
+
+    Then, open the .env file and edit the SQLALCHEMY_DATABASE_URI to have the following formula, 
+    where the information is the previously created user, password and database:
+    > export SQLALCHEMY_DATABASE_URI="postgresql://{username}:{password}@localhost/{created database}"
+
+
+10. Migrate Database 
+    We need to now set up the database we created in the previous step.
+
+    Move to the api directory:
+    $ cd /path/to/project/root/Empyrean/api
+
+    Migrate the current migrations with:
+    $ flask db migrate -m "Migration message"
+
+    Upgrade the database:
+    $ flask db upgrade
+
+11. Ensure Working product 
+    At this point, the base product should be working with a database, so everything should be set up.
+    Start these commands in the base root directory
+    
+    To run the backend for development: 
+    $ python api/wsgi.py
+
+    In a second terminal, start the frontend with:
+    $ npm start 
+
+    Now if going to localhost:3000/ one should see that the app is operational and ready for development.
+
+
+
+Step 2: Installation of Instruments: 
+1. Install code for Each Instruments
+    In the project root directory, copy the control code with:
+    $ git clone https://github.com/Empyrean-Capstone/shelyak_control.git
+
+2. Run each of the instruments in seperate terminals 
+    Note: the program to be run for the spectrograph, as an expample, is python spectrograph.py

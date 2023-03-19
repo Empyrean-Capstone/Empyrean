@@ -17,7 +17,7 @@ This will assume that the user will have basic psql and python knowledge
 3. Initialize database: In the api directory, run the following commands:
 
     $ flask db init
-    ^ Sets up all the migration files for now and later
+    ^ Sets up all the migration files for now and later. This is only needed if there are no migrations in the migrations/versions file. 
 
     $ flask db migrate -m "Message here"
     ^ initializes the database with any new migrations
