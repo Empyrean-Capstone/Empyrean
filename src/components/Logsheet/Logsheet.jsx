@@ -1,172 +1,105 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+
+import { SocketContext } from '../../context/socket';
 import './style.css'
 
-import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
-import PropTypes from 'prop-types';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import { TableVirtuoso } from 'react-virtuoso';
-import { Typography } from '@mui/material';
-import {SocketContext} from '../../context/socket';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 
-function LinearProgressWithLabel(props) {
-	return (
-		<Box sx={{ display: 'flex', alignItems: 'center' }}>
-			<Box sx={{ minWidth: 35 }}>
-				<Typography variant="body2" color="text.secondary">{`${Math.round(
-					props.value,
-				)}%`}</Typography>
-			</Box>
-			<Box sx={{ width: '55%', mr: 1 }}>
-				<LinearProgress variant="determinate" {...props} />
-			</Box>
-		</Box>
-	);
-}
-
-LinearProgressWithLabel.propTypes = {
-	/**
-	 * The value of the progress indicator for the determinate and buffer variants.
-	 * Value between 0 and 100.
-	 */
-	value: PropTypes.number.isRequired,
-};
-
-function initNames(obsId, target, progress, date, sigToNoise) {
-	return { obsId, target, progress, date, sigToNoise };
-}
 
 const columns = [
 	{
-		width: 80,
-		label: 'Observation ID',
-		dataKey: 'obsId',
+		field: 'id',
+		headerName: 'Observation ID',
+		width: 300,
 	},
 	{
-		width: 100,
-		label: 'Target',
-		dataKey: 'target',
+		field: 'progress',
+		headerName: 'Progress',
+		width: 240,
 	},
 	{
-		width: 120,
-		label: 'Progress',
-		dataKey: 'progress',
+		field: 'target',
+		headerName: 'Target',
+		width: 600,
 	},
 	{
-		width: 100,
-		label: 'Date',
-		dataKey: 'date',
+		field: 'date',
+		headerName: 'Date',
+		width: 300,
 	},
 	{
-		width: 60,
-		label: 'Signal-to-Noise',
-		dataKey: 'sigToNoise',
+		field: 'sigToNoise',
+		headerName: 'Signal-to-Noise',
+		width: 300
 	},
 ];
 
-const VirtuosoTableComponents = {
-	Scroller: React.forwardRef((props, ref) => (
-		<TableContainer {...props} ref={ref} />
-	)),
-	Table: (props) => <Table {...props} style={{ borderCollapse: 'separate' }} />,
-	TableHead,
-	TableRow: ({ item: _item, ...props }) => <TableRow {...props} />,
-	TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
-};
-
-function fixedHeaderContent() {
-	return (
-		<TableRow>
-			{columns.map((column) => (
-				<TableCell
-					key={column.dataKey}
-					variant="head"
-					align={column.numeric || false ? 'right' : 'left'}
-					style={{ width: column.width }}
-					sx={{
-						backgroundColor: 'background.paper',
-						fontWeight: 'bold'
-					}}
-				>
-					{column.label}
-				</TableCell>
-			))}
-		</TableRow>
-	);
-}
-
-function rowContent(_index, row) {
-	return (
-		<React.Fragment>
-			{columns.map((column) => (
-				<TableCell
-					key={column.dataKey}
-					align={column.numeric || false ? 'right' : 'left'}
-				>
-					{row[column.dataKey]}
-				</TableCell>
-			))}
-		</React.Fragment>
-	);
-}
 
 function Logsheet() {
-    const [messages, setMessages] = useState([
-		['ORD.00925', 'VY Canis Majoris', 'Complete', '19 min ago', '$209,465'],
-		['ORD.10000', 'Mu Cephei', 'Complete', '1 day, 3 hours ago', '$0.50'],
-		['ORD.12345', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12346', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12347', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12348', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12349', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12350', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12351', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-		['ORD.12352', 'Antares', 'Complete', '3 months ago', '$100,000,000'],
-	]);
+	const tableHeight = 1000
+	const [logMatrix, setLogMatrix] = useState([]);
+	const [isLogLoading, setLogLoading] = useState(false);
+	const socket = useContext(SocketContext);
 
-	const socket = useContext( SocketContext );
-    useEffect(() => {
-
-        socket.on("retrieveLogsheetData", (logsheetData) => {
-            setMessages(logsheetData)
-        })
-
-		socket.on("newObservation", (logsheetData) => {
-			// setMessages([logsheetData, ...messages])
-			// https://reactjs.org/docs/hooks-reference.html
-			// Look at functional updates, this is where I'm getting this
-			setMessages( formerMessages => {
-				formerMessages = [formerMessages, ...logsheetData]
-			})
+	useEffect(() => {
+		socket.on("setObservations", (logsheetData) => {
+			setLogMatrix(logsheetData)
+			setLogLoading(false)
 		})
 
-		socket.emit("retrieveLogsheetData", {});
-		
-    }, [socket])
+		setLogLoading(true)
+		socket.emit("retrieveObservations", {});
+	}, [socket])
 
-	const rows = Array.from({ length: messages.length }, (_, index) => {
-		const row = messages[index];
+	socket.on("prependNewObservation", (newLogArr) => {
+		// https://reactjs.org/docs/hooks-reference.html#functional-updates
+
+		setLogMatrix([newLogArr, ...logMatrix])
+	})
+
+	socket.on("updateNewObservation", (updatedLogArr) => {
+		let updatedMatrix = [...logMatrix]
+		updatedMatrix[0] = updatedLogArr
+
+		setLogMatrix(updatedMatrix)
+	})
+
+	socket.on("removeNewObservation", () => {
+		// https://reactjs.org/docs/hooks-reference.html#functional-updates
+		let rmMatrix = logMatrix.slice(1)
+		setLogMatrix(rmMatrix)
+	})
+
+	function initNames(id, target, progress, date, sigToNoise) {
+		return { id, target, progress, date, sigToNoise };
+	}
+
+	const rows = Array.from({ length: logMatrix.length }, (_, index) => {
+		const row = logMatrix[index];
 		return initNames(...row);
 	});
 
-	
 	return (
-		<TableContainer style={{ height: 400 }}>
+		<TableContainer>
 			<h2 className="horiz-align">Logsheet</h2>
 			<h5 className="horiz-align">Current sheet: 20220101.001</h5>
 
-			<TableVirtuoso
-				data={rows}
-				components={VirtuosoTableComponents}
-				fixedHeaderContent={fixedHeaderContent}
-				itemContent={rowContent}
+			<DataGrid
+				sx={{ height: tableHeight * .9 }}
+				autoPageSize={true}
+				sortingOrder={["asc", "desc"]}
+				rows={rows}
+				columns={columns}
+				slots={{ toolbar: GridToolbar }}
+				initialState={{
+					sorting: {
+						sortModel: [{ field: 'id', sort: 'desc' }],
+					},
+				}}
+				loading={isLogLoading}
 			/>
-		</TableContainer>
+		</TableContainer >
 	);
 }
 
