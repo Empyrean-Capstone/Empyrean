@@ -1,0 +1,263 @@
+Step 1: Installation of main project: 
+
+1. Download Code:
+    In a repository that you want the project, run:
+    $ git clone https://github.com/Empyrean-Capstone/Empyrean.git
+    Ensure that a repository name Empyrean has been correctly copied into this directory
+
+    Now, move into the repository with:
+    $ cd Empyrean
+
+2. install, npm, pip, python yarn, postgres:
+    Ensure that the following tools are installed: 
+
+    On Ubuntu Linux:
+    $ sudo apt install -y npm python pip yarn postgresql
+
+    On mac:
+    $ brew install npm
+    $ brew install python
+    $ brew install pip
+    $ brew install yarn
+    $ brew install postgresql
+
+2.5: Make a python virtual environment: 
+
+    We need a virtual environment so that we can install packages without version management.
+    This is so the installation does not ruin other packages that have been installed.
+
+    If conda is installed:
+    $ conda create --name {name of environment, i.e. empyrean} python=3.9
+    Then type 'y' in response to the question
+
+    This environment can be activated, and needs to be active for correct function with:
+    $ conda activate {name chosen earlier}
+
+    From here, packages can be installed like normal with 'pip install' or with conda with 'conda install'
+
+    If not using conda, a venv (virtual environment) can be used with pip to generate the same results:
+    This is conceptually more complicated, but not that much harder
+    To create a venve, run:
+    $ python -m venv /path/to/new/environment
+
+    To activate this venv, run:
+    $ source path/to/venv/bin/activate
+
+    After this, new packages should be able to be install with 'pip install'
+
+3. Install python requirements:
+
+    We need to move into the directory in which the file requirements.txt is:
+    $ cd api
+    Then, we can install based on this file with:
+    $ pip install -r requirements.txt
+
+    This will install all the python packages needed for production
+
+3.5. Configure python variables:
+
+    In this directory main, there should be a file called .env. Move to this directory with:
+    $ cd main
+
+    After this, open the .env file, and configure the following:
+        change DATA_FILEPATH to a location that should hold the FITS files that will be generated
+
+4. Install npm requirements: 
+
+    Move back to the root directory of the project with:
+    $ cd ../../
+
+    Now, to install the node packages needed for react, run:
+    $ npm install
+
+4.5. Configure react variables: 
+
+    TODO: configure later 
+
+5. Install nginx
+
+    Now we will install nginx, which will be used to host the React server with:
+    On ubuntu linux:
+    $ sudo apt install nginx
+
+    On Mac:
+    $ brew install nginx
+
+6. Configure nginx:
+
+    Now we need to make it so that nginx can serve our files. 
+    In the root directory, we need to build our project with:
+    $ yarn build 
+    This should build a 'public' directory at the root level. These are the files that will be served 
+
+    Run the following to find the location of configuration files for nginx:
+    $ nginx -t 
+
+    Open this configuration file, and change the following:
+        ... Some configuration
+        server {
+            listen          8080; # Change this to 80 to enable web communication
+        ... More configuration
+            location{
+                root        html; # Change this to the location of the public directory generated at the beginning of this Step
+                ... Even more configuration
+            }
+        ... Even even more 
+        }
+
+    Now we need to start nginx as a service with:
+    On Ubuntu Linux:
+    $ sudo service start nginx
+
+    On Mac:
+    $ sudo brew services start nginx 
+    Now nginx should start on startup and after power outages, allowing us to be able to serve our server automatically 
+
+7. Start Eventlet as a service 
+    We need to do the same process with the flask server as we do with the react server. 
+    This is because the server we will use, called Eventlet, is already installed by step 3 earlier, and all the configuration is in the code. 
+
+    To run the flask server (not as a service) run in the root project directory: 
+    $ python api/wsgi.py 
+    This will start up the server, ready for production. 
+
+    To make sure this is a service, we must add it to the service list. 
+    In Ubuntu Linux:
+        Find which python is being used. Make sure the virtual environment is activated, then run:
+        $ which python
+        Take note of this location 
+
+        We need to add a new entry to our systemd file in /etc/systemd/system
+        cd into this file: 
+        $ cd /etc/systemd/system
+
+        Create the needed file:
+        $ touch empyrean.service 
+
+        Enter this file, and paste and edit the following file:
+        ***start don't copy this part***
+        [Unit]
+        Description=A simple Flask API
+        After=network.target
+
+        [Service]
+        User=ubuntu
+        WorkingDirectory=/path/to/project/Empyrean/api
+        ExecStart=/path/to/python/from/earlier/python wsgi.py
+        Restart=always
+
+        [Install]
+        WantedBy=multi-user.target
+        *** End, don't copy this part ***
+
+        After this, run:
+        $ sudo systemctl daemon-reload
+
+        If this worked, we can now run:
+        $ sudo systemctl start empyrean
+
+    On mac: 
+        On mac, jobs are run with launchctl and launchd, so we have to do something different 
+
+        find where python is by making sure the environment is loaded, then running:
+        $ which python
+        And make sure to note this for later 
+
+        cd into the global agents directory, which is the non-user-specific, global launches:
+        $ cd /Library/LaunchDaemon
+
+        Create the service we need to craete the file:
+        $ touch com.empyrean.plist
+        If a domain name is intended, this should be named in reverse domain name notation. E.G: empyrean.com as domain is the above result 
+
+        Enter this file, paste and edit the following: 
+        *** start, don't copy this part ***
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+            <dict>
+                <key>Label</key>
+                <string>com.empyrean</string>
+                <key>Program</key>
+                <string>/path/to/virtual/environment/python /path/to/project/directory/Empyrean/api/wsgi.py</string>
+                <key>KeepAlive</key>
+                <true/>
+            </dict>
+        </plist>
+        *** end, don't copy this part ***
+        Note: the string under the Label <key> is the argument to start the service
+        Note: the string under the Program <key> tells the daemon what program to run. In this case, the python server 
+        Note: the KeepAlive <key> tells the computer to keep this service running in case it is not in whatever situation
+
+        Now we need to restart the daemon and make sure our service is running
+        reboot with:
+        $ reboot 
+        And once done, this service should be active  
+
+8. Ensure basic operation
+
+    At this point, opening a browser, and going to:
+    IP.OF.Computer/
+    Should show the basic app, sans any information.
+
+9. Configure database 
+    This app is less interesting without data, so now we will set up postgresql so that we can have data. 
+
+    Open postgresql with:
+    $ psql -U postgres
+        Then, create a new user for the app with:
+        > CREATE USER empyrean WITH PASSWORD '{chosen password}' CREATEDB;
+
+        Now, let's create the database we need with:
+        > CREATE DATABASE {name of database}; 
+
+        Now, exit psql:
+        > \q
+
+    Next, we need to edit the .env file from before. First, cd into the database:
+    $ cd /path/to/project/root/Empyrean/api
+
+    Then, open the .env file and edit the SQLALCHEMY_DATABASE_URI to have the following formula, 
+    where the information is the previously created user, password and database:
+    > export SQLALCHEMY_DATABASE_URI="postgresql://{username}:{password}@localhost/{created database}"
+
+
+10. Migrate Database 
+    We need to now set up the database we created in the previous step.
+
+    Move to the api directory:
+    $ cd /path/to/project/root/Empyrean/api
+
+    Migrate the current migrations with:
+    $ flask db migrate -m "Migration message"
+
+    Upgrade the database:
+    $ flask db upgrade
+
+11. Ensure Working product 
+    At this point, the base product should be working with a database, so everything should be set up.
+    If needed, the services created in steps 6 and 7 will need to be restarted in order to find the database. 
+
+    This can be done with:
+    On Ubuntu Linux:
+        $ sudo systemctl restart nginx
+        This will restart nginx
+
+        $ sudo systemcttl reload empyrean
+
+    On Mac:
+        To restart nginx:
+        $ sudo brew services reload nginx
+
+        To restart Eventlet. The name of plist was created in stem 7:
+        $ sudo launchctl unload {name of plist}
+        $ sudo launchctl load {name of plist}
+
+
+Step 2: Installation of Instruments: 
+1. Install code for Each Instruments
+    In the project root directory, copy the control code with:
+    $ git clone https://github.com/Empyrean-Capstone/shelyak_control.git
+
+2. Each of these instruments can be run as a service, through the process in step 7 of the installation code
+    Note: the program to be run for the spectrograph, as an expample, is python spectrograph.py
