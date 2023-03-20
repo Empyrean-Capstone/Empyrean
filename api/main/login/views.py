@@ -14,6 +14,23 @@ from . import login
 from ..models.user import User
 
 
+@login.get("/")
+def get_user():
+    """
+    Get the current user's name.
+
+    Returns:
+        str: the user's name
+    """
+
+    username = session.get("username")
+
+    if username is not None:
+        return session["username"], 200
+
+    return "", 401
+
+
 @login.post("/")
 def post_login():
     """

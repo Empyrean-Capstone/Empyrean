@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import axios from 'axios'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 
@@ -6,13 +7,32 @@ import './style.css'
 function Layout() {
 	const navigate = useNavigate();
 
+	let [username, setUsername] = useState("")
+
+	useEffect(() => {
+		(async () => {
+			const res = await axios.get(
+				`http://localhost:5000/auth_login/`,
+				{
+					withCredentials: true
+				})
+
+			if (res.status === 200) setUsername(res.data)
+				else console.error(res.status)
+		})();
+
+		return () => {
+			// this now gets called when the component unmounts
+		};
+	}, [setUsername]);
+
 	return (
 		<>
 			<div id='layout-grid'>
 				<div id='left-toolbar'>
 					<div id='profile-bar'>
 						<ul id='main-links'>
-							<li>UserName</li>
+							<li>{username}</li>
 
 							<li className='main-page-link'>
 								<Link
