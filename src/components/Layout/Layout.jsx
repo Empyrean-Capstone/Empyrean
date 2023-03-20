@@ -38,7 +38,10 @@ function Layout() {
 										logout()
 									}}
 								>Logout</Link>
+							</li>
 
+							<li className='main-page-link'>
+								<Link className="main-link" to="/registration">Register new user</Link>
 							</li>
 						</ul>
 

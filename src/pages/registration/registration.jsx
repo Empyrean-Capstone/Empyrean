@@ -9,13 +9,11 @@ import InputAdornment from '@mui/material/InputAdornment';
 import MuiAlert from '@mui/material/Alert';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { LoadingButton } from "@mui/lab"
 import { styled } from '@mui/material/styles';
-import { useNavigate } from "react-router-dom";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
 	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -30,17 +28,17 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 
-function Login() {
-	const navigate = useNavigate();
-
+function Register() {
 	const [authState, setAuthState] = React.useState({
 		set: false,
 		msg: "",
 		severity: ""
 	});
 
+
 	const [creds, setCreds] = React.useState({
-		username: "",
+		email: "",
+		name: "",
 		password: "",
 	});
 
@@ -79,12 +77,28 @@ function Login() {
 						fullWidth
 						disabled={isLoading !== ""}
 						type="text"
-						key={"Username"}
-						label={"Username"}
-						id="username"
+						id="email"
+						key={"email"}
+						label={"Email"}
 						variant="filled"
-						value={creds["username"]}
-						onChange={handleCredChange("username")}
+						value={creds["email"]}
+						onChange={handleCredChange("email")}
+						InputLabelProps={{
+							shrink: true,
+						}}
+					/>
+
+					<TextField
+						sx={{ mt: 2, mb: 2 }}
+						required
+						fullWidth
+						disabled={isLoading !== ""}
+						key={"Name"}
+						label="Observer Name"
+						id="filled-start-adornment"
+						variant="filled"
+						value={creds["name"]}
+						onChange={handleCredChange("name")}
 						InputLabelProps={{
 							shrink: true,
 						}}
@@ -121,55 +135,51 @@ function Login() {
 						}}
 					/>
 
-					<Stack
-						alignItems="center"
-						justifyContent="center"
-						direction="row" spacing={3}
-					>
-						<LoadingButton
-							sx={{ mt: 2, mb: 2 }}
-							type="submit"
-							variant="contained"
-							onClick={() => {
-								setLoading("login");
 
-								//  const salt = bcrypt.genSaltSync(0);
-								//  values.password = bcrypt.hashSync(values.password, salt);
-
-								const attemptLogin = async (values) => {
-									try {
-										let auth_res = await axios.post(
-											`http://localhost:5000/auth_login/`,
-											values,
-											{
-												withCredentials: true
-											}
-										)
-										if (auth_res.status === 200) {
-											navigate("/observation");
+					<LoadingButton
+						sx={{ mt: 2, mb: 2 }}
+						type="submit"
+						variant="contained"
+						onClick={() => {
+							setLoading("registration");
+							const attemptRegistration = async (values) => {
+								try {
+									let reg_res = await axios.post(
+										`http://localhost:5000/auth_login/register/`,
+										values,
+										{
+											withCredentials: true
 										}
-									}
-									catch (err) {
+									)
+									if (reg_res.status === 201) {
+										setLoading("");
+
 										setAuthState({
 											set: true,
-											msg: "Username or password are incorrect",
-											severity: "error"
+											msg: `user "${values.username}" sucessfully registered`,
+											severity: "success"
 										})
 									}
-									finally {
-										setLoading("")
-									}
-								};
+								} catch (err) {
+									setAuthState({
+										set: true,
+										msg: `user "${values.username}" already exists`,
+										severity: "error"
+									})
+								}
+								finally {
+									setLoading("")
+								}
+							};
 
-								attemptLogin(creds);
-							}}
-							loadingPosition="center"
-							loading={isLoading === "login"}
-							disabled={isLoading === "registration"}
-						>
-							Login
-						</LoadingButton>
-					</ Stack>
+							attemptRegistration(creds);
+						}}
+						loadingPosition="center"
+						loading={isLoading === "registration"}
+						disabled={isLoading === "login"}
+					>
+						Register
+					</LoadingButton>
 
 					<Snackbar open={authState.set} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
 						<Alert variant="standard" severity={authState.severity} sx={{ width: '100%' }}>
@@ -183,4 +193,4 @@ function Login() {
 	)
 }
 
-export { Login }
+export { Register }
