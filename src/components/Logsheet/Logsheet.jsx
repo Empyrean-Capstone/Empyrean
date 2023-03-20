@@ -14,14 +14,14 @@ const columns = [
 		width: 300,
 	},
 	{
-		field: 'progress',
-		headerName: 'Progress',
-		width: 240,
-	},
-	{
 		field: 'target',
 		headerName: 'Target',
 		width: 600,
+	},
+	{
+		field: 'progress',
+		headerName: 'Progress',
+		width: 240,
 	},
 	{
 		field: 'date',
@@ -43,31 +43,32 @@ function Logsheet() {
 	const socket = useContext(SocketContext);
 
 	useEffect(() => {
-		socket.on("setObservations", (logsheetData) => {
-			setLogMatrix(logsheetData)
+		socket.on("setObservations", (logsheetDataStr) => {
+			let logData = JSON.parse(logsheetDataStr)
+			setLogMatrix(logData)
 			setLogLoading(false)
 		})
 
 		setLogLoading(true)
-		socket.emit("retrieveObservations", {});
+		socket.emit("retrieveObservations");
 	}, [socket])
 
-	socket.on("prependNewObservation", (newLogArr) => {
-		// https://reactjs.org/docs/hooks-reference.html#functional-updates
+	socket.on("updateObservations", (newLogJson) => {
+		let newLogObj = JSON.parse(newLogJson)
+		let updatedMatrix = { ...logMatrix }
 
-		setLogMatrix([newLogArr, ...logMatrix])
-	})
-
-	socket.on("updateNewObservation", (updatedLogArr) => {
-		let updatedMatrix = [...logMatrix]
-		updatedMatrix[0] = updatedLogArr
+		Object.entries(newLogObj).map(([id, data]) => {
+			updatedMatrix[id] = data
+		})
 
 		setLogMatrix(updatedMatrix)
 	})
 
-	socket.on("removeNewObservation", () => {
-		// https://reactjs.org/docs/hooks-reference.html#functional-updates
-		let rmMatrix = logMatrix.slice(1)
+	socket.on("removeObservations", (rmObsList) => {
+		let rmMatrix = { ...logMatrix }
+
+		rmObsList.forEach(id => delete rmMatrix[id])
+
 		setLogMatrix(rmMatrix)
 	})
 
@@ -75,10 +76,10 @@ function Logsheet() {
 		return { id, target, progress, date, sigToNoise };
 	}
 
-	const rows = Array.from({ length: logMatrix.length }, (_, index) => {
-		const row = logMatrix[index];
-		return initNames(...row);
-	});
+
+	const rows = Object.entries(logMatrix).map(([id, data]) => {
+		return initNames(id, ...data)
+	})
 
 	return (
 		<TableContainer>

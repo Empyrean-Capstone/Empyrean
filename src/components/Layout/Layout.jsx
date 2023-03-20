@@ -22,7 +22,7 @@ function Layout() {
 											try {
 												let logout_res = await axios.post(
 													`http://localhost:5000/auth_login/logout/`,
-													{},
+													null,
 													{
 														withCredentials: true
 													})

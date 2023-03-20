@@ -1,26 +1,40 @@
 """Endpoints related to observation requests."""
 
 from flask import request
+
 from main import db
-
 from . import observations
-from ..models import Observation
 from .. import sio
+from ..logsheet.views import get_all_log_data
+from ..models.observation import Observation, get_logs_json_str
+from ..status.views import get_current_obsid
 
 
-def get_newest_observation():
-    return Observation.query.order_by(-Observation.id).limit(1).first()
-
-
-def create_observation_entry(dict_data: dict):
-    new_observe = Observation(dict_data)
+def __init_obs_records(request: dict) -> Observation:
+    new_observe = Observation(request)
 
     db.session.add(new_observe)
     db.session.commit()
 
-    sio.emit("prependNewObservation", [field for field in new_observe])
-
     return new_observe
+
+
+def __init_obs_requests(obs_request: dict) -> list:
+    i: int = 0
+    obs: Observation
+    observations: list[Observation] = []
+    ids: list[int] = []
+
+    while i < int(obs_request["num_exposures"]):
+        obs = __init_obs_records(obs_request)
+        observations.append(obs)
+        i += 1
+
+    sio.emit("updateObservations", get_logs_json_str(observations))
+
+    ids = [obs.id for obs in observations]
+
+    return ids
 
 
 @observations.get("/")
@@ -42,24 +56,16 @@ def post_observation():
     returns:
         str: URI to newly created observation request.
     """
-    observation_input: dict = request.get_json()
+    obs_instructions: dict = request.get_json()
 
-    cur_observation = create_observation_entry(observation_input)
+    exp_ids: list[int] = __init_obs_requests(obs_instructions)
 
-    # "OBSID" is the key used in the FITS file
-    # format, so naming it so here is convenient
-    observation_input["OBSID"] = cur_observation.id
-    observation_input["date"] = str(cur_observation.date_obs)
+    # The request data from the frontend will act like
+    # instructions for how the camera must populate the
+    # observations that it has been given in the second
+    # input
+    sio.emit("begin_exposure", data=(obs_instructions, exp_ids))
 
-    sio.emit("begin_exposure", observation_input)
-
-    # TODO: "A POST request creates a resource. The server
-    # assigns a URI for the new resource, and returns
-    # that URI to the client." Here, we need to create an
-    # order, give it a URI where the final part is the order
-    # number, e.g. "/observations/4", then return that. The
-    # order number should be the last number in the table of
-    # all past orders.
     return {}
 
 
@@ -67,18 +73,16 @@ def post_observation():
 def end_observation():
     sio.emit("end_exposure")
 
-    new_observe = get_newest_observation()
-    db.session.delete(new_observe)
+    cur_obsid: int = get_current_obsid()
+
+    Observation.query.filter(Observation.id >= cur_obsid).delete()
     db.session.commit()
 
-    sio.emit("removeNewObservation")
+    get_all_log_data()
 
     return {}
 
 
 @sio.on("exposure_complete")
-def update_request_form():
-    new_observe = get_newest_observation()
-
-    sio.emit("updateNewObservation", [field for field in new_observe])
+def conclude_exposure():
     sio.emit("enable_request_form")

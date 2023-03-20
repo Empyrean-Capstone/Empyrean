@@ -1,5 +1,6 @@
-from flask import request, jsonify
-from main import db, app
+"""TODO."""
+
+from main import db
 from .. import sio
 from . import status
 from ..models import Status, Instrument
@@ -8,7 +9,21 @@ from ..models import Status, Instrument
 SPECTROGRAPH_STATUS = {"Mirror": 0, "LED": 1, "ThAr": 2, "Tungsten": 3}
 
 
-@status.get("/index")
+# FIXME: must have a way to designate the current camera
+def get_current_camera() -> int:
+    return Instrument.query.filter_by(instrumentName="ZWO ASI120MM-S").first().instrumentId
+
+
+def get_current_obsid() -> int:
+    cur_camera_id: int = get_current_camera()
+
+    cur_camera_status = Status.query.filter_by(instrumentID=cur_camera_id, statusName="obs_id").first()
+
+    cur_obsid: int = int(cur_camera_status.statusValue)
+
+    return cur_obsid
+
+
 def index():
     result = Status.query.all()
     for index in range(len(result)):
