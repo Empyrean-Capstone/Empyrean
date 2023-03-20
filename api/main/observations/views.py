@@ -1,6 +1,6 @@
 """Endpoints related to observation requests."""
 
-from flask import request
+from flask import request, session
 
 from main import db
 from . import observations
@@ -59,6 +59,9 @@ def post_observation():
     obs_instructions: dict = request.get_json()
 
     exp_ids: list[int] = __init_obs_requests(obs_instructions)
+
+    obs_instructions["userid"] = session.get("userid")
+    obs_instructions["username"] = session.get("username")
 
     # The request data from the frontend will act like
     # instructions for how the camera must populate the

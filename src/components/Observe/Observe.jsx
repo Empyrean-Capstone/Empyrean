@@ -246,7 +246,13 @@ function Observe() {
 
 								const initObservation = async (values) => {
 									try {
-										const resp = await axios.post(`http://localhost:5000/observations/`, values);
+										const resp = await axios.post(
+											`http://localhost:5000/observations/`,
+											values,
+											{
+												withCredentials: true
+											}
+										);
 										console.log(resp.data);
 									} catch (err) {
 										console.error(err);

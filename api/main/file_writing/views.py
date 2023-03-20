@@ -103,8 +103,7 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
     hdu = enter_request_input(hdu, request_input)
     hdu = enter_exp_data(hdu, exposure_data, filename)
 
-    # TODO: get from session
-    hdu.header["OBSERVER"] = "Joe Llama"
+    hdu.header["OBSERVER"] = request_input["username"]
 
     # TODO: get from current instrument
     hdu.header["INSTRUME"] = "Shelyak"
@@ -128,6 +127,7 @@ def __update_db_cols(headers, request_input: dict) -> dict:
     cols = {
         "id": headers["OBSID"],
         "observer": headers["OBSERVER"],
+        "owner_id": request_input["userid"],
         "obs_type": headers["OBSTYPE"],
         "exp_time": headers["EXPTIME"],
         "image_typ": headers["IMAGETYP"],
@@ -144,7 +144,6 @@ def __update_db_cols(headers, request_input: dict) -> dict:
         # TODO: need to determine if we need these and get them
         #  "ccd_temp": headers["CCD-TEMP"],
         #  "gamma": headers[""],
-        #  "owner_id" = obs_data[""],
         #  "roworder": headers["ROWORDER"],
     }
 
