@@ -9,7 +9,7 @@ import numpy as np
 
 from . import file_writer
 from .. import DATA_FILEPATH, db, sio
-from ..models.observation import Observation, headers_to_db_cols
+from ..models.observation import Observation, get_logs_json_str
 
 
 @file_writer.route("/")
@@ -18,7 +18,7 @@ def index():
 
 
 @sio.on("save_img")
-def submit_data(image_path, exposure_data: dict):
+def submit_data(image_path, exposure_data: dict, request_input: dict):
     """
     Save observation image data to FITS file format.
 
@@ -26,63 +26,148 @@ def submit_data(image_path, exposure_data: dict):
         image_data(dict): image data resulting from requested exposure
 
     Returns:
-        None: writes observation data to a FITS file and the database
+        200: all operations were successful
+        TODO: add error status
     """
-    if DATA_FILEPATH is None:
-        print("ERR: Path to FITS file directory is unset. Set this env variable before attempting an exposure.")
-
-        # TODO: return error message
-        return
-
     timestr_fmt = "%Y-%m-%dT%X.%f"
-    file_date_fmt = "%Y%m%d"
 
-    image = cleanup_image_transmission(image_path)
+    image = __read_image_file(image_path)
 
-    # calculate needed headers
-    time_difference = timedelta(weeks=26)
     date_obs: datetime = datetime.strptime(exposure_data["DATE-OBS"], timestr_fmt)
-    exposure_data["date_made_open_source"] = (date_obs + time_difference).strftime(timestr_fmt)
 
-    # create specialized FITS file name
-    date_obs_file_prefix = datetime.strftime(date_obs, file_date_fmt)
-    padded_id = str(exposure_data["OBSID"]).zfill(4)
-    fits_path_head = f"{date_obs_file_prefix}.{padded_id}"
+    request_input["date_made_open_source"] = (date_obs + timedelta(weeks=26)).strftime(timestr_fmt)
 
-    fits_path = make_fits_abspath(DATA_FILEPATH, fits_path_head)
+    fits_path_head = __init_filename(exposure_data["OBSID"], date_obs)
 
-    # make fits file - add headers and such
-    hdu = fits.PrimaryHDU(image, uint=True)
+    hdu = __init_header_data_unit(image, exposure_data, request_input, fits_path_head)
 
-    hdu = populate_headers(hdu, exposure_data, fits_path_head)
-
-    # write this fits file to disk
-    hdu.writeto(fits_path, overwrite=True)
+    __write_header_data_unit(hdu, fits_path_head)
 
     # At this point, there is a row in the database for
     # this observation, but it is essentially a receipt
     # that indicates an observation is in action. We must
     # update that row with the data gained from the finished
     # observation.
-    db_data: dict = headers_to_db_cols(hdu.header, exposure_data)
+    __update_db_cols(hdu.header, request_input)
 
-    cur_observation = Observation.query.filter_by(id=exposure_data["OBSID"]).first()
-    cur_observation.set_attrs(db_data)
-
-    db.session.commit()
-
-    # TODO: return success message
-    return "Success"
+    return "success", 200
 
 
-def cleanup_image_transmission(image_path: str) -> np.ndarray:
+def __read_image_file(image_path: str) -> np.ndarray:
     image = np.load(image_path)
     os.unlink(image_path)
 
     return image
 
 
-def make_fits_abspath(fits_dir: str, fits_file_head: str) -> str:
+def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_input: dict, filename: str):
+    def enter_request_input(hdu, input: dict):
+        # TODO: whats the difference between this and IMAGETYP?
+        hdu.header["OBSTYPE"] = {
+            "object": "Object",
+            "dark": "Dark",
+            "flat": "Flat",
+            "thar": "ThAr",
+        }[input["observation_type"]]
+
+        # TODO: confirm that "Temperature" in ZWO ASI is CCD-TEMP
+        #  hdu.header["CCD-TEMP"] = exposure_data["TEMPERAT"]
+        hdu.header["IMAGETYP"] = input["observation_type"]
+
+        if hdu.header["OBSTYPE"] == "Object":
+            hdu.header["OBJECT"] = input["object"]
+            hdu.header["RA"] = input["right_ascension"]
+            hdu.header["DEC"] = input["declination"]
+            hdu.header["ALT"] = input["altitude"]
+            hdu.header["AIRM"] = 1 / math.cos(float(input["altitude"]))  # airmass
+        else:
+            hdu.header["OBJECT"] = "None"
+            hdu.header["RA"] = "+00:00:00.00"
+            hdu.header["DEC"] = "00:00:00.00"
+            hdu.header["ALT"] = 0
+
+        return hdu
+
+    def enter_exp_data(hdu, data: dict, filename: str):
+        hdu.header.update(data)
+        hdu.header["LOGID"] = filename  # name of file without fits extension
+
+        # TODO: from camera, currently unset
+        #  hdu.header["GAMMA"] = 0
+        #  hdu.header["ROWORDER"] = 0
+
+        return hdu
+
+    hdu = fits.PrimaryHDU(image, uint=True)
+
+    hdu = enter_request_input(hdu, request_input)
+    hdu = enter_exp_data(hdu, exposure_data, filename)
+
+    hdu.header["OBSERVER"] = request_input["username"]
+
+    # TODO: get from current instrument
+    hdu.header["INSTRUME"] = "Shelyak"
+
+    # TODO: DATE-OBS in numerical form: will receive script
+    hdu.header["MJDOBS"] = 0
+
+    return hdu
+
+
+def __write_header_data_unit(hdu, out_filename: str):
+    fits_path = __init_fits_abspath(DATA_FILEPATH, out_filename)
+
+    hdu.writeto(fits_path, overwrite=True)
+
+    # TODO: return outcome of write
+    return ""
+
+
+def __update_db_cols(headers, request_input: dict) -> dict:
+    cols = {
+        "id": headers["OBSID"],
+        "observer": headers["OBSERVER"],
+        "owner_id": request_input["userid"],
+        "obs_type": headers["OBSTYPE"],
+        "exp_time": headers["EXPTIME"],
+        "image_typ": headers["IMAGETYP"],
+        "gain": headers["GAIN"],
+        "offset": headers["OFFSET"],
+        "date_obs": headers["DATE-OBS"],
+        "instrume": headers["INSTRUME"],
+        "object_name": headers["OBJECT"],
+        "airm": headers["AIRM"],
+        "obs_id": headers["OBSID"],
+        "log_id": headers["LOGID"],
+        "mjdobs": headers["MJDOBS"],
+        "date_made_open_source": request_input["date_made_open_source"],
+        # TODO: need to determine if we need these and get them
+        #  "ccd_temp": headers["CCD-TEMP"],
+        #  "gamma": headers[""],
+        #  "roworder": headers["ROWORDER"],
+    }
+
+    cur_observation = Observation.query.filter_by(id=headers["OBSID"]).first()
+    cur_observation.set_attrs(cols)
+    db.session.commit()
+
+    sio.emit("updateObservations", get_logs_json_str([cur_observation]))
+
+    # TODO: return error if operation fails
+    return headers
+
+
+def __init_filename(obsid, date_obs):
+    file_date_fmt = "%Y%m%d"
+
+    padded_id = str(obsid).zfill(4)
+    date_obs_file_prefix = datetime.strftime(date_obs, file_date_fmt)
+
+    return f"{date_obs_file_prefix}.{padded_id}"
+
+
+def __init_fits_abspath(fits_dir: str, fits_file_head: str) -> str:
+    # TODO: return errors?
     fits_dir = os.path.abspath(fits_dir)
 
     if not os.path.exists(fits_dir):
@@ -91,51 +176,3 @@ def make_fits_abspath(fits_dir: str, fits_file_head: str) -> str:
     fits_path = f"{fits_dir}/{fits_file_head}.fits"
 
     return fits_path
-
-
-def populate_headers(hdu, exposure_data: dict, filename: str) -> fits.PrimaryHDU:
-    hdu.header["OBSERVER"] = "Joe Llama"
-    hdu.header["OBSID"] = exposure_data["OBSID"]
-    hdu.header["OBSTYPE"] = {
-        "object": "Object",
-        "dark": "Dark",
-        "flat": "Flat",
-        "thar": "ThAr",
-    }[exposure_data["observation_type"]]
-    hdu.header["DATE-OBS"] = exposure_data["DATE-OBS"]
-    hdu.header["DATE-END"] = exposure_data["DATE-END"]
-
-    if hdu.header["OBSTYPE"] == "Object":
-        hdu.header["OBJECT"] = exposure_data["object"]
-        hdu.header["RA"] = exposure_data["right_ascension"]
-        hdu.header["DEC"] = exposure_data["declination"]
-        hdu.header["ALT"] = exposure_data["altitude"]
-    else:
-        hdu.header["OBJECT"] = "None"
-        hdu.header["RA"] = "+00:00:00.00"
-        hdu.header["DEC"] = "00:00:00.00"
-        hdu.header["ALT"] = 0
-
-    # airmass
-    hdu.header["AIRM"] = 1 / math.cos(float(exposure_data["altitude"]))
-    hdu.header["INSTRUME"] = "Shelyak"
-
-    # TODO: from camera, currently unset
-    hdu.header["GAMMA"] = 0
-    hdu.header["ROWORDER"] = 0
-
-    # TODO: confirm that "Temperature" in ZWO ASI is CCD-TEMP
-    #  hdu.header["CCD-TEMP"] = exposure_data["TEMPERAT"]
-    hdu.header["GAIN"] = exposure_data["GAIN"]
-    hdu.header["IMAGETYP"] = exposure_data["observation_type"]
-    hdu.header["OFFSET"] = exposure_data["OFFSET"]
-
-    # name of file without fits extension
-    hdu.header["LOGID"] = filename
-
-    # TODO: DATE-OBS in numerical form: will receive script
-    hdu.header["MJDOBS"] = 0
-
-    hdu.header["EXPTIME"] = exposure_data["exposure_duration"]
-
-    return hdu

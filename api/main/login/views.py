@@ -14,6 +14,23 @@ from . import login
 from ..models.user import User
 
 
+@login.get("/")
+def get_user():
+    """
+    Get the current user's name.
+
+    Returns:
+        str: the user's name
+    """
+
+    username = session.get("username")
+
+    if username is not None:
+        return session["username"], 200
+
+    return "", 401
+
+
 @login.post("/")
 def post_login():
     """
@@ -32,15 +49,19 @@ def post_login():
 
     try:
         cur_user = User.query.filter_by(username=username_req).first()
+
+    except (AttributeError, TypeError):
+        return "unauthorized", 401
+
+    else:
         if password_req == cur_user.password:
             session["userid"] = str(cur_user.id)
+            session["username"] = cur_user.username
+
             return "success", 200
 
         else:
             return "unauthorized", 401
-
-    except (AttributeError, TypeError):
-        return "unauthorized", 401
 
 
 @login.post("/logout/")
@@ -53,10 +74,12 @@ def logout():
         404: endpoint is valid but the requested
              resource could not be found
     """
-    res = session.pop("userid", None)
+    userid = session.pop("userid", None)
 
-    if res is None:
+    if userid is None:
         return "not found", 404
+
+    session.clear()
 
     return "success", 200
 

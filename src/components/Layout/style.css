@@ -8,10 +8,10 @@
 }
 
 body{
-    margin: 0; 
+    margin: 0;
 }
 
-#page-content{
+.page-content{
     min-height: 93vh;
 }
 
@@ -24,9 +24,8 @@ body{
     color: white;
 }
 
-#profile-bar{
+.profile-bar{
     background-color: #232e3e;
-    height: 5%;
 }
 
 #main-page-title{
@@ -53,7 +52,7 @@ body{
 
 
 /* Footer css */
-#main-content{
+.main-content{
     grid-row: 1;
     grid-column: 2;
     display: inline;
@@ -68,8 +67,8 @@ body{
 }
 
 .footer-nav-link{
-    margin-left: 15px; 
-    display: inline; 
+    margin-left: 15px;
+    display: inline;
 }
 
 #left-info{

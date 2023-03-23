@@ -1,14 +1,18 @@
-from flask_socketio import SocketIO, emit
+"""TODO."""
+
 from . import logsheet
 from .. import sio
-from ..models.observation import Observation
+from ..models.observation import Observation, get_logs_json_str
 
 
 # TODO change this to a get request
 @sio.on("retrieveObservations")
-def get_all_log_data(data):
+def get_all_log_data():
+    """
+    TODO.
+
+    Args:
+        data ():
+    """
     observations = Observation.query.all()
-
-    data =  [list(row) for row in observations]
-
-    emit("setObservations", data)
+    sio.emit("setObservations", get_logs_json_str(observations))

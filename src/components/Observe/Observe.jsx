@@ -246,7 +246,13 @@ function Observe() {
 
 								const initObservation = async (values) => {
 									try {
-										const resp = await axios.post(`http://localhost:5000/observations/`, values);
+										const resp = await axios.post(
+											`http://localhost:5000/observations/`,
+											values,
+											{
+												withCredentials: true
+											}
+										);
 										console.log(resp.data);
 									} catch (err) {
 										console.error(err);
@@ -260,10 +266,11 @@ function Observe() {
 								if (isFormValid) {
 									initObservation(props.values);
 								}
-
-								setFormEnabled(true)
-
+								else {
+									setFormEnabled(true)
+								}
 							}}
+
 							disabled={!isFormEnabled || (isLoading !== "" && isLoading !== "Start")}
 						>
 							Start
@@ -283,7 +290,7 @@ function Observe() {
 							onClick={() => {
 								const endObservation = async () => {
 									try {
-										const resp = await axios.post(`http://localhost:5000/observations/end`);
+										const resp = await axios.post(`http://localhost:5000/observations/end`, null);
 										console.log(resp.data);
 									} catch (err) {
 										console.error(err);

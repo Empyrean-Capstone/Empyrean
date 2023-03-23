@@ -12,6 +12,7 @@ import { Layout } from './components/Layout';
 import { Login } from './pages/login'
 import { LogsheetPage } from './pages/logsheet'
 import { Observation } from './pages/observation'
+import { Register } from './pages/registration'
 
 
 
@@ -30,7 +31,7 @@ const AuthWrapper = () => {
 			try {
 				const auth = await axios.post(
 					`http://localhost:5000/auth_login/validate/`,
-					{},
+					null,
 					{
 						withCredentials: true
 					}
@@ -79,6 +80,7 @@ function App() {
 						<Route element={<AuthWrapper />}>
 							<Route path="observation" element={<Observation />} />
 							<Route path="logsheet" element={<LogsheetPage />} />
+							<Route path="registration" element={<Register />} />
 						</Route>
 
 					</Route>
