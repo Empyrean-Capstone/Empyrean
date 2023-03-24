@@ -179,38 +179,46 @@ class Zwocamera:
         return self.__convert_camera_status(status)
 
     # Public Methods
-    def sequence(self, request_input):
+    def sequence(self, request_instructions: dict, exposure_ids: list[int]):
+        """TODO."""
         camera.exposure_terminated = False
-        num_exposures = int(request_input["num_exposures"])
-        exposure_duration = int(request_input["exposure_duration"])
+
+        num_exposures = int(request_instructions["num_exposures"])
+        exposure_duration = int(request_instructions["exposure_duration"])
 
         self.__emit_status({"nexp_total": num_exposures, "itime_total": exposure_duration})
 
         kk: int = 0
+        cur_exp_data: dict = {}
+        while kk < len(exposure_ids) and not self.exposure_terminated:
+            cur_id: int = exposure_ids[kk]
 
-        while kk < num_exposures and not self.exposure_terminated:
-            cur_status = {
-                "obs_id": request_input["OBSID"],
-                "exp_number": int(kk),
-            }
-
-            self.__emit_status(cur_status)
+            self.__emit_status({"obs_id": cur_id, "exp_number": kk})
 
             tstart = Time.now()
             image = self.expose(exptime=exposure_duration)
             tend = Time.now()
 
             if not self.exposure_terminated:
-                request_input["DATE-END"] = tend.fits
-                request_input["DATE-OBS"] = tstart.fits
-                request_input["EXPTIME"] = exposure_duration
+                cur_exp_data["OBSID"] = cur_id
+                cur_exp_data["DATE-END"] = tend.fits
+                cur_exp_data["DATE-OBS"] = tstart.fits
+                cur_exp_data["EXPTIME"] = exposure_duration
 
-                time.sleep(1)
-                self.write_image_data(image, request_input)
-                time.sleep(1)
+                for k, v in self.camera.get_control_values().items():
+                    cur_exp_data[k.upper()[:8]] = v
 
-            kk += 1
+                # make and save file
+                tmp = tempfile.NamedTemporaryFile(delete=False, mode="w", prefix="empyrean", suffix=".npy")
+                np.save(tmp.name, image)
 
+                # send file
+                sio.emit("save_img", data=(tmp.name, cur_exp_data, request_instructions))
+
+                cur_exp_data.clear()
+                kk += 1
+
+        # TODO: do we need to send this
         #  update_global_vars({"ccd_status": 0})
 
         self.exposure_terminated = False
@@ -286,15 +294,6 @@ class Zwocamera:
 
         return img
 
-    def write_image_data(self, image: np.ndarray, request_input):
-        for k, v in self.camera.get_control_values().items():
-            request_input[k.upper()[:8]] = v
-
-        tmp = tempfile.NamedTemporaryFile(delete=False, mode="w", prefix="empyrean", suffix=".npy")
-        np.save(tmp.name, image)
-
-        sio.emit("save_img", data=(tmp.name, request_input))
-
     def complete(self):
         sio.emit("exposure_complete")
 
@@ -309,8 +308,8 @@ if __name__ == "__main__":
     camera = Zwocamera(device="ZWO ASI120MM-S")
 
     @sio.on("begin_exposure")
-    def sequence(obs_request):
-        camera.sequence(obs_request)
+    def sequence(obs_instructions, pending_obs):
+        camera.sequence(obs_instructions, pending_obs)
 
     @sio.event
     def disconnect():
