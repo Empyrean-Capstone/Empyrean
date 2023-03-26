@@ -5,7 +5,7 @@ from flask import request, session
 from main import db
 from . import observations
 from .. import sio
-from ..logsheet.views import get_all_log_data
+from ..logsheet.views import get_all_log_data, create_logsheet
 from ..models.observation import Observation, get_logs_json_str
 from ..status.views import get_current_obsid
 
@@ -57,6 +57,10 @@ def post_observation():
         str: URI to newly created observation request.
     """
     obs_instructions: dict = request.get_json()
+
+    cur_logsheet = create_logsheet(obs_instructions)
+
+    obs_instructions["log_id"] = cur_logsheet.id
 
     exp_ids: list[int] = __init_obs_requests(obs_instructions)
 

@@ -40,6 +40,8 @@ function Logsheet() {
 	const tableHeight = 1000
 	const [logMatrix, setLogMatrix] = useState([]);
 	const [isLogLoading, setLogLoading] = useState(false);
+	const [logsheetName, setLogsheetName] = useState("");
+	const [logsheetID, setLogsheetID] = useState(0);
 	const socket = useContext(SocketContext);
 
 	useEffect(() => {
@@ -50,8 +52,13 @@ function Logsheet() {
 		})
 
 		setLogLoading(true)
-		socket.emit("retrieveObservations");
-	}, [socket])
+		socket.emit("retrieveObservations", {"log_id" : logsheetID});
+	}, [socket, logsheetID])
+
+	socket.on("updateCurrentLogsheet", (currentLogsheetData) => {
+		setLogsheetName(currentLogsheetData["log_name"])
+		setLogsheetID(currentLogsheetData["log_id"])
+	})
 
 	socket.on("updateObservations", (newLogJson) => {
 		let newLogObj = JSON.parse(newLogJson)

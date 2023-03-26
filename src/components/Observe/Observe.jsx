@@ -1,13 +1,16 @@
 // resources:
 // For async posts to backend: https://medium.com/@adrianhuber17/how-to-build-a-simple-real-time-application-using-flask-react-and-socket-io-7ec2ce2da977
 //
-
-import React, { useContext, useEffect } from 'react';
-import axios from 'axios';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
+import React, { useContext, useEffect } from 'react'
+import axios from 'axios'
+import Button from '@mui/material/Button'
+import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
+import Tooltip from '@mui/material/Tooltip'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel';
 import { LoadingButton } from "@mui/lab"
 
 import './style.css'
@@ -18,6 +21,7 @@ import { SocketContext } from '../../context/socket'
 function Observe() {
 	const [activeButton, setActiveButton] = React.useState("object");
 	const buttons = ["object", "dark", "flat", "thar"]
+	const [logMatrix, setLogMatrix] = React.useState([]);
 
 	const styles = {
 		"active": {
@@ -49,6 +53,7 @@ function Observe() {
 		visible: false,
 		num_exposures: 0,
 		exposure_duration: 0,
+		log_id: 0
 	});
 
 	const [errs, setErrs] = React.useState({
@@ -59,7 +64,8 @@ function Observe() {
 		altitude: "",
 		visible: "",
 		num_exposures: "",
-		exposure_duration: ""
+		exposure_duration: "",
+		log_id: ""
 	})
 
 	const handleFieldChange = (prop) => (event) => {
@@ -80,6 +86,13 @@ function Observe() {
 		})
 	}, [socket, setFormEnabled])
 
+	useEffect(() => {
+		socket.on("setLogsheets", (logsheetData) => {
+			setLogMatrix(logsheetData)
+		})
+
+		socket.emit("retrieveLogsheets", {});
+	}, [socket])
 
 	const fields_row1 = [
 		{ name: "Right Ascension (α)", value: "right_ascension" },
@@ -214,6 +227,24 @@ function Observe() {
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
+				<FormControl fullWidth>
+					<InputLabel >Logsheet</InputLabel>
+					<Select
+						id="logsheet-select"
+						value={values.log_id}
+						defaultValue = ""
+						label="Logsheet"
+						onChange={handleFieldChange("log_id")}
+					>
+						<MenuItem value="New Logsheet"><em>Create new logsheet...</em></MenuItem>
+						{logMatrix.map((element) => (
+							<MenuItem value={element[0]}>Logsheet {element[1]}</MenuItem>
+						))}
+					</Select>
+				</FormControl>
+			</Stack>
+
+			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
 				<Tooltip title="Begin Observation">
 					<span>
 						<LoadingButton
@@ -246,13 +277,7 @@ function Observe() {
 
 								const initObservation = async (values) => {
 									try {
-										const resp = await axios.post(
-											`http://localhost:5000/observations/`,
-											values,
-											{
-												withCredentials: true
-											}
-										);
+										const resp = await axios.post(`http://localhost:5000/observations/`, values);
 										console.log(resp.data);
 									} catch (err) {
 										console.error(err);
@@ -266,11 +291,10 @@ function Observe() {
 								if (isFormValid) {
 									initObservation(props.values);
 								}
-								else {
-									setFormEnabled(true)
-								}
-							}}
 
+								setFormEnabled(true)
+
+							}}
 							disabled={!isFormEnabled || (isLoading !== "" && isLoading !== "Start")}
 						>
 							Start
@@ -290,7 +314,7 @@ function Observe() {
 							onClick={() => {
 								const endObservation = async () => {
 									try {
-										const resp = await axios.post(`http://localhost:5000/observations/end`, null);
+										const resp = await axios.post(`http://localhost:5000/observations/end`);
 										console.log(resp.data);
 									} catch (err) {
 										console.error(err);
