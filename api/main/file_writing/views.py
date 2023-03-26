@@ -36,12 +36,12 @@ def submit_data(image_path, exposure_data: dict, request_input: dict):
     date_obs: datetime = datetime.strptime(exposure_data["DATE-OBS"], timestr_fmt)
 
     request_input["date_made_open_source"] = (date_obs + timedelta(weeks=26)).strftime(timestr_fmt)
-
-    fits_path_head = __init_filename(exposure_data["OBSID"], date_obs)
+    fits_path_head = __init_filename(date_obs)
+    fits_path = __init_fits_abspath(DATA_FILEPATH, fits_path_head)
 
     hdu = __init_header_data_unit(image, exposure_data, request_input, fits_path_head)
 
-    __write_header_data_unit(hdu, fits_path_head)
+    hdu.writeto(fits_path, overwrite=True)
 
     # At this point, there is a row in the database for
     # this observation, but it is essentially a receipt
@@ -114,15 +114,6 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
     return hdu
 
 
-def __write_header_data_unit(hdu, out_filename: str):
-    fits_path = __init_fits_abspath(DATA_FILEPATH, out_filename)
-
-    hdu.writeto(fits_path, overwrite=True)
-
-    # TODO: return outcome of write
-    return ""
-
-
 def __update_db_cols(headers, request_input: dict) -> dict:
     cols = {
         "id": headers["OBSID"],
@@ -157,13 +148,10 @@ def __update_db_cols(headers, request_input: dict) -> dict:
     return headers
 
 
-def __init_filename(obsid, date_obs):
-    file_date_fmt = "%Y%m%d"
+def __init_filename(date_obs):
+    file_date_fmt = "%Y%m%dT%H%M%S"
 
-    padded_id = str(obsid).zfill(4)
-    date_obs_file_prefix = datetime.strftime(date_obs, file_date_fmt)
-
-    return f"{date_obs_file_prefix}.{padded_id}"
+    return datetime.strftime(date_obs, file_date_fmt)
 
 
 def __init_fits_abspath(fits_dir: str, fits_file_head: str) -> str:
