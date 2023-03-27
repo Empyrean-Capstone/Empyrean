@@ -3,7 +3,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { SocketContext } from '../../context/socket';
 import './style.css'
 
+import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import LinearProgress from '@mui/material/LinearProgress';
 import TableContainer from '@mui/material/TableContainer';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 
@@ -29,6 +31,15 @@ function getChipProps(params) {
 }
 
 
+function showProgress(params) {
+	if (params.value === "None") {
+		return <LinearProgress sx={{ width: "80%" }} />
+	}
+
+	return params.value
+}
+
+
 const columns = [
 	{
 		field: 'id',
@@ -36,11 +47,13 @@ const columns = [
 		width: 300,
 		valueGetter: ({ value }) => value && Number(value),
 	},
+
 	{
 		field: 'target',
 		headerName: 'Target',
-		width: 600,
+		width: 300,
 	},
+
 	{
 		field: 'progress',
 		headerName: 'Progress',
@@ -49,17 +62,41 @@ const columns = [
 			return getChipProps(params)
 		}
 	},
+
 	{
 		field: 'date',
 		headerName: 'Date',
 		width: 300,
+		renderCell: (params) => {
+			return showProgress(params)
+		}
 	},
+
 	{
 		field: 'sigToNoise',
 		headerName: 'Signal-to-Noise',
-		width: 300
+		width: 300,
+		renderCell: (params) => {
+			return showProgress(params)
+		}
 	},
 ];
+
+
+function EmptyOverlay() {
+	return (
+		<div style={{
+			display: 'flex',
+			flexDirection: 'column',
+			alignItems: 'center',
+			justifyContent: 'center',
+			height: '100%',
+		}}>
+			<Box sx={{ fontSize: 40 }}>📭</Box>
+			<Box sx={{ fontStyle: "italic" }}>There Are No Observations In This Logsheet...</Box>
+		</div>
+	)
+}
 
 
 function Logsheet() {
@@ -109,7 +146,10 @@ function Logsheet() {
 				sortingOrder={["asc", "desc"]}
 				rows={logRows}
 				columns={columns}
-				slots={{ toolbar: GridToolbar }}
+				slots={{
+					noRowsOverlay: EmptyOverlay,
+					toolbar: GridToolbar
+				}}
 				initialState={{
 					sorting: {
 						sortModel: [{ field: 'id', sort: 'desc' }],
