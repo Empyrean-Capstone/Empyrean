@@ -34,6 +34,7 @@ const columns = [
 		field: 'id',
 		headerName: 'Observation ID',
 		width: 300,
+		valueGetter: ({ value }) => value && Number(value),
 	},
 	{
 		field: 'target',
