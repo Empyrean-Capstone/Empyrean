@@ -22,7 +22,7 @@ const requestFormSchema = yup.object().shape({
 		.trim()
 		.required("Object is required"),
 
-	observation_type: yup
+	obs_type: yup
 		.string()
 		.required("Object Type is required"),
 

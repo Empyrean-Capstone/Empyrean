@@ -68,11 +68,11 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
             "dark": "Dark",
             "flat": "Flat",
             "thar": "ThAr",
-        }[input["observation_type"]]
+        }[input["obs_type"]]
 
         # TODO: confirm that "Temperature" in ZWO ASI is CCD-TEMP
         #  hdu.header["CCD-TEMP"] = exposure_data["TEMPERAT"]
-        hdu.header["IMAGETYP"] = input["observation_type"]
+        hdu.header["IMAGETYP"] = input["obs_type"]
 
         if hdu.header["OBSTYPE"] == "Object":
             hdu.header["OBJECT"] = input["object"]

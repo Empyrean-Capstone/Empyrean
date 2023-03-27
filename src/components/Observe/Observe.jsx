@@ -42,7 +42,7 @@ function Observe() {
 
 	const [values, setValues] = React.useState({
 		object: "",
-		observation_type: activeButton,
+		obs_type: activeButton,
 		right_ascension: "0",
 		declination: "0",
 		altitude: "0",
@@ -53,7 +53,7 @@ function Observe() {
 
 	const [errs, setErrs] = React.useState({
 		object: "",
-		observation_type: "",
+		obs_type: "",
 		right_ascension: "",
 		declination: "",
 		altitude: "",
@@ -129,7 +129,7 @@ function Observe() {
 				]}
 				key={name}
 				variant="contained"
-				onClick={() => { setActiveButton(name); values.observation_type = name; }}
+				onClick={() => { setActiveButton(name); values.obs_type = name; }}
 			>
 				{name}
 			</Button>
@@ -150,7 +150,7 @@ function Observe() {
 					disabled={activeButton !== "object" ? true : false}
 					fullWidth
 					id="outlined"
-					value={values.observation_type === "object" ? values.object : values.observation_type}
+					value={values.obs_type === "object" ? values.object : values.obs_type}
 					size="small"
 					onChange={handleFieldChange("object")}
 					label="object"
@@ -177,7 +177,7 @@ function Observe() {
 									setErrs({
 										...errs,
 										object: "",
-										observation_type: "",
+										obs_type: "",
 										right_ascension: "",
 										declination: "",
 										altitude: "",
