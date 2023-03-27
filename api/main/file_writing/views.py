@@ -62,6 +62,8 @@ def __read_image_file(image_path: str) -> np.ndarray:
 
 def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_input: dict, filename: str):
     def enter_request_input(hdu, input: dict):
+        hdu.header["OBSERVER"] = input["username"]
+
         # TODO: whats the difference between this and IMAGETYP?
         hdu.header["OBSTYPE"] = {
             "object": "Object",
@@ -85,6 +87,7 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
             hdu.header["RA"] = "+00:00:00.00"
             hdu.header["DEC"] = "00:00:00.00"
             hdu.header["ALT"] = 0
+            hdu.header["AIRM"] = 0
 
         return hdu
 
@@ -102,8 +105,6 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
 
     hdu = enter_request_input(hdu, request_input)
     hdu = enter_exp_data(hdu, exposure_data, filename)
-
-    hdu.header["OBSERVER"] = request_input["username"]
 
     # TODO: get from current instrument
     hdu.header["INSTRUME"] = "Shelyak"
@@ -131,6 +132,7 @@ def __update_db_cols(headers, request_input: dict) -> dict:
         "obs_id": headers["OBSID"],
         "log_id": headers["LOGID"],
         "mjdobs": headers["MJDOBS"],
+        "filename": f"{headers['LOGID']}.fits",
         "date_made_open_source": request_input["date_made_open_source"],
         # TODO: need to determine if we need these and get them
         #  "ccd_temp": headers["CCD-TEMP"],
