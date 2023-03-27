@@ -44,10 +44,6 @@ const requestFormSchema = yup.object().shape({
 		.matches(requestFieldsRegex["altitude"], "Altitude must be a float between -90 and 90")
 		.required("Altitude is required"),
 
-	visible: yup
-		.boolean("Visibility must be a boolean value")
-		.required("Visibility is required"),
-
 	num_exposures: yup
 		.number("Number of Exposures must be a positive number")
 		.positive("Number of Exposures must be a positive number")

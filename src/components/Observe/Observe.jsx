@@ -4,7 +4,12 @@
 
 import React, { useContext, useEffect } from 'react';
 import axios from 'axios';
+
 import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
@@ -46,7 +51,7 @@ function Observe() {
 		right_ascension: "0",
 		declination: "0",
 		altitude: "0",
-		visible: false,
+		visible: "False",
 		num_exposures: 0,
 		exposure_duration: 0,
 	});
@@ -57,7 +62,6 @@ function Observe() {
 		right_ascension: "",
 		declination: "",
 		altitude: "",
-		visible: "",
 		num_exposures: "",
 		exposure_duration: ""
 	})
@@ -87,7 +91,6 @@ function Observe() {
 	]
 	const fields_row2 = [
 		{ name: "Altitude", value: "altitude" },
-		{ name: "Visible", value: "visible" },
 	]
 	const fields_row3 = [
 		{ name: "Number of Exposures", value: "num_exposures" },
@@ -173,7 +176,9 @@ function Observe() {
 							const initResolution = async (values) => {
 								try {
 									let res = await axios.post(`http://localhost:5000/resolve/`, values);
+
 									setValues(res.data)
+
 									setErrs({
 										...errs,
 										object: "",
@@ -181,7 +186,6 @@ function Observe() {
 										right_ascension: "",
 										declination: "",
 										altitude: "",
-										visible: "",
 									})
 								} catch (err) {
 									setErrs({ ...errs, object: "No such object found" })
@@ -207,6 +211,24 @@ function Observe() {
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row2.map(field_init)}
+
+				<FormControl
+					sx={{ m: 1, minWidth: 120 }}
+					disabled={activeButton !== "object"}
+					className="half-containers"
+				>
+					<InputLabel id="visible-select">Visible</InputLabel>
+					<Select
+						size="small"
+						value={values.visible}
+						label="Visible"
+						onChange={handleFieldChange("visible")}
+					>
+						<MenuItem value={"False"}>False</MenuItem>
+						<MenuItem value={"True"}>True</MenuItem>
+					</Select>
+				</FormControl>
+
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
@@ -253,7 +275,9 @@ function Observe() {
 												withCredentials: true
 											}
 										);
+
 										console.log(resp.data);
+
 									} catch (err) {
 										console.error(err);
 									}
