@@ -3,8 +3,30 @@ import React, { useState, useEffect, useContext } from 'react';
 import { SocketContext } from '../../context/socket';
 import './style.css'
 
+import Chip from '@mui/material/Chip';
 import TableContainer from '@mui/material/TableContainer';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+
+// icons
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import PendingIcon from '@mui/icons-material/Pending';
+import CheckIcon from '@mui/icons-material/Check';
+
+
+function getChipProps(params) {
+	const chipProps = {
+		"Pending": { color: "primary", icon: <PendingIcon /> },
+		"In Progress": { color: "warning", icon: <DownloadForOfflineIcon /> },
+		"Complete": { color: "success", icon: <CheckIcon /> },
+	}
+
+	let label = params.value
+	let props = chipProps[label]
+
+	return (
+		<Chip icon={props.icon} label={label} color={props.color} variant="outlined" />
+	)
+}
 
 
 const columns = [
@@ -22,6 +44,9 @@ const columns = [
 		field: 'progress',
 		headerName: 'Progress',
 		width: 240,
+		renderCell: (params) => {
+			return getChipProps(params)
+		}
 	},
 	{
 		field: 'date',
@@ -44,8 +69,9 @@ function Logsheet() {
 
 	useEffect(() => {
 		socket.on("setObservations", (logsheetDataStr) => {
-			let logData = JSON.parse(logsheetDataStr)
-			setLogMatrix(logData)
+			let logObjs = JSON.parse(logsheetDataStr)
+
+			setLogMatrix(logObjs)
 			setLogLoading(false)
 		})
 
@@ -54,29 +80,21 @@ function Logsheet() {
 	}, [socket])
 
 	socket.on("updateObservations", (newLogJson) => {
-		let newLogObj = JSON.parse(newLogJson)
-		let updatedMatrix = { ...logMatrix }
+		let newLogObjs = JSON.parse(newLogJson)
+		let updatedMatrix = {}
 
-		Object.entries(newLogObj).forEach(([id, data]) => updatedMatrix[id] = data)
+		Object.entries(newLogObjs).forEach(([id, incomingData]) => {
+			let curLog = logMatrix[id]
 
-		setLogMatrix(updatedMatrix)
+			updatedMatrix[id] = { ...curLog, ...incomingData }
+			setLogMatrix((prevMatrix) => ({ ...prevMatrix, ...updatedMatrix }))
+		})
+
 	})
 
-	socket.on("removeObservations", (rmObsList) => {
-		let rmMatrix = { ...logMatrix }
 
-		rmObsList.forEach(id => delete rmMatrix[id])
-
-		setLogMatrix(rmMatrix)
-	})
-
-	function initNames(id, target, progress, date, sigToNoise) {
-		return { id, target, progress, date, sigToNoise };
-	}
-
-
-	const rows = Object.entries(logMatrix).map(([id, data]) => {
-		return initNames(id, ...data)
+	const logRows = Object.entries(logMatrix).map(([id, data]) => {
+		return { ...data, "id": id }
 	})
 
 	return (
@@ -88,7 +106,7 @@ function Logsheet() {
 				sx={{ height: tableHeight * .9 }}
 				autoPageSize={true}
 				sortingOrder={["asc", "desc"]}
-				rows={rows}
+				rows={logRows}
 				columns={columns}
 				slots={{ toolbar: GridToolbar }}
 				initialState={{
