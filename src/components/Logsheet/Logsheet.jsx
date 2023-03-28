@@ -89,7 +89,7 @@ function Logsheet() {
 	return (
 		<TableContainer>
 			<h2 className="horiz-align">Logsheet</h2>
-			<h5 className="horiz-align">Current sheet: 20220101.001</h5>
+			<h5 className="horiz-align">Current sheet: {logsheetName}</h5>
 
 			<DataGrid
 				sx={{ height: tableHeight * .9 }}

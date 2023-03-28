@@ -10,7 +10,7 @@ import Tooltip from '@mui/material/Tooltip'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel';
+import InputLabel from '@mui/material/InputLabel'
 import { LoadingButton } from "@mui/lab"
 
 import './style.css'
@@ -227,12 +227,12 @@ function Observe() {
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
-				<FormControl fullWidth>
-					<InputLabel >Logsheet</InputLabel>
+				<FormControl style={{minWidth: 400}}>
+					<InputLabel>Logsheet</InputLabel>
 					<Select
 						id="logsheet-select"
 						value={values.log_id}
-						defaultValue = ""
+						defaultValue=""
 						label="Logsheet"
 						onChange={handleFieldChange("log_id")}
 					>
@@ -277,7 +277,13 @@ function Observe() {
 
 								const initObservation = async (values) => {
 									try {
-										const resp = await axios.post(`http://localhost:5000/observations/`, values);
+										const resp = await axios.post(
+											`http://localhost:5000/observations/`,
+											values,
+											{
+												withCredentials : true
+											}
+										);
 										console.log(resp.data);
 									} catch (err) {
 										console.error(err);
@@ -291,8 +297,9 @@ function Observe() {
 								if (isFormValid) {
 									initObservation(props.values);
 								}
-
-								setFormEnabled(true)
+								else {
+									setFormEnabled(true)
+								}
 
 							}}
 							disabled={!isFormEnabled || (isLoading !== "" && isLoading !== "Start")}

@@ -3,7 +3,7 @@ from main import db
 from datetime import datetime, timezone
 from . import logsheet
 from .. import sio
-from ..models.observation import Observation
+from ..models.observation import Observation, get_logs_json_str
 from ..models.logsheet import Logsheet
 
 
@@ -37,11 +37,15 @@ def create_logsheet(dict_data : dict):
 # TODO change this to a get request
 @sio.on("retrieveObservations")
 def get_all_log_data(data):
+    """
+    TODO.
+
+    Args:
+        data ():
+    """
     observations = Observation.query.filter( Observation.log_id==data["log_id"]).all()
 
-    data =  [list(row) for row in observations]
-
-    emit("setObservations", data)
+    sio.emit("setObservations", get_logs_json_str(observations))
 
 @sio.on("retrieveLogsheets")
 def get_all_logsheets(data):
