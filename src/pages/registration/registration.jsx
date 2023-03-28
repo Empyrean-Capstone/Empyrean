@@ -145,7 +145,7 @@ function Register() {
 							const attemptRegistration = async (values) => {
 								try {
 									let reg_res = await axios.post(
-										`http://localhost:5000/auth_login/register/`,
+										`/auth_login/register/`,
 										values,
 										{
 											withCredentials: true

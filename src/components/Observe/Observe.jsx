@@ -172,7 +172,7 @@ function Observe() {
 						onClick={() => {
 							const initResolution = async (values) => {
 								try {
-									let res = await axios.post(`http://localhost:5000/resolve/`, values);
+									let res = await axios.post(`/resolve/`, values);
 									setValues(res.data)
 									setErrs({
 										...errs,
@@ -247,7 +247,7 @@ function Observe() {
 								const initObservation = async (values) => {
 									try {
 										const resp = await axios.post(
-											`http://localhost:5000/observations/`,
+											`/observations/`,
 											values,
 											{
 												withCredentials: true
@@ -290,7 +290,7 @@ function Observe() {
 							onClick={() => {
 								const endObservation = async () => {
 									try {
-										const resp = await axios.post(`http://localhost:5000/observations/end`, null);
+										const resp = await axios.post(`/observations/end`, null);
 										console.log(resp.data);
 									} catch (err) {
 										console.error(err);

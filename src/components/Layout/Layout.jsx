@@ -94,7 +94,7 @@ function Layout() {
 	useEffect(() => {
 		(async () => {
 			const res = await axios.get(
-				`http://localhost:5000/auth_login/`,
+				`/auth_login/`,
 				{
 					withCredentials: true
 				})
@@ -116,7 +116,7 @@ function Layout() {
 				const logout = async () => {
 					try {
 						let logout_res = await axios.post(
-							`http://localhost:5000/auth_login/logout/`,
+							`/auth_login/logout/`,
 							null,
 							{
 								withCredentials: true
