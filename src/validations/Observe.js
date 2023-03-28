@@ -6,14 +6,14 @@ const requestFieldsRegex = {
 
 	// from 00:00:00.00 to 24:00:00, with max
 	// values for each segment being 24:59:59.99
-	right_ascension: new RegExp('^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](.[0-9][0-9])?|24:00:00(.00)?$'),
+	right_ascension: new RegExp("^(([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](.[0-9][0-9])?|24:00:00(.00)?)$"),
 
 	// from -90:00:00.00 to 90:00:00.00, with max
 	// values for each segment being 90:59:59:99
-	declination: new RegExp("^0|[+-][0-8][0-9]:[0-5][0-9]:[0-5][0-9](.[0-9][0-9])?|90:00:00(.00)?$"),
+	declination: new RegExp("^(0|[+-][0-8][0-9]:[0-5][0-9]:[0-5][0-9](.[0-9][0-9])?|90:00:00(.00)?)$"),
 
 	// float, with two places, from -90.00 to 90.00
-	altitude: new RegExp("^-?(([0-8][0-9]?|9)(.[0-9][0-9])?|90(.00)?)"),
+	altitude: new RegExp("^(-?(([0-8][0-9]?|9)(.[0-9][0-9])?|90(.00)?))$"),
 }
 
 const requestFormSchema = yup.object().shape({
@@ -22,7 +22,7 @@ const requestFormSchema = yup.object().shape({
 		.trim()
 		.required("Object is required"),
 
-	observation_type: yup
+	obs_type: yup
 		.string()
 		.required("Object Type is required"),
 
@@ -43,10 +43,6 @@ const requestFormSchema = yup.object().shape({
 		.trim()
 		.matches(requestFieldsRegex["altitude"], "Altitude must be a float between -90 and 90")
 		.required("Altitude is required"),
-
-	visible: yup
-		.boolean("Visibility must be a boolean value")
-		.required("Visibility is required"),
 
 	num_exposures: yup
 		.number("Number of Exposures must be a positive number")

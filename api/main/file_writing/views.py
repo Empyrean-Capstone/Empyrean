@@ -36,12 +36,12 @@ def submit_data(image_path, exposure_data: dict, request_input: dict):
     date_obs: datetime = datetime.strptime(exposure_data["DATE-OBS"], timestr_fmt)
 
     request_input["date_made_open_source"] = (date_obs + timedelta(weeks=26)).strftime(timestr_fmt)
-
-    fits_path_head = __init_filename(exposure_data["OBSID"], date_obs)
+    fits_path_head = __init_filename(date_obs)
+    fits_path = __init_fits_abspath(DATA_FILEPATH, fits_path_head)
 
     hdu = __init_header_data_unit(image, exposure_data, request_input, fits_path_head)
 
-    __write_header_data_unit(hdu, fits_path_head)
+    hdu.writeto(fits_path, overwrite=True)
 
     # At this point, there is a row in the database for
     # this observation, but it is essentially a receipt
@@ -62,17 +62,19 @@ def __read_image_file(image_path: str) -> np.ndarray:
 
 def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_input: dict, filename: str):
     def enter_request_input(hdu, input: dict):
+        hdu.header["OBSERVER"] = input["username"]
+
         # TODO: whats the difference between this and IMAGETYP?
         hdu.header["OBSTYPE"] = {
             "object": "Object",
             "dark": "Dark",
             "flat": "Flat",
             "thar": "ThAr",
-        }[input["observation_type"]]
+        }[input["obs_type"]]
 
         # TODO: confirm that "Temperature" in ZWO ASI is CCD-TEMP
         #  hdu.header["CCD-TEMP"] = exposure_data["TEMPERAT"]
-        hdu.header["IMAGETYP"] = input["observation_type"]
+        hdu.header["IMAGETYP"] = input["obs_type"]
 
         if hdu.header["OBSTYPE"] == "Object":
             hdu.header["OBJECT"] = input["object"]
@@ -85,6 +87,7 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
             hdu.header["RA"] = "+00:00:00.00"
             hdu.header["DEC"] = "00:00:00.00"
             hdu.header["ALT"] = 0
+            hdu.header["AIRM"] = 0
 
         return hdu
 
@@ -103,8 +106,6 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
     hdu = enter_request_input(hdu, request_input)
     hdu = enter_exp_data(hdu, exposure_data, filename)
 
-    hdu.header["OBSERVER"] = request_input["username"]
-
     # TODO: get from current instrument
     hdu.header["INSTRUME"] = "Shelyak"
 
@@ -112,15 +113,6 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
     hdu.header["MJDOBS"] = 0
 
     return hdu
-
-
-def __write_header_data_unit(hdu, out_filename: str):
-    fits_path = __init_fits_abspath(DATA_FILEPATH, out_filename)
-
-    hdu.writeto(fits_path, overwrite=True)
-
-    # TODO: return outcome of write
-    return ""
 
 
 def __update_db_cols(headers, request_input: dict) -> dict:
@@ -140,6 +132,7 @@ def __update_db_cols(headers, request_input: dict) -> dict:
         "obs_id": headers["OBSID"],
         "log_id": headers["LOGID"],
         "mjdobs": headers["MJDOBS"],
+        "filename": f"{headers['LOGID']}.fits",
         "date_made_open_source": request_input["date_made_open_source"],
         # TODO: need to determine if we need these and get them
         #  "ccd_temp": headers["CCD-TEMP"],
@@ -157,13 +150,10 @@ def __update_db_cols(headers, request_input: dict) -> dict:
     return headers
 
 
-def __init_filename(obsid, date_obs):
-    file_date_fmt = "%Y%m%d"
+def __init_filename(date_obs):
+    file_date_fmt = "%Y%m%dT%H%M%S"
 
-    padded_id = str(obsid).zfill(4)
-    date_obs_file_prefix = datetime.strftime(date_obs, file_date_fmt)
-
-    return f"{date_obs_file_prefix}.{padded_id}"
+    return datetime.strftime(date_obs, file_date_fmt)
 
 
 def __init_fits_abspath(fits_dir: str, fits_file_head: str) -> str:
