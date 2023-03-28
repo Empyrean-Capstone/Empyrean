@@ -48,8 +48,8 @@ function Observe() {
 	const [values, setValues] = React.useState({
 		object: "",
 		obs_type: activeButton,
-		right_ascension: "0",
-		declination: "0",
+		right_ascension: "00:00:00.00",
+		declination: "+00:00:00.00",
 		altitude: "0",
 		visible: "False",
 		num_exposures: 0,
@@ -65,6 +65,12 @@ function Observe() {
 		num_exposures: "",
 		exposure_duration: ""
 	})
+
+	const defaultVals = {
+		right_ascension: "00:00:00.00",
+		declination: "+00:00:00.00",
+		altitude: "0",
+	}
 
 	const handleFieldChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
@@ -108,7 +114,7 @@ function Observe() {
 				id="outlined"
 				variant="outlined"
 				size="small"
-				value={values[type.value]}
+				value={activeButton === "object" ? values[type.value] : defaultVals[type.value]}
 				onChange={handleFieldChange(type.value)}
 				label={type.name}
 				error={errs[type.value] === "" ? false : true}
@@ -220,7 +226,7 @@ function Observe() {
 					<InputLabel id="visible-select">Visible</InputLabel>
 					<Select
 						size="small"
-						value={values.visible}
+						value={activeButton === "object" ? values.visible : "False"}
 						label="Visible"
 						onChange={handleFieldChange("visible")}
 					>
