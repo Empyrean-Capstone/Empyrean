@@ -1,5 +1,7 @@
 """TODO."""
 
+import json
+
 from main import db
 from .. import sio
 from . import status
@@ -68,6 +70,10 @@ def update_status(instrument_id, update_dict):
     db.session.commit()
 
     sio.emit("frontend_update_status", update_dict)
+
+    if update_dict.get("obs_id") is not None:
+        log_status: dict = {update_dict["obs_id"]: {"progress": "In Progress"}}
+        sio.emit("updateObservations", json.dumps(log_status))
 
 
 @sio.on("observation_complete")

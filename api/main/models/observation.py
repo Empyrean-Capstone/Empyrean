@@ -52,7 +52,17 @@ class Observation(db.Model):
         return iter([self.id, self.object, "In Progress", str(self.date_obs), "None"])
 
     def get_log_dict(self):
-        return {self.id: [self.object, "In Progress", str(self.date_obs), "None"]}
+        status: str = "Pending" if self.date_obs is None else "Complete"
+        target: str = self.object if self.obs_type.lower() == "object" else self.obs_type.lower()
+
+        return {
+            self.id: {
+                "target": target,
+                "progress": status,
+                "date": str(self.date_obs),
+                "sigToNoise": "$50",
+            }
+        }
 
     def set_attrs(self, attrs: dict):
         for key, val in attrs.items():

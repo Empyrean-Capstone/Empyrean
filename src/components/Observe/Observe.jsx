@@ -4,7 +4,12 @@
 
 import React, { useContext, useEffect } from 'react';
 import axios from 'axios';
+
 import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
@@ -42,25 +47,30 @@ function Observe() {
 
 	const [values, setValues] = React.useState({
 		object: "",
-		observation_type: activeButton,
-		right_ascension: "0",
-		declination: "0",
+		obs_type: activeButton,
+		right_ascension: "00:00:00.00",
+		declination: "+00:00:00.00",
 		altitude: "0",
-		visible: false,
+		visible: "False",
 		num_exposures: 0,
 		exposure_duration: 0,
 	});
 
 	const [errs, setErrs] = React.useState({
 		object: "",
-		observation_type: "",
+		obs_type: "",
 		right_ascension: "",
 		declination: "",
 		altitude: "",
-		visible: "",
 		num_exposures: "",
 		exposure_duration: ""
 	})
+
+	const defaultVals = {
+		right_ascension: "00:00:00.00",
+		declination: "+00:00:00.00",
+		altitude: "0",
+	}
 
 	const handleFieldChange = (prop) => (event) => {
 		setValues({ ...values, [prop]: event.target.value });
@@ -87,7 +97,6 @@ function Observe() {
 	]
 	const fields_row2 = [
 		{ name: "Altitude", value: "altitude" },
-		{ name: "Visible", value: "visible" },
 	]
 	const fields_row3 = [
 		{ name: "Number of Exposures", value: "num_exposures" },
@@ -105,7 +114,7 @@ function Observe() {
 				id="outlined"
 				variant="outlined"
 				size="small"
-				value={values[type.value]}
+				value={activeButton === "object" ? values[type.value] : defaultVals[type.value]}
 				onChange={handleFieldChange(type.value)}
 				label={type.name}
 				error={errs[type.value] === "" ? false : true}
@@ -129,7 +138,7 @@ function Observe() {
 				]}
 				key={name}
 				variant="contained"
-				onClick={() => { setActiveButton(name); values.observation_type = name; }}
+				onClick={() => { setActiveButton(name); values.obs_type = name; }}
 			>
 				{name}
 			</Button>
@@ -150,7 +159,7 @@ function Observe() {
 					disabled={activeButton !== "object" ? true : false}
 					fullWidth
 					id="outlined"
-					value={values.observation_type === "object" ? values.object : values.observation_type}
+					value={values.obs_type === "object" ? values.object : values.obs_type}
 					size="small"
 					onChange={handleFieldChange("object")}
 					label="object"
@@ -174,14 +183,14 @@ function Observe() {
 								try {
 									let res = await axios.post(`/resolve/`, values);
 									setValues(res.data)
+
 									setErrs({
 										...errs,
 										object: "",
-										observation_type: "",
+										obs_type: "",
 										right_ascension: "",
 										declination: "",
 										altitude: "",
-										visible: "",
 									})
 								} catch (err) {
 									setErrs({ ...errs, object: "No such object found" })
@@ -207,6 +216,24 @@ function Observe() {
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
 				{fields_row2.map(field_init)}
+
+				<FormControl
+					sx={{ m: 1, minWidth: 120 }}
+					disabled={activeButton !== "object"}
+					className="half-containers"
+				>
+					<InputLabel id="visible-select">Visible</InputLabel>
+					<Select
+						size="small"
+						value={activeButton === "object" ? values.visible : "False"}
+						label="Visible"
+						onChange={handleFieldChange("visible")}
+					>
+						<MenuItem value={"False"}>False</MenuItem>
+						<MenuItem value={"True"}>True</MenuItem>
+					</Select>
+				</FormControl>
+
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
@@ -253,7 +280,9 @@ function Observe() {
 												withCredentials: true
 											}
 										);
+
 										console.log(resp.data);
+
 									} catch (err) {
 										console.error(err);
 									}
