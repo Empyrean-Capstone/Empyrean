@@ -21,13 +21,16 @@ Step 1: Installation of main project:
     $ brew install yarn
     $ brew install postgresql
 
+    Note: if installing postgersal does not work, run:
+    $ brew reinstall icu4c
+
 2.5: Make a python virtual environment: 
 
     We need a virtual environment so that we can install packages without version management.
     This is so the installation does not ruin other packages that have been installed.
 
     If conda is installed:
-    $ conda create --name {name of environment, i.e. empyrean} python=3.9
+    $ conda create --name {name of environment, i.e. empyrean} python=3.10
     Then type 'y' in response to the question
 
     This environment can be activated, and needs to be active for correct function with:
@@ -88,7 +91,7 @@ Step 1: Installation of main project:
     Now we need to make it so that nginx can serve our files. 
     In the root directory, we need to build our project with:
     $ yarn build 
-    This should build a 'public' directory at the root level. These are the files that will be served 
+    This should build a 'build' directory at the root level. These are the files that will be served 
 
     Run the following to find the location of configuration files for nginx:
     $ nginx -t 
@@ -98,8 +101,9 @@ Step 1: Installation of main project:
         server {
             listen          8080; # Change this to 80 to enable web communication
         ... More configuration
-            location{
+            location /{
                 root        html; # Change this to the location of the public directory generated at the beginning of this Step
+                index       indes.html; # This should stay the same, but this is the root file to be served
                 ... Even more configuration
             }
         ... Even even more 
@@ -110,7 +114,7 @@ Step 1: Installation of main project:
     $ sudo service start nginx
 
     On Mac:
-    $ sudo brew services start nginx 
+    $ nginx 
     Now nginx should start on startup and after power outages, allowing us to be able to serve our server automatically 
 
 7. Start Eventlet as a service 
@@ -164,7 +168,7 @@ Step 1: Installation of main project:
         And make sure to note this for later 
 
         cd into the global agents directory, which is the non-user-specific, global launches:
-        $ cd /Library/LaunchDaemon
+        $ cd /Library/LaunchDaemons/
 
         Create the service we need to craete the file:
         $ touch com.empyrean.plist
@@ -174,16 +178,25 @@ Step 1: Installation of main project:
         *** start, don't copy this part ***
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-            <dict>
-                <key>Label</key>
-                <string>com.empyrean</string>
-                <key>Program</key>
-                <string>/path/to/virtual/environment/python /path/to/project/directory/Empyrean/api/wsgi.py</string>
-                <key>KeepAlive</key>
-                <true/>
-            </dict>
-        </plist>
+            <plist version="1.0">
+                <dict>
+                    <key>Label</key>
+                    <string>com.empyrean</string>
+                    <key>ProgramArguments</key>
+                    <array>
+                        <string>/absolute/path/to/python</string>
+                        <string>/absolute/path/to/executable/wsgi.py</string>
+                    </array>
+                    <key>KeepAlive</key>
+                    <true/>
+                    <key>WorkingDirectory</key>
+                    <string>/Users/naucapstone/empyrean/Empyrean/api/</string>
+                    <key>StandardErrorPath</key>
+                    <string>/path/to/error/file.txt</string>
+                    <key>StandardOutPath</key>
+                    <string>/path/to/standar/output/file.txt</string>
+                </dict>
+            </plist>
         *** end, don't copy this part ***
         Note: the string under the Label <key> is the argument to start the service
         Note: the string under the Program <key> tells the daemon what program to run. In this case, the python server 
@@ -203,10 +216,13 @@ Step 1: Installation of main project:
 9. Configure database 
     This app is less interesting without data, so now we will set up postgresql so that we can have data. 
 
+    On mac, you may need to start postgres as a service with:
+    $ brew services start postgres 
+
     Open postgresql with:
     $ psql -U postgres
         Then, create a new user for the app with:
-        > CREATE USER empyrean WITH PASSWORD '{chosen password}' CREATEDB;
+        > CREATE USER empyrean WITH LOGIN PASSWORD '{chosen password}' CREATEDB;
 
         Now, let's create the database we need with:
         > CREATE DATABASE {name of database}; 
@@ -227,9 +243,6 @@ Step 1: Installation of main project:
 
     Move to the api directory:
     $ cd /path/to/project/root/Empyrean/api
-
-    Migrate the current migrations with:
-    $ flask db migrate -m "Migration message"
 
     Upgrade the database:
     $ flask db upgrade
