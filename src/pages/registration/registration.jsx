@@ -145,7 +145,7 @@ function Register() {
 							const attemptRegistration = async (values) => {
 								try {
 									let reg_res = await axios.post(
-										`/auth_login/register/`,
+										`/api/auth_login/register/`,
 										values,
 										{
 											withCredentials: true

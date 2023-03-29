@@ -94,7 +94,7 @@ function Layout() {
 	useEffect(() => {
 		(async () => {
 			const res = await axios.get(
-				`/auth_login/`,
+				`/api/auth_login/`,
 				{
 					withCredentials: true
 				})
@@ -116,7 +116,7 @@ function Layout() {
 				const logout = async () => {
 					try {
 						let logout_res = await axios.post(
-							`/auth_login/logout/`,
+							`/api/auth_login/logout/`,
 							null,
 							{
 								withCredentials: true
