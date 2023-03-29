@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-resolve = Blueprint("resolve", __name__, url_prefix="/resolve")
+resolve = Blueprint("resolve", __name__, url_prefix="/api/resolve")
 
 from . import views
