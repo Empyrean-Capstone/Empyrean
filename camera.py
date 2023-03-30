@@ -218,8 +218,6 @@ class Zwocamera:
                 cur_exp_data.clear()
                 kk += 1
 
-        # TODO: do we need to send this
-        #  update_global_vars({"ccd_status": 0})
 
         self.exposure_terminated = False
 
@@ -233,8 +231,7 @@ class Zwocamera:
             }
         )
 
-        if not self.exposure_terminated:
-            self.complete()
+        self.complete()
 
     def expose(self, exptime=30):
         self.camera.set_control_value(asi.ASI_EXPOSURE, int(exptime * 1e-6))
