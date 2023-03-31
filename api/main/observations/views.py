@@ -61,7 +61,7 @@ def post_observation():
     exp_ids: list[int] = __init_obs_requests(obs_instructions)
 
     obs_instructions["userid"] = session.get("userid")
-    obs_instructions["username"] = session.get("username")
+    obs_instructions["name"] = session.get("name")
 
     # The request data from the frontend will act like
     # instructions for how the camera must populate the
