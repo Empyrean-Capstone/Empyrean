@@ -22,13 +22,20 @@ def get_user():
     Returns:
         str: the user's name
     """
+    id = session.get("userid")
+
+    if id is None:
+        return "", 401
 
     username = session.get("username")
+    name = session.get("name")
+    role = session.get("role")
 
-    if username is not None:
-        return session["username"], 200
-
-    return "", 401
+    return {
+        "username": username,
+        "name": name,
+        "role": role
+    }, 200
 
 
 @login.post("/")
@@ -57,6 +64,8 @@ def post_login():
         if password_req == cur_user.password:
             session["userid"] = str(cur_user.id)
             session["username"] = cur_user.username
+            session["name"] = cur_user.name
+            session["role"] = cur_user.role
 
             return "success", 200
 
@@ -97,8 +106,8 @@ def register_new_user():
                         exists
     """
 
-    def commit_user():
-        user_obj = User(username_req, password_req)
+    def commit_user(username, name, password, role):
+        user_obj = User(username, name, password, role)
 
         db.session.add(user_obj)
         db.session.commit()
@@ -106,16 +115,20 @@ def register_new_user():
         return "created", 201
 
     reg_input: dict = request.get_json()
-    username_req = reg_input["username"]
-    password_req = reg_input["password"]
+    username = reg_input["username"]
+    name = reg_input["name"]
+    password = reg_input["password"]
+    role = reg_input["role"]
 
     if User.query.count() == 0:
-        return commit_user()
+        return commit_user(username, name, password, role)
 
-    cur_user = User.query.filter_by(username=username_req).first()
+    cur_user = User.query.filter_by(username=username).first()
 
     if cur_user is None:
-        return commit_user()
+        name = reg_input["name"]
+        role = reg_input["role"]
+        return commit_user(username, name, password, role)
 
     else:
         return "user exists", 409
@@ -128,12 +141,19 @@ def validate_session():
 
     Returns:
         200: user has a valid session.
+        403: The user was found but their role does
+             not match the required role for access
         404: endpoint is valid but the requested
              resource could not be found
     """
-    userid = session.get("userid")
-
-    if userid is None:
+    if session.get("userid") is None:
         return "not found", 404
 
-    return "success", 200
+    role = str(session.get("role"))
+
+    accepted_permissions: list = request.get_json()
+
+    if session.get("role") in set(accepted_permissions):
+        return role, 200
+
+    return role, 403
