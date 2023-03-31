@@ -10,9 +10,10 @@ import TableContainer from '@mui/material/TableContainer';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 
 // icons
-import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
-import PendingIcon from '@mui/icons-material/Pending';
 import CheckIcon from '@mui/icons-material/Check';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import PanoramaIcon from '@mui/icons-material/Panorama';
+import PendingIcon from '@mui/icons-material/Pending';
 
 
 function getChipProps(params) {
@@ -92,8 +93,8 @@ function EmptyOverlay() {
 			justifyContent: 'center',
 			height: '100%',
 		}}>
-			<Box sx={{ fontSize: 40 }}>📭</Box>
-			<Box sx={{ fontStyle: "italic" }}>There Are No Observations In This Logsheet...</Box>
+			<Box><PanoramaIcon /></Box>
+			<Box sx={{ fontStyle: "italic" }}>There Are No Observations In This Logsheet</Box>
 		</div>
 	)
 }
