@@ -1,8 +1,10 @@
 import React, { useLayoutEffect, useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
+import Fade from '@mui/material/Fade';
 
 import './App.css';
 import { SocketContext, socket } from './context/socket';
@@ -55,8 +57,16 @@ const AuthWrapper = () => {
 
 	if (isLoading) {
 		return (
-			<Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
-				<CircularProgress color="inherit" />
+			<Backdrop invisible open={isLoading}>
+				<Fade
+					in={isLoading}
+					style={{
+						transitionDelay: isLoading ? '800ms' : '0ms',
+					}}
+					unmountOnExit
+				>
+					<CircularProgress color="primary" />
+				</Fade>
 			</Backdrop>
 		)
 	}
