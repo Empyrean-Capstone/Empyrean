@@ -18,24 +18,25 @@ from ..models.user import User
 def get_user():
     """
     Get the current user's name.
-
     Returns:
         str: the user's name
     """
+    id = session.get("userid")
+
+    if id is None:
+        return "", 401
 
     username = session.get("username")
+    name = session.get("name")
+    isadmin = session.get("isadmin")
 
-    if username is not None:
-        return session["username"], 200
-
-    return "", 401
+    return {"username": username, "name": name, "isadmin": isadmin}, 200
 
 
 @login.post("/")
 def post_login():
     """
     Authenticate the user using their username and password.
-
     Returns:
         200: The user was successfully logged in
         401: User credentials did not match an existing user
@@ -57,6 +58,8 @@ def post_login():
         if password_req == cur_user.password:
             session["userid"] = str(cur_user.id)
             session["username"] = cur_user.username
+            session["name"] = cur_user.name
+            session["isadmin"] = cur_user.isadmin
 
             return "success", 200
 
@@ -92,13 +95,11 @@ def register_new_user():
     Returns:
         201: Registration was successful and a new
              user was created.
-
         409 (Conflict): User, found via username, already
                         exists
     """
-
-    def commit_user():
-        user_obj = User(username_req, password_req)
+    def commit_user(username: str, name: str, password: str, isadmin: bool):
+        user_obj = User(username, name, password, isadmin)
 
         db.session.add(user_obj)
         db.session.commit()
@@ -106,16 +107,21 @@ def register_new_user():
         return "created", 201
 
     reg_input: dict = request.get_json()
-    username_req = reg_input["username"]
-    password_req = reg_input["password"]
+
+    username = reg_input["username"]
+    name = reg_input["name"]
+    password = reg_input["password"]
+    isadmin = reg_input["isadmin"]
 
     if User.query.count() == 0:
-        return commit_user()
+        return commit_user(username, name, password, isadmin)
 
-    cur_user = User.query.filter_by(username=username_req).first()
+    cur_user = User.query.filter_by(username=username).first()
 
     if cur_user is None:
-        return commit_user()
+        name = reg_input["name"]
+        isadmin = reg_input["role"]
+        return commit_user(username, name, password, isadmin)
 
     else:
         return "user exists", 409
@@ -131,9 +137,12 @@ def validate_session():
         404: endpoint is valid but the requested
              resource could not be found
     """
-    userid = session.get("userid")
-
-    if userid is None:
+    if session.get("username") is None:
         return "not found", 404
 
-    return "success", 200
+    needs_admin = request.get_json()
+
+    if needs_admin == "False" or session.get("isadmin"):
+        return "success", 200
+
+    return "forbidden", 403
