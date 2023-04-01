@@ -16,6 +16,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { LoadingButton } from "@mui/lab"
 import { useNavigate } from "react-router-dom";
 
+
 const Alert = React.forwardRef(function Alert(props, ref) {
 	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -143,7 +144,7 @@ function Login() {
 									catch (err) {
 										setAuthState({
 											set: true,
-											msg: "Username or password are incorrect",
+											msg: "Credentials are incorrect",
 											severity: "error"
 										})
 									}
@@ -156,7 +157,6 @@ function Login() {
 							}}
 							loadingPosition="center"
 							loading={isLoading === "login"}
-							disabled={isLoading === "registration"}
 						>
 							Login
 						</LoadingButton>
