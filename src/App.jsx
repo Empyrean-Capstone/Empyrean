@@ -11,6 +11,7 @@ import { Contact } from './pages/contact/contact'
 import { Layout } from './components/Layout';
 import { Login } from './pages/login'
 import { LogsheetPage } from './pages/logsheet'
+import { NotFound } from './pages/notfound'
 import { Observation } from './pages/observation'
 import { Register } from './pages/registration'
 
@@ -92,6 +93,9 @@ function App() {
 						</Route>
 
 					</Route>
+
+					<Route path='*' element={<NotFound />} />
+
 				</Routes>
 			</BrowserRouter>
 		</SocketContext.Provider>
