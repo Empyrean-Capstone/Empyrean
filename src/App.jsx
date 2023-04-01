@@ -55,8 +55,16 @@ const AuthWrapper = () => {
 
 	if (isLoading) {
 		return (
-			<Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
-				<CircularProgress color="inherit" />
+			<Backdrop invisible open={isLoading}>
+				<Fade
+					in={isLoading}
+					style={{
+						transitionDelay: isLoading ? '800ms' : '0ms',
+					}}
+					unmountOnExit
+				>
+					<CircularProgress color="primary" />
+				</Fade>
 			</Backdrop>
 		)
 	}
