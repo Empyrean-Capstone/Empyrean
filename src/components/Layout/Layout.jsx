@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import './style.css'
 
@@ -17,9 +17,8 @@ import ListItemText from '@mui/material/ListItemText';
 // icons
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import FilterCenterFocusIcon from '@mui/icons-material/FilterCenterFocus';
-import Home from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 
 function Footer() {
@@ -43,13 +42,24 @@ function Footer() {
 }
 
 
-function CreateNavItems({ items }) {
+function CreateNavLinks({ items }) {
+	const navigate = useNavigate()
+	const { pathname } = useLocation()
+
 	let linkList = items.map((linkObj) => {
-		const { text, icon, onClick } = linkObj;
+		const { text, icon, key } = linkObj;
 
 		return (
-			<ListItem key={text} onClick={onClick}>
-				<ListItemButton dense sx={{ py: 0, minHeight: 27, color: 'rgba(255,255,255,.8)' }}>
+			<ListItem key={text} onClick={() => navigate(key)}>
+				<ListItemButton
+					dense
+					sx={{
+						py: 0,
+						minHeight: 27,
+						color: 'rgba(255, 255, 255, .9)'
+					}}
+					selected={pathname === key}
+				>
 					<ListItemIcon sx={{ color: 'inherit' }}>
 						{icon}
 					</ListItemIcon>
@@ -61,6 +71,7 @@ function CreateNavItems({ items }) {
 							fontSize: 12,
 							fontWeight: 'medium',
 						}}
+						sx={{ mt: 1, ml: 1 }}
 					/>
 
 				</ListItemButton>
@@ -69,6 +80,61 @@ function CreateNavItems({ items }) {
 	})
 
 	return linkList
+}
+
+function LogOutLink() {
+	const navigate = useNavigate()
+
+	const text = "Log Out"
+	const icon = <LogoutIcon />
+	const clickHandler = () => {
+		const logout = async () => {
+			try {
+				let logout_res = await axios.post(
+					`http://localhost:5000/auth_login/logout/`,
+					null,
+					{
+						withCredentials: true
+					})
+
+				if (logout_res.status === 200) {
+					navigate("/");
+				}
+			} catch (err) {
+				console.error(err);
+			}
+		};
+
+		logout()
+	}
+
+	return (
+		<ListItem key={text} onClick={clickHandler}>
+			<ListItemButton
+				dense
+				sx={{
+					py: 0,
+					minHeight: 27,
+					color: 'rgba(255, 255, 255, .9)'
+				}}
+			>
+				<ListItemIcon sx={{ color: 'inherit' }}>
+					{icon}
+				</ListItemIcon>
+
+				<ListItemText
+					primary={text}
+					primaryTypographyProps={{
+						align: "left",
+						fontSize: 12,
+						fontWeight: 'medium',
+					}}
+					sx={{ mt: 1, ml: 1 }}
+				/>
+
+			</ListItemButton>
+		</ListItem >
+	)
 }
 
 
@@ -87,191 +153,148 @@ const CustomNav = styled(List)({
 });
 
 function Layout() {
-	const drawerWidth = 240
-	const navigate = useNavigate();
+	const drawerWidth = 285
 
-	let [username, setUsername] = useState("")
+	let [userInfo, setUserInfo] = useState({
+		username: "",
+		name: "",
+		isadmin: false
+	})
+
 	useEffect(() => {
 		(async () => {
 			const res = await axios.get(
 				`http://localhost:5000/auth_login/`,
 				{
 					withCredentials: true
-				})
+				}
+			)
 
-			if (res.status === 200) setUsername(res.data)
+			if (res.status === 200) setUserInfo(res.data)
 			else console.error(res.status)
 		})();
 
 		return () => {
 			// this now gets called when the component unmounts
 		};
-	}, [setUsername]);
+	}, [setUserInfo]);
 
-	const userItems = [
+
+	const navLinks = [
 		{
-			"text": 'Log Out',
-			"icon": <LogoutIcon />,
-			"onClick": () => {
-				const logout = async () => {
-					try {
-						let logout_res = await axios.post(
-							`http://localhost:5000/auth_login/logout/`,
-							null,
-							{
-								withCredentials: true
-							})
-
-						if (logout_res.status === 200) {
-							navigate("/");
-						}
-					} catch (err) {
-						console.error(err);
-					}
-				};
-
-				logout()
-			}
+			text: 'Request Observations',
+			icon: <FilterCenterFocusIcon />,
+			key: '/observation',
 		},
 		{
-			"text": 'Register a New User',
-			"icon": <PersonAddIcon />,
-			"onClick": () => navigate('/registration'),
+			text: 'Explore Logs',
+			icon: <AssignmentIcon />,
+			key: '/logsheet',
 		},
-	];
+	]
 
-	const navItems = [
-		{
-			"text": 'Request Observations',
-			"icon": <FilterCenterFocusIcon />,
-			"onClick": () => navigate('/observation'),
-		},
-		{
-			"text": 'Explore Logs',
-			"icon": <AssignmentIcon />,
-			"onClick": () => navigate('/logsheet'),
-		},
-	];
+	const manageUsers = {
+		text: 'Manage Users',
+		icon: <ManageAccountsIcon />,
+		key: '/management',
+	}
+
 
 	return (
-		<>
-			<Box sx={{ display: 'flex' }}>
+		<Box sx={{ display: 'flex' }}>
 
-				<ThemeProvider
-					theme={createTheme({
-						components: {
-							MuiListItemButton: {
-								defaultProps: {
-									disableTouchRipple: true,
-								},
+			<ThemeProvider
+				theme={createTheme({
+					components: {
+						MuiListItemButton: {
+							defaultProps: {
+								disableTouchRipple: true,
 							},
 						},
-						palette: {
-							mode: 'dark',
-							primary: { main: 'rgb(102, 157, 246)' },
-							background: { paper: 'rgb(5, 30, 52)' },
-						},
-					})}
-				>
+					},
+					palette: {
+						mode: 'dark',
+						primary: { main: 'rgb(102, 157, 246)' },
+						background: { paper: 'rgb(5, 30, 52)' },
+					},
+				})}
+			>
 
-					<Drawer
-						sx={{
-							flexShrink: 0,
+				<Drawer
+					sx={{
+						flexShrink: 0,
+						width: drawerWidth,
+					}}
+					PaperProps={{
+						sx: {
+							boxSizing: 'border-box',
 							width: drawerWidth,
-						}}
-						PaperProps={{
-							sx: {
-								boxSizing: 'border-box',
-								width: drawerWidth,
-							}
-						}}
-						variant="permanent"
-						anchor="left"
-					>
-
-						<CustomNav component="nav" disablePadding>
-							<ListItemButton component="a" href="#customized-list">
-								<ListItemIcon sx={{ fontSize: 20 }}>🔭</ListItemIcon>
-								<ListItemText
-									sx={{ my: 0 }}
-									primary="Empyrean"
-									primaryTypographyProps={{
-										fontSize: 20,
-										fontWeight: 'medium',
-										letterSpacing: 0,
-									}}
-								/>
-							</ListItemButton>
-
-							<Divider />
-
-							<ListItem component="div" disablePadding>
-								<ListItemButton sx={{
-									fontSize: 15,
-									fontWeight: 'medium',
-									height: 23,
-									mt: 5,
-								}}>
-
-									<ListItemIcon>
-										<Home color="primary" />
-									</ListItemIcon>
-
-									<ListItemText
-										primary={username}
-										primaryTypographyProps={{
-											color: 'primary',
-											fontWeight: 'medium',
-											variant: 'body2',
-										}}
-									/>
-
-								</ListItemButton>
-							</ListItem>
-
-							<CreateNavItems items={userItems} />
-
-							<Divider />
-							<Box
-								sx={{
-									bgcolor: 'rgba(71, 98, 130, 0.2)',
-									pb: 2,
-								}}
-							>
-
-								<ListItemText
-									primary="Navigation"
-									primaryTypographyProps={{
-										fontSize: 15,
-										fontWeight: 'medium',
-										mb: '2px',
-									}}
-									sx={{
-										my: 0,
-										px: 3,
-										pt: 2.5,
-										pb: 0,
-										'&:hover, &:focus': { '& svg': { opacity: 1 } },
-									}}
-								/>
-
-								<CreateNavItems items={navItems} />
-
-							</Box>
-						</CustomNav>
-					</Drawer>
-				</ThemeProvider>
-
-				<Box
-					component="main"
-					className="main-content"
-					sx={{ flexGrow: 1, p: 3 }}
+						}
+					}}
+					variant="permanent"
+					anchor="left"
 				>
-					<Outlet />
-					<Footer />
-				</Box>
-			</Box >
-		</>
+
+					<CustomNav component="nav" disablePadding>
+						<ListItem>
+							<ListItemIcon sx={{ fontSize: 20 }}>🔭</ListItemIcon>
+							<ListItemText
+								sx={{ my: 0 }}
+								primary="Empyrean"
+								primaryTypographyProps={{
+									fontSize: 20,
+									fontWeight: 'medium',
+									letterSpacing: 0,
+								}}
+							/>
+						</ListItem>
+
+						<ListItem>
+							<ListItemText
+								primary={userInfo.name}
+								secondary={userInfo.username}
+								primaryTypographyProps={{
+									align: "left",
+									fontSize: 14,
+									fontWeight: 'medium',
+								}}
+								secondaryTypographyProps={{
+									align: "left",
+									fontSize: 12,
+									fontWeight: 'medium',
+								}}
+								sx={{ marginLeft: 2 }}
+							/>
+
+						</ListItem>
+
+						<Box>
+							<Divider sx={{ margin: 2 }} />
+							<CreateNavLinks items={navLinks} />
+
+
+							<Divider sx={{ margin: 2 }} />
+							{userInfo.isadmin === true ?
+								<CreateNavLinks items={[manageUsers]} /> :
+								null
+							}
+
+							<LogOutLink />
+						</Box>
+
+					</CustomNav>
+				</Drawer>
+			</ThemeProvider>
+
+			<Box
+				component="main"
+				className="main-content"
+				sx={{ flexGrow: 1, p: 3 }}
+			>
+				<Outlet />
+				<Footer />
+			</Box>
+		</Box >
 	);
 }
 
