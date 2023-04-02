@@ -4,6 +4,7 @@ import socketio
 import sys
 import tempfile
 import time
+from instrument import Instrument
 
 from astropy.time import Time
 from tqdm.auto import trange
@@ -16,17 +17,18 @@ import zwoasi as asi
 class Camera:
     """TODO."""
 
-    def __init__(self, device="/dev/cu.", simulator=False):
+    def __init__(self, device="/dev/cu.", socketio=None, simulator=False):
         """TODO."""
+        self.sio = socketio
         if simulator:
             self.simulation = True
             self.device = None  # Replace with instance of K8056
-            self.id = "5"
         else:
             self.simulation = False
             self.device = Zwocamera()
-            self.id = sio.emit("get_id", "camera")
+        self.id = self.sio.emit("get_id", "camera")
 
+    # Does Nothing
     def expose(self, request_input):
         """
         TODO.
@@ -64,7 +66,7 @@ class Camera:
                     break
 
             self.emit_status({"camera": "Idle"})
-            sio.emit("set_obs_type", 0)
+            self.sio.emit("set_obs_type", 0)
 
             data = {
                 "obs_id": request_input["OBSID"],
@@ -80,7 +82,7 @@ class Camera:
             return []
 
     def return_image_data(self, image, request_input):
-        sio.emit("save_img", {"image": image, "exposure_data": request_input})
+        self.sio.emit("save_img", {"image": image, "exposure_data": request_input})
 
     def sequence(self, request_input):
         """
@@ -110,14 +112,14 @@ class Camera:
             self.return_image_data(image, request_input)
             time.sleep(1)
 
-        sio.emit("set_obs_type", 0)
+        self.sio.emit("set_obs_type", 0)
         self.emit_status({"camera": "Finished"})
 
     def emit_status(self, status: dict) -> None:
-        sio.emit("update_status", data=(self.id, status))
+        self.sio.emit("update_status", data=(self.id, status))
 
 
-class Zwocamera:
+class Zwocamera(Instrument):
     """
     TODO.
 
@@ -125,6 +127,15 @@ class Zwocamera:
         camera:
         camera_info:
     """
+
+    # Default values for the camera 
+    status_dictionary = {
+                "exp_number": "N/A",
+                "exp_number": "N/A",
+                "itime_elapsed": "N/A",
+                "itime_elapsed": "N/A",
+                "nexp_total": "N/A",
+            }
 
     def __init__(self, device="ZWO ASI2600MM Pro"):
         # TODO: remove
@@ -153,12 +164,33 @@ class Zwocamera:
 
         self.camera = asi.Camera(idx)
         self.camera_info = self.camera.get_camera_property()
-        self.id = sio.call("get_instrument_id", device)
         self.exposure_terminated = False
 
         self.camera.set_control_value(asi.ASI_BANDWIDTHOVERLOAD, self.camera.get_controls()["BandWidth"]["MinValue"])
         self.camera.disable_dark_subtract()
+        super().__init__()
 
+    def get_instrument_name(self):
+        return "ZWO ASI2600MM Pro"
+
+    def callbacks(self):
+        @Instrument.sio.on("begin_exposure")
+        def sequence(obs_instructions, pending_obs):
+            self.sequence(obs_instructions, pending_obs)
+
+        @Instrument.sio.event
+        def disconnect():
+            self.complete()
+
+        @Instrument.sio.on("end_exposure")
+        def end_exposure():
+            self.exposure_terminated = True
+
+            try:
+                self.camera.stop_exposure()
+            except:
+                pass
+            
     # Helper Methods (private, internal usage only)
     @staticmethod
     def __convert_camera_status(status):
@@ -171,8 +203,6 @@ class Zwocamera:
         else:
             return "Unknown"
 
-    def __emit_status(self, status: dict) -> None:
-        sio.emit("update_status", data=(self.id, status))
 
     def __get_camera_status_str(self) -> str:
         status = self.camera.get_exposure_status()
@@ -181,19 +211,19 @@ class Zwocamera:
     # Public Methods
     def sequence(self, request_instructions: dict, exposure_ids: list[int]):
         """TODO."""
-        camera.exposure_terminated = False
+        self.camera.exposure_terminated = False
 
         num_exposures = int(request_instructions["num_exposures"])
         exposure_duration = int(request_instructions["exposure_duration"])
 
-        self.__emit_status({"nexp_total": num_exposures, "itime_total": exposure_duration})
+        self.update_status({"nexp_total": num_exposures, "itime_total": exposure_duration})
 
         kk: int = 0
         cur_exp_data: dict = {}
         while kk < len(exposure_ids) and not self.exposure_terminated:
             cur_id: int = exposure_ids[kk]
 
-            self.__emit_status({"obs_id": cur_id, "exp_number": kk})
+            self.update_status({"obs_id": cur_id, "exp_number": kk})
 
             tstart = Time.now()
             image = self.expose(exptime=exposure_duration)
@@ -213,7 +243,7 @@ class Zwocamera:
                 np.save(tmp.name, image)
 
                 # send file
-                sio.emit("save_img", data=(tmp.name, cur_exp_data, request_instructions))
+                Instrument.sio.emit("save_img", data=(tmp.name, cur_exp_data, request_instructions))
 
                 cur_exp_data.clear()
                 kk += 1
@@ -221,7 +251,7 @@ class Zwocamera:
 
         self.exposure_terminated = False
 
-        self.__emit_status(
+        self.update_status(
             {
                 "exp_number": 0,
                 "exp_number": 0,
@@ -265,12 +295,12 @@ class Zwocamera:
         while status == asi.ASI_EXP_WORKING:
             status = self.camera.get_exposure_status()
 
-        self.__emit_status({"camera": self.__convert_camera_status(status), "itime_elapsed": 0})
+        self.update_status({"camera": self.__convert_camera_status(status), "itime_elapsed": 0})
 
         buffer_ = None
         data = self.camera.get_data_after_exposure(buffer_)
 
-        self.__emit_status({"camera": self.__get_camera_status_str()})
+        self.update_status({"camera": self.__get_camera_status_str()})
 
         whbi = self.camera.get_roi_format()
         shape = [whbi[1], whbi[0]]
@@ -287,36 +317,17 @@ class Zwocamera:
 
         img = img.reshape(shape)
 
-        self.__emit_status({"camera": self.__get_camera_status_str()})
+        self.update_status({"camera": self.__get_camera_status_str()})
 
         return img
 
     def complete(self):
-        sio.emit("exposure_complete")
+        Instrument.sio.emit("exposure_complete")
 
-
-if __name__ == "__main__":
-    sio = socketio.Client(
-        request_timeout=60,
-        logger=True,
-        engineio_logger=True,
-    )
-    sio.connect("http://localhost:5000")
+def main():
     camera = Zwocamera(device="ZWO ASI120MM-S")
 
-    @sio.on("begin_exposure")
-    def sequence(obs_instructions, pending_obs):
-        camera.sequence(obs_instructions, pending_obs)
+if __name__ == "__main__":
+    main()
 
-    @sio.event
-    def disconnect():
-        camera.complete()
-
-    @sio.on("end_exposure")
-    def end_exposure():
-        camera.exposure_terminated = True
-
-        try:
-            camera.camera.stop_exposure()
-        except:
-            pass
+    
