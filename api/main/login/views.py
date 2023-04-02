@@ -87,46 +87,6 @@ def logout():
     return "success", 200
 
 
-@login.post("/register/")
-def register_new_user():
-    """
-    Register a new user using their username and password.
-
-    Returns:
-        201: Registration was successful and a new
-             user was created.
-        409 (Conflict): User, found via username, already
-                        exists
-    """
-    def commit_user(username: str, name: str, password: str, isadmin: bool):
-        user_obj = User(username, name, password, isadmin)
-
-        db.session.add(user_obj)
-        db.session.commit()
-
-        return "created", 201
-
-    reg_input: dict = request.get_json()
-
-    username = reg_input["username"]
-    name = reg_input["name"]
-    password = reg_input["password"]
-    isadmin = reg_input["isadmin"]
-
-    if User.query.count() == 0:
-        return commit_user(username, name, password, isadmin)
-
-    cur_user = User.query.filter_by(username=username).first()
-
-    if cur_user is None:
-        name = reg_input["name"]
-        isadmin = reg_input["role"]
-        return commit_user(username, name, password, isadmin)
-
-    else:
-        return "user exists", 409
-
-
 @login.post("/validate/")
 def validate_session():
     """
