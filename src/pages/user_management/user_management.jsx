@@ -104,22 +104,45 @@ function ManageUsers() {
 		const handleClick = () => {
 			setCanAddUser(false)
 
-			const id = -1;
-			const emptyRow = {
-				id,
-				name: '',
-				username: '',
-				password: '',
-				isadmin: false,
-				isNew: true
-			}
+			const createUser = async () => {
+				try {
+					let createRes = await axios.get(
+						`/api/users/`,
+						{
+							withCredentials: true
+						}
+					)
 
-			setRows((oldRows) => [...oldRows, emptyRow]);
+					if (createRes.status === 201) {
+						let newRow = initRows(...createRes.data)
 
-			setRowModesModel((oldModel) => ({
-				...oldModel,
-				[id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-			}));
+						setRows((oldRows) => [...oldRows, newRow]);
+
+						newRow["isNew"] = true
+
+						setRowModesModel((oldModel) => ({
+							...oldModel,
+							[newRow.id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+						}));
+
+						setCanAddUser(true)
+
+						setSnackbar({
+							children: `User #${newRow.id} created`,
+							severity: 'success',
+						});
+					}
+				}
+				catch (err) {
+					console.log(err)
+					setSnackbar({
+						children: `User creation failed`,
+						severity: 'error',
+					});
+				}
+			};
+
+			createUser()
 		};
 
 		return (
@@ -169,33 +192,33 @@ function ManageUsers() {
 		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
 	};
 
-	const handleDeleteClick = (id) => () => {
-		const deleteUser = async (rowID) => {
-			try {
-				let deleteRes = await axios.post(
-					`/api/users/delete/`,
-					{ id: rowID },
-					{
-						withCredentials: true
-					}
-				)
-
-				if (deleteRes.status === 200) {
-					setSnackbar({
-						children: `User #${rowID} deleted`,
-						severity: 'success',
-					});
+	const deleteUser = async (rowID) => {
+		try {
+			let deleteRes = await axios.post(
+				`/api/users/delete/`,
+				{ id: rowID },
+				{
+					withCredentials: true
 				}
-			}
-			catch (err) {
-				console.log(err)
+			)
+
+			if (deleteRes.status === 200) {
 				setSnackbar({
-					children: `User #${rowID} deletion failed`,
-					severity: 'error',
+					children: `User #${rowID} deleted`,
+					severity: 'success',
 				});
 			}
-		};
+		}
+		catch (err) {
+			console.log(err)
+			setSnackbar({
+				children: `User #${rowID} deletion failed`,
+				severity: 'error',
+			});
+		}
+	};
 
+	const handleDeleteClick = (id) => () => {
 		if (rows.length > 1) {
 			deleteUser(id)
 			setRows(rows.filter((row) => row.id !== id));
@@ -209,7 +232,6 @@ function ManageUsers() {
 	};
 
 	const handleCancelClick = (id) => () => {
-		setCanAddUser(true)
 		setRowModesModel({
 			...rowModesModel,
 			[id]: { mode: GridRowModes.View, ignoreModifications: true },
@@ -218,8 +240,11 @@ function ManageUsers() {
 		const row = rows.find((row) => row.id === id);
 
 		if (row.isNew) {
+			deleteUser(id)
 			setRows(rows.filter((row) => row.id !== id));
 		}
+
+		setCanAddUser(true)
 	};
 
 	const processRowUpdate = (newRow) => {
@@ -250,6 +275,7 @@ function ManageUsers() {
 		};
 
 		let rowData = {
+			id: newRow.id,
 			name: newRow.name,
 			username: newRow.username,
 			password: newRow.password,
@@ -278,13 +304,14 @@ function ManageUsers() {
 		return null
 	}
 
-	function validateName(cur_id, username) {
-		const existingUsernames = rows.map((row) => {
-			if (cur_id !== row.id) return row.username
+	function ensureStrUnique(curID, str, columnName) {
+		const existingValues = rows.map((row) => {
+			if (curID !== row.id) return row[columnName]
 
 			return null
 		})
-		return existingUsernames.includes(username)
+
+		return existingValues.includes(str)
 	}
 
 
@@ -325,7 +352,10 @@ function ManageUsers() {
 			preProcessEditCellProps: async (params) => {
 				let hasError = null
 
-				if (validateStrLen(params.props.value, 1) || validateName(params.props.value)) {
+				if (
+					validateStrLen(params.props.value, 1) ||
+					ensureStrUnique(params.id, params.props.value, "username")
+				) {
 					hasError = true
 				}
 

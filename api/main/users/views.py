@@ -9,7 +9,8 @@ from .. import sio
 from ..models.user import User
 
 
-def register_new_user(user_info: dict):
+@users.get("/")
+def register_new_user():
     """
     Register a new user using their username and password.
 
@@ -17,10 +18,16 @@ def register_new_user(user_info: dict):
         201: Registration was successful and a new
              user was created.
     """
-    user_obj = User(user_info)
+    empty_row: dict = {"name": "", "username": "", "password": "", "isadmin": False}
+
+    user_obj = User(empty_row)
 
     db.session.add(user_obj)
     db.session.commit()
+
+    new_row: list = user_obj.get_creds()
+
+    return new_row, 201
 
 
 @users.post("/update/")
@@ -28,13 +35,6 @@ def update_user():
     updated_user_req: dict = request.get_json()
 
     req_id = updated_user_req.get("id")
-
-    if req_id is None:
-        register_new_user(updated_user_req)
-
-        get_all_users()
-
-        return "created", 201
 
     try:
         cur_user = User.query.filter_by(id=req_id).first()
