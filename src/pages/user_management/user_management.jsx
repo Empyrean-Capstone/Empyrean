@@ -1,18 +1,23 @@
 import React, { useState, useEffect, useContext } from 'react';
-import PropTypes from 'prop-types';
+import axios from 'axios';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import MuiAlert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import TableContainer from '@mui/material/TableContainer';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
 
 import {
-	GridRowModes,
 	DataGrid,
-	GridToolbarContainer,
-	GridToolbarColumnsButton,
-	GridToolbarFilterButton,
-	GridToolbarDensitySelector,
 	GridActionsCellItem,
+	GridEditInputCell,
+	GridRowModes,
+	GridToolbarColumnsButton,
+	GridToolbarContainer,
+	GridToolbarDensitySelector,
+	GridToolbarFilterButton,
 } from '@mui/x-data-grid';
 
 // icons
@@ -28,22 +33,9 @@ import { PaperPane } from '../../components/PaperPane/PaperPane'
 import { SocketContext } from '../../context/socket';
 
 
-
-const initrows = [
-	{
-		id: "0",
-		name: "user",
-		username: "user",
-		role: "user",
-	},
-
-	{
-		id: "1",
-		name: "jmp",
-		username: "testing",
-		role: "admin",
-	},
-]
+const Alert = React.forwardRef(function Alert(props, ref) {
+	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 
 function EmptyOverlay() {
@@ -62,24 +54,64 @@ function EmptyOverlay() {
 }
 
 
+const StyledTooltip = styled(({ className, ...props }) => (
+	<Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+	'& .MuiTooltip-arrow': {
+		color: theme.palette.error.main,
+	},
+	[`& .${tooltipClasses.tooltip}`]: {
+		backgroundColor: theme.palette.error.main,
+		color: theme.palette.error.contrastText,
+		whiteSpace: "pre-line",
+		fontSize: 11.5
+	},
+}));
+
+
+// Not passing props correctly:
+// https://github.com/mui/material-ui/issues/33476
+function renderEditName(props) {
+	const { error, errormessage } = props;
+
+	return (
+		<StyledTooltip
+			arrow
+			open={!!error}
+			title={errormessage}
+		>
+			<GridEditInputCell {...props} />
+		</StyledTooltip>
+	)
+}
+
+
 function ManageUsers() {
 	const tableHeight = 1000
 
+	const [canAddUser, setCanAddUser] = useState(true);
 	const [isLogLoading, setLogLoading] = useState(false);
-	const [rows, setRows] = React.useState(initrows);
 	const [rowModesModel, setRowModesModel] = React.useState({});
+	const [rows, setRows] = React.useState([]);
+	const [snackbar, setSnackbar] = React.useState(null);
 
 	const socket = useContext(SocketContext);
+
+	const handleCloseSnackbar = () => setSnackbar(null);
 
 
 	function GridToolbarAddRow() {
 		const handleClick = () => {
-			const id = 2;
+			setCanAddUser(false)
+
+			const id = -1;
 			const emptyRow = {
 				id,
 				name: '',
 				username: '',
-				role: 'user',
+				password: '',
+				isadmin: false,
+				isNew: true
 			}
 
 			setRows((oldRows) => [...oldRows, emptyRow]);
@@ -98,17 +130,13 @@ function ManageUsers() {
 					color="primary"
 					startIcon={<PersonAddIcon />}
 					onClick={handleClick}
+					disabled={!canAddUser}
 				>
 					Add User
 				</Button>
 			</GridToolbarContainer>
 		);
 	}
-
-	GridToolbarAddRow.propTypes = {
-		setRowModesModel: PropTypes.func.isRequired,
-		setRows: PropTypes.func.isRequired,
-	};
 
 	function CustomToolbar() {
 		return (
@@ -121,51 +149,153 @@ function ManageUsers() {
 		);
 	}
 
+
 	const handleRowEditStart = (event) => {
 		event.defaultMuiPrevented = true;
 	};
 
 	const handleRowEditStop = (event) => {
+		setCanAddUser(true)
 		event.defaultMuiPrevented = true;
 	};
 
 	const handleEditClick = (id) => () => {
+		setCanAddUser(false)
 		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
 	};
 
 	const handleSaveClick = (id) => () => {
+		setCanAddUser(true)
 		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
 	};
 
-	// TODO: must delete from database
 	const handleDeleteClick = (id) => () => {
-		setRows(rows.filter((row) => row.id !== id));
+		const deleteUser = async (rowID) => {
+			try {
+				let deleteRes = await axios.post(
+					`http://localhost:5000/users/delete/`,
+					{ id: rowID },
+					{
+						withCredentials: true
+					}
+				)
+
+				if (deleteRes.status === 200) {
+					setSnackbar({
+						children: `User #${rowID} deleted`,
+						severity: 'success',
+					});
+				}
+			}
+			catch (err) {
+				console.log(err)
+				setSnackbar({
+					children: `User #${rowID} deletion failed`,
+					severity: 'error',
+				});
+			}
+		};
+
+		if (rows.length > 1) {
+			deleteUser(id)
+			setRows(rows.filter((row) => row.id !== id));
+		}
+		else {
+			setSnackbar({
+				children: `Deletion prevented: must have at least one user`,
+				severity: 'error',
+			});
+		}
 	};
 
 	const handleCancelClick = (id) => () => {
+		setCanAddUser(true)
 		setRowModesModel({
 			...rowModesModel,
 			[id]: { mode: GridRowModes.View, ignoreModifications: true },
 		});
 
-		const editedRow = rows.find((row) => row.id === id);
-		if (editedRow.isNew) {
+		const row = rows.find((row) => row.id === id);
+
+		if (row.isNew) {
 			setRows(rows.filter((row) => row.id !== id));
 		}
 	};
 
 	const processRowUpdate = (newRow) => {
+		const updateUser = async (updatedRow) => {
+			try {
+				let updateRes = await axios.post(
+					`http://localhost:5000/users/update/`,
+					updatedRow,
+					{
+						withCredentials: true
+					}
+				)
+
+				if (updateRes.status === 200) {
+					setSnackbar({
+						children: `User #${newRow.id} saved`,
+						severity: 'success',
+					});
+				}
+			}
+			catch (err) {
+				console.log(err)
+				setSnackbar({
+					children: `User #${newRow.id} save failed`,
+					severity: 'error',
+				});
+			}
+		};
+
+		let rowData = {
+			name: newRow.name,
+			username: newRow.username,
+			password: newRow.password,
+			isadmin: newRow.isadmin,
+		}
+
+		updateUser(rowData)
+
 		const updatedRow = { ...newRow, isNew: false };
 		setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+
 		return updatedRow;
 	};
+
+	const handleProcessRowUpdateError = React.useCallback((error) => {
+		setSnackbar({ children: error.message, severity: 'error' });
+	}, []);
 
 	const handleRowModesModelChange = (newRowModesModel) => {
 		setRowModesModel(newRowModesModel);
 	};
 
+
+	function validateStrLen(str, len) {
+		if (str === null || str.length < len) return true
+		return null
+	}
+
+	function validateName(cur_id, username) {
+		const existingUsernames = rows.map((row) => {
+			if (cur_id !== row.id) return row.username
+
+			return null
+		})
+		return existingUsernames.includes(username)
+	}
+
+
 	const columns = [
-		{ field: 'id', headerName: 'ID', width: 90 },
+		{
+			field: "id",
+			headerName: "ID",
+			description: "User's ID. Indelible.",
+			sortable: true,
+			width: 200,
+		},
 		{
 			field: "name",
 			headerName: "Name",
@@ -173,6 +303,16 @@ function ManageUsers() {
 			sortable: true,
 			width: 350,
 			editable: true,
+			renderEditCell: renderEditName,
+			preProcessEditCellProps: async (params) => {
+				let hasError = validateStrLen(params.props.value, 1)
+
+				return {
+					...params.props,
+					error: hasError,
+					errormessage: "Ensure that the user's name is:\n• more than 0 characters long"
+				};
+			}
 		},
 		{
 			field: "username",
@@ -181,23 +321,47 @@ function ManageUsers() {
 			sortable: true,
 			width: 200,
 			editable: true,
+			renderEditCell: renderEditName,
+			preProcessEditCellProps: async (params) => {
+				let hasError = null
+
+				if (validateStrLen(params.props.value, 1) || validateName(params.props.value)) {
+					hasError = true
+				}
+
+				return {
+					...params.props,
+					error: hasError,
+					errormessage: "Ensure that the user's username is:\n• more than 0 characters long\n• unique",
+				};
+			}
 		},
 		{
-			field: "role",
-			headerName: "Role",
+			field: "password",
+			headerName: "Password",
+			sortable: true,
+			width: 200,
+			editable: true,
+			renderEditCell: renderEditName,
+			preProcessEditCellProps: async (params) => {
+				let hasError = null
+				hasError = validateStrLen(params.props.value, 5)
+
+				return {
+					...params.props,
+					error: hasError,
+					errormessage: "Ensure that the user's password is:\n• more than 5 characters long"
+				};
+			}
+		},
+		{
+			field: "isadmin",
+			headerName: "Is Admin?",
 			description: "The user's role determines what features they have access to",
 			sortable: true,
 			width: 125,
 			editable: true,
-			type: "singleSelect",
-
-			// set these dynamically:
-			// https://github.com/mui/mui-x/issues/3528
-			// https://mui.com/x/react-data-grid/column-definition/#special-properties
-			valueOptions: [
-				{ value: "user", label: "User" },
-				{ value: "admin", label: "Admin" },
-			],
+			type: 'boolean',
 		},
 		{
 			field: 'actions',
@@ -246,22 +410,43 @@ function ManageUsers() {
 		},
 	];
 
-	//  useEffect(() => {
-	//  	socket.on("setUsers", (userDataStr) => {
-	//  		let userObjs = JSON.parse(userDataStr)
+	function initRows(id, username, name, password, isadmin) {
+		return { id, name, username, password, isadmin }
+	}
 
-	//  		//  setLogMatrix(userObjs)
-	//  		setLogLoading(false)
-	//  	})
+	useEffect(() => {
+		socket.on("setUsers", (userDataStr) => {
+			let users = JSON.parse(userDataStr)
 
-	//  	setLogLoading(true)
+			let userMatrix = users.map(function(arr) {
+				return initRows(...arr)
+			})
 
-	//  	socket.emit("retrieveUsers");
-	//  }, [socket])
+			setRows(userMatrix)
+			setLogLoading(false)
+		})
+
+		setLogLoading(true)
+
+		socket.emit("retrieveUsers");
+	}, [socket])
+
 
 	return (
 		<PaperPane>
-			<TableContainer>
+			<TableContainer
+				sx={{
+					'& .MuiDataGrid-cell--editable': {
+						'& .MuiInputBase-root': {
+							height: '100%',
+						},
+					},
+					'& .Mui-error': {
+						backgroundColor: `rgb(126,10,15, 0.1)`,
+						color: '#750f0f',
+					},
+				}}
+			>
 				<DataGrid
 					disableRowSelectionOnClick
 
@@ -283,6 +468,7 @@ function ManageUsers() {
 					onRowEditStart={handleRowEditStart}
 					onRowEditStop={handleRowEditStop}
 					processRowUpdate={processRowUpdate}
+					onProcessRowUpdateError={handleProcessRowUpdateError}
 
 					slots={{
 						noRowsOverlay: EmptyOverlay,
@@ -294,7 +480,18 @@ function ManageUsers() {
 
 					loading={isLogLoading}
 				/>
+
 			</ TableContainer>
+			{!!snackbar && (
+				<Snackbar
+					open
+					anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+					onClose={handleCloseSnackbar}
+					autoHideDuration={2500}
+				>
+					<Alert {...snackbar} onClose={handleCloseSnackbar} />
+				</Snackbar>
+			)}
 		</ PaperPane>
 	);
 }
