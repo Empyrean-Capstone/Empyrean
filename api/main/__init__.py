@@ -75,7 +75,7 @@ from .resolve.views import resolve
 from .status.views import status
 from .users.views import users
 
-app.register_blueprint(file_writer, url_prefix="/file-writer")
+app.register_blueprint(file_writer, url_prefix="/api/file-writer")
 app.register_blueprint(login)
 app.register_blueprint(logsheet)
 app.register_blueprint(observations)

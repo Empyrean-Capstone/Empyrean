@@ -25,7 +25,7 @@ def get_current_obsid() -> int:
 
     return cur_obsid
 
-
+@status.get('/index')
 def index():
     result = Status.query.all()
     for index in range(len(result)):

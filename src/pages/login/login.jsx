@@ -131,7 +131,7 @@ function Login() {
 								const attemptLogin = async (values) => {
 									try {
 										let auth_res = await axios.post(
-											`http://localhost:5000/auth_login/`,
+											`/api/auth_login/`,
 											values,
 											{
 												withCredentials: true

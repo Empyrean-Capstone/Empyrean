@@ -33,7 +33,7 @@ const AuthWrapper = ({ props }) => {
 
 			try {
 				const auth = await axios.post(
-					`http://localhost:5000/auth_login/validate/`,
+					`/api/auth_login/validate/`,
 					[needsAdmin],
 					{
 						withCredentials: true

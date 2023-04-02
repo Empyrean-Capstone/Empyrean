@@ -164,7 +164,7 @@ function Layout() {
 	useEffect(() => {
 		(async () => {
 			const res = await axios.get(
-				`http://localhost:5000/auth_login/`,
+				`/api/auth_login/`,
 				{
 					withCredentials: true
 				}

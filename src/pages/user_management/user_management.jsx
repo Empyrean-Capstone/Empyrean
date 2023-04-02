@@ -173,7 +173,7 @@ function ManageUsers() {
 		const deleteUser = async (rowID) => {
 			try {
 				let deleteRes = await axios.post(
-					`http://localhost:5000/users/delete/`,
+					`/api/users/delete/`,
 					{ id: rowID },
 					{
 						withCredentials: true
@@ -226,7 +226,7 @@ function ManageUsers() {
 		const updateUser = async (updatedRow) => {
 			try {
 				let updateRes = await axios.post(
-					`http://localhost:5000/users/update/`,
+					`/api/users/update/`,
 					updatedRow,
 					{
 						withCredentials: true
