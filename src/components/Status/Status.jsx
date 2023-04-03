@@ -153,77 +153,86 @@ function makeChipRow(row) {
 	)
 }
 
+const colorDict = {
+	"On": "success",
+	"Off": "error",
+	"Idle": "warning",
+	"Busy": "info",
+}
 
 function Status() {
-	
-	const socket = useContext( SocketContext );
 
-	const colorDict = {
-		"On": "success",
-		"Off": "error",
-		"Idle": "warning",
-		"Busy": "info",
-	}
-	
+	const socket = useContext(SocketContext);
+
 	function createData(name, status, color) {
 		return { name, status, color };
 	}
-	
-	const [stateData, setState ] = useState({
+
+	const [stateData, setState] = useState({
 		isLoading: true,
 		data: []
 	})
-	
+
 	const updateData = useCallback((updates) => {
 		let tempData = stateData.data;
-		for( let key in updates ){
 
+		for (let key in updates) {
 			let statusColor = updates[key];
-			if ( statusColor != "On" || statusColor != "Off" ||
-				statusColor != "Idle" || statusColor != "Busy" ) {
-				let color = "primary"
+			let color = null
+
+			if (statusColor !== "On" || statusColor !== "Off" ||
+				statusColor !== "Idle" || statusColor !== "Busy") {
+				color = "primary"
 			}
 			else {
-				let color = colorDict[statusColor];
+				color = colorDict[statusColor];
 			}
 
 			let updatedKey = false;
-			for( let index in tempData ){
-				if( tempData[index].name === key ){
-					tempData[index] = createData( key, updates[key], color )
+
+			for (let index in tempData) {
+				if (tempData[index].name === key) {
+
+					tempData[index] = createData(key, updates[key], color)
 					updatedKey = true;
 					break;
 				}
 			}
 			// Incase the status being updated is a new status type
-			if( !updatedKey ){
-				tempData.push( createData( key, updates[key], color ));
+			if (!updatedKey) {
+				tempData.push(createData(key, updates[key], color));
 			}
 		}
-		setState({isLoading: false, data: tempData})
+		setState({ isLoading: false, data: tempData })
 	}, [stateData.data]);
-	
-	useEffect( () => {
-		socket.on('frontend_update_status', updateData );
-	}, [socket, updateData] );
-	
-	useEffect( () => {
-		fetch('/api/status/index').then( res => res.json()).then( ( result ) => {
-				for( const index in result ){
-					const name = result[index]["statusName"]
-					const status = result[index]["statusValue"]
-					if ( status != "On" || status != "Off" || status != "Idle"
-						|| status != "Busy" ) {
-						const color = "primary";
-					}
-					else {
-						const color = colorDict[status];
-					}
-					result[ index ] = createData( name, status, color )
+
+	useEffect(() => {
+		socket.on('frontend_update_status', updateData);
+	}, [socket, updateData]);
+
+	useEffect(() => {
+		fetch('/api/status/index').then(res => res.json()).then((result) => {
+			for (const index in result) {
+				const name = result[index]["statusName"]
+				const status = result[index]["statusValue"]
+				let color = null
+
+				if (
+					status !== "On" ||
+					status !== "Off" ||
+					status !== "Idle" ||
+					status !== "Busy"
+				) {
+					color = "primary";
 				}
-				
-				setState({isLoading: false, data: result} );
-			})
+				else {
+					color = colorDict[status];
+				}
+				result[index] = createData(name, status, color)
+			}
+
+			setState({ isLoading: false, data: result });
+		})
 	}, []);
 
 	return (
@@ -247,5 +256,4 @@ function Status() {
 	)
 
 }
-
 export { Status }
