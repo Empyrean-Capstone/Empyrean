@@ -100,7 +100,9 @@ def validate_session():
     if session.get("username") is None:
         return "not found", 404
 
-    needs_admin = request.get_json()
+    validation_req = request.get_json()
+
+    needs_admin = validation_req["needs_admin"]
 
     if needs_admin == "False" or session.get("isadmin"):
         return "success", 200
