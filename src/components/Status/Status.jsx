@@ -157,6 +157,13 @@ function makeChipRow(row) {
 function Status() {
 	
 	const socket = useContext( SocketContext );
+
+	const colorDict = {
+		"On": "success",
+		"Off": "error",
+		"Idle": "warning",
+		"Busy": "info",
+	}
 	
 	function createData(name, status, color) {
 		return { name, status, color };
@@ -170,18 +177,27 @@ function Status() {
 	const updateData = useCallback((updates) => {
 		let tempData = stateData.data;
 		for( let key in updates ){
+
+			let statusColor = updates[key];
+			if ( statusColor != "On" || statusColor != "Off" ||
+				statusColor != "Idle" || statusColor != "Busy" ) {
+				let color = "primary"
+			}
+			else {
+				let color = colorDict[statusColor];
+			}
+
 			let updatedKey = false;
 			for( let index in tempData ){
 				if( tempData[index].name === key ){
-					// TODO, find interesting color picking 
-					tempData[index] = createData( key, updates[key], "info" )
+					tempData[index] = createData( key, updates[key], color )
 					updatedKey = true;
 					break;
 				}
 			}
 			// Incase the status being updated is a new status type
 			if( !updatedKey ){
-				tempData.push( createData( key, updates[key], "info" ));
+				tempData.push( createData( key, updates[key], color ));
 			}
 		}
 		setState({isLoading: false, data: tempData})
@@ -196,8 +212,13 @@ function Status() {
 				for( const index in result ){
 					const name = result[index]["statusName"]
 					const status = result[index]["statusValue"]
-					// TODO: figure out how to color these buttons in an interesting way that isn't a million ifelse statements
-					const color = "info"
+					if ( status != "On" || status != "Off" || status != "Idle"
+						|| status != "Busy" ) {
+						const color = "primary";
+					}
+					else {
+						const color = colorDict[status];
+					}
 					result[ index ] = createData( name, status, color )
 				}
 				
