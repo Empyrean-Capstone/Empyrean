@@ -55,7 +55,7 @@ def post_login():
         return "unauthorized", 401
 
     else:
-        if password_req == cur_user.password:
+        if cur_user is not None and password_req == cur_user.password:
             session["userid"] = str(cur_user.id)
             session["username"] = cur_user.username
             session["name"] = cur_user.name
