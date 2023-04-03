@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
+import { GridEmptyOverlay, GridPagination } from '../../components/DataGrid';
+import { PaperPane } from '../../components/PaperPane/PaperPane'
+import { SocketContext } from '../../context/socket';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MuiAlert from '@mui/material/Alert';
@@ -18,6 +22,7 @@ import {
 	GridToolbarContainer,
 	GridToolbarDensitySelector,
 	GridToolbarFilterButton,
+	useGridApiRef
 } from '@mui/x-data-grid';
 
 // icons
@@ -29,9 +34,6 @@ import CancelIcon from '@mui/icons-material/Close';
 import PeopleIcon from '@mui/icons-material/People';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 
-import { PaperPane } from '../../components/PaperPane/PaperPane'
-import { SocketContext } from '../../context/socket';
-
 
 const Alert = React.forwardRef(function Alert(props, ref) {
 	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -40,16 +42,10 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 
 function EmptyOverlay() {
 	return (
-		<div style={{
-			display: 'flex',
-			flexDirection: 'column',
-			alignItems: 'center',
-			justifyContent: 'center',
-			height: '100%',
-		}}>
-			<Box><PeopleIcon /></Box>
-			<Box sx={{ fontStyle: "italic" }}>There Are No Users In The System</Box>
-		</div>
+		<GridEmptyOverlay
+			icon=<PeopleIcon />
+			text="There Are No Users In The System"
+		/>
 	)
 }
 
@@ -87,6 +83,7 @@ function renderEditName(props) {
 
 
 function ManageUsers() {
+	const apiRef = useGridApiRef();
 	const tableHeight = 1000
 
 	const [canAddUser, setCanAddUser] = useState(true);
@@ -172,12 +169,29 @@ function ManageUsers() {
 		);
 	}
 
+	// There is currently no means of manualing triggering
+	// preProcessEditCellProps, which is the canonical way
+	// of validating MUI data grid rows. This callback only
+	// fires on text change, that I'm aware of. We can force
+	// it to run by manually setting a cell value.
+	//
+	// https://github.com/mui/mui-x/issues/5009
+	function validateOnLeave(id) {
+		const row = apiRef.current.getRowWithUpdatedValues(id)
+
+		Object.entries(row).map(([key, value]) => (
+			apiRef.current.setEditCellValue({ id: id, field: key, value: value })
+		))
+	}
 
 	const handleRowEditStart = (event) => {
 		event.defaultMuiPrevented = true;
 	};
 
 	const handleRowEditStop = (event) => {
+		const id = event.id
+		validateOnLeave(id)
+
 		setCanAddUser(true)
 		event.defaultMuiPrevented = true;
 	};
@@ -188,8 +202,10 @@ function ManageUsers() {
 	};
 
 	const handleSaveClick = (id) => () => {
-		setCanAddUser(true)
+		validateOnLeave(id)
+
 		setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+		setCanAddUser(true)
 	};
 
 	const deleteUser = async (rowID) => {
@@ -387,7 +403,7 @@ function ManageUsers() {
 		{
 			field: "isadmin",
 			headerName: "Is Admin?",
-			description: "The user's role determines what features they have access to",
+			description: "Allows the user to administer other users",
 			sortable: true,
 			width: 125,
 			editable: true,
@@ -484,6 +500,7 @@ function ManageUsers() {
 					autoPageSize={true}
 					sortingOrder={["asc", "desc"]}
 
+					apiRef={apiRef}
 					rows={rows}
 					columns={columns}
 					initialState={{
@@ -501,6 +518,7 @@ function ManageUsers() {
 					onProcessRowUpdateError={handleProcessRowUpdateError}
 
 					slots={{
+						pagination: GridPagination,
 						noRowsOverlay: EmptyOverlay,
 						toolbar: CustomToolbar,
 					}}
