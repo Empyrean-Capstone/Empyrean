@@ -192,7 +192,7 @@ function Status() {
 	}, [socket, updateData] );
 	
 	useEffect( () => {
-		fetch('/status/index').then( res => res.json()).then( ( result ) => {
+		fetch('/api/status/index').then( res => res.json()).then( ( result ) => {
 				for( const index in result ){
 					const name = result[index]["statusName"]
 					const status = result[index]["statusValue"]
