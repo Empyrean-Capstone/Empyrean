@@ -106,6 +106,11 @@ function Logsheet() {
 	const socket = useContext(SocketContext);
 
 	useEffect(() => {
+		socket.on("setDateObservations", (logsheetDataStr) => {
+			let logObjs = JSON.parse(logsheetDataStr)
+			setLogMatrix(logObjs)
+		})
+
 		socket.on("setObservations", (logsheetDataStr) => {
 			let logObjs = JSON.parse(logsheetDataStr)
 

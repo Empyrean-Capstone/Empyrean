@@ -2,8 +2,8 @@ import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2'
 
-import { Search } from '../../components/Search/Search'
 import { Logsheet } from '../../components/Logsheet/Logsheet'
+import { CalendarSearch } from '../../components/CalendarSearch/CalendarSearch'
 
 const Item = styled(Paper)(({ theme }) => ({
 	backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -26,10 +26,8 @@ function LogsheetPage() {
 return (
 	<div>
 		<Grid container spacing={2}>
-			<GridComponent size={8} Component={Search}></GridComponent>
-			<Grid item xs={12}>
-			<GridComponent size={12} Component={Logsheet}></GridComponent>
-			</Grid>
+			<GridComponent size={4.8} Component={CalendarSearch}></GridComponent>
+			<GridComponent size={14} Component={Logsheet}></GridComponent>
 		</Grid>
 	</div>
 )
