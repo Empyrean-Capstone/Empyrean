@@ -5,7 +5,6 @@ import { GridEmptyOverlay, GridPagination } from '../../components/DataGrid';
 import { PaperPane } from '../../components/PaperPane/PaperPane'
 import { SocketContext } from '../../context/socket';
 
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MuiAlert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';

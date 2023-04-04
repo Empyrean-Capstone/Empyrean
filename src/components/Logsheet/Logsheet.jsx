@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 
+import { GridEmptyOverlay, GridPagination } from '../DataGrid';
 import { SocketContext } from '../../context/socket';
 import './style.css'
 
-import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import TableContainer from '@mui/material/TableContainer';
@@ -83,19 +83,12 @@ const columns = [
 	},
 ];
 
-
 function EmptyOverlay() {
 	return (
-		<div style={{
-			display: 'flex',
-			flexDirection: 'column',
-			alignItems: 'center',
-			justifyContent: 'center',
-			height: '100%',
-		}}>
-			<Box><PanoramaIcon /></Box>
-			<Box sx={{ fontStyle: "italic" }}>There Are No Observations In This Logsheet</Box>
-		</div>
+		<GridEmptyOverlay
+			icon={<PanoramaIcon />}
+			text="There Are No Observations In This Logsheet"
+		/>
 	)
 }
 
@@ -148,6 +141,7 @@ function Logsheet() {
 				rows={logRows}
 				columns={columns}
 				slots={{
+					pagination: GridPagination,
 					noRowsOverlay: EmptyOverlay,
 					toolbar: GridToolbar
 				}}
