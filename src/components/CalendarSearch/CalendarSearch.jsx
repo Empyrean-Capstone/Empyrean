@@ -62,8 +62,8 @@ function CalendarSearch() {
 
 	return (
 		<>
-			<h2 className="horiz-align">Calendar Search</h2>
-			<h5 className="horiz-align">Query by Date</h5>
+			<h2 className="horiz-align">Advanced Observation Search</h2>
+			<h5 className="horiz-align">Query the observation logsheet</h5>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={2}>
 
