@@ -6,10 +6,8 @@ import './style.css'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TextField } from '@mui/material'
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import TableContainer from '@mui/material/TableContainer';
 
 
 function CalendarSearch() {
@@ -31,55 +29,64 @@ function CalendarSearch() {
 
 	})
 
-	const handleClick = (e) => {
-		e.preventDefault();
-		socket.emit("retrieveDateObservations", {startDay: selectedStartDate.$D, startMonth: selectedStartDate.$M, startYear: selectedStartDate.$y,  
-			endDay: selectedEndDate.$D, endMonth: selectedEndDate.$M, endYear: selectedEndDate.$y})
-		}
+	const handleClick = () => {
+		socket.emit("retrieveDateObservations", {
+			startDay: selectedStartDate["$D"],
+			startMonth: selectedStartDate["$M"],
+			startYear: selectedStartDate["$y"],
+			endDay: selectedEndDate["$D"],
+			endMonth: selectedEndDate["$M"],
+			endYear: selectedEndDate["$y"],
+		})
+	}
+
+	function DateSelect(props) {
+		return (
+			<LocalizationProvider dateAdapter={AdapterDayjs}>
+				<DatePicker
+					value={props.value}
+					format="YYYY-MM-DD"
+					disableFuture={true}
+					minDate={props.minDate}
+					slotProps={{
+						textField: {
+							helperText: props.helperText,
+							size: "small"
+						}
+					}}
+					onChange={props.onChange}
+				/>
+			</LocalizationProvider>
+		)
+	}
 
 	return (
-		<TableContainer>
+		<>
 			<h2 className="horiz-align">Calendar Search</h2>
 			<h5 className="horiz-align">Query by Date</h5>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={2}>
-				<LocalizationProvider dateAdapter={AdapterDayjs}>
-					<DatePicker className="left-align" 
-						renderInput={(params) => <TextField {...params} />}
-						value={selectedStartDate}
-						format="YYYY-MM-DD"
-						disableFuture="true"
-						slotProps={{
-							textField: {
-								helperText: 'Start Date',
-							},
-						}}
-						onChange={(newValue) => {
-							setSelectedStartDate(newValue)
-						}} 
-					/>
-				</LocalizationProvider>
 
-				<LocalizationProvider dateAdapter={AdapterDayjs}>
-					<DatePicker 
-						renderInput={(params) => <TextField {...params} />}
-						value={selectedEndDate}
-						format="YYYY-MM-DD"
-						disableFuture="true"
-						slotProps={{
-							textField: {
-								helperText: 'End Date',
-							},
-						}}
-						onChange={(newValue) => {
-							setSelectedEndDate(newValue)
-						}} 
-					/>
-				</LocalizationProvider>
+				<DateSelect
+					helperText={"Start Date"}
+					minDate={null}
+					value={selectedStartDate}
+					onChange={(newValue) => setSelectedStartDate(newValue)}
+				/>
+
+				<DateSelect
+					helperText={"End Date"}
+					minDate={selectedStartDate}
+					value={selectedEndDate}
+					onChange={(newValue) => setSelectedEndDate(newValue)}
+				/>
 			</Stack>
 
-			<Button variant="contained" color="success" onClick={handleClick}>Submit</Button>
-		</TableContainer >
+			<Stack className="horiz-align vert-space" direction="row" spacing={2}>
+				<Button variant="contained" color="success" onClick={handleClick}>Submit</Button>
+			</Stack>
+
+		</>
 	);
 }
 
