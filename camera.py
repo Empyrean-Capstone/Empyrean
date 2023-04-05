@@ -131,10 +131,10 @@ class Zwocamera(Instrument):
     # Default values for the camera 
     status_dictionary = {
                 "exp_number": "N/A",
-                "exp_number": "N/A",
-                "itime_elapsed": "N/A",
                 "itime_elapsed": "N/A",
                 "nexp_total": "N/A",
+                "camera": "Idle",
+                "obs_id": "N/A"
             }
 
     def __init__(self, device="ZWO ASI2600MM Pro"):

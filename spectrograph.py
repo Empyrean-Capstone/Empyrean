@@ -141,7 +141,6 @@ class Spectrograph(Instrument):
             
         @Instrument.sio.on("set_obs_type")
         def set_obs_type(mode):
-            print( 'made it', mode )
             mode_ports = self.observing_modes[mode]
 
             for i, val in enumerate(mode_ports):
