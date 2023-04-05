@@ -1,9 +1,8 @@
-// https://skyandtelescope.org/astronomy-resources/right-ascension-declination-celestial-coordinates/
-
 import * as yup from 'yup';
 
-const requestFieldsRegex = {
 
+// https://skyandtelescope.org/astronomy-resources/right-ascension-declination-celestial-coordinates/
+const requestFieldsRegex = {
 	// from 00:00:00.00 to 24:00:00, with max
 	// values for each segment being 24:59:59.99
 	right_ascension: new RegExp("^(([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](.[0-9][0-9])?|24:00:00(.00)?)$"),
@@ -19,12 +18,19 @@ const requestFieldsRegex = {
 const requestFormSchema = yup.object().shape({
 	object: yup
 		.string()
+		.ensure()
 		.trim()
-		.required("Object is required"),
+		.when("obs_type", (obs_type, schema) => {
+			if (obs_type[0] === "object") {
+				return schema.required("Object is required")
+			}
+
+			return schema.notRequired()
+		}),
 
 	obs_type: yup
 		.string()
-		.required("Object Type is required"),
+		.required("Observation Type is required"),
 
 	right_ascension: yup
 		.string()
@@ -46,15 +52,18 @@ const requestFormSchema = yup.object().shape({
 
 	num_exposures: yup
 		.number("Number of Exposures must be a positive number")
+		.typeError("Number of Exposures must be a positive number")
 		.positive("Number of Exposures must be a positive number")
 		.integer("Number of Exposures must be a positive number")
 		.required("Number of Exposures must be a positive number"),
 
 	exposure_duration: yup
 		.number("Exposure Duration must be a positive number")
+		.typeError("Number of Exposures must be a positive number")
 		.positive("Exposure Duration must be a positive number")
 		.integer("Exposure Duration must be a positive number")
 		.required("Exposure Duration must be a positive number"),
 })
+
 
 export { requestFormSchema }

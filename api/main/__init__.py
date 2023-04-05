@@ -73,6 +73,7 @@ from .logsheet.views import logsheet
 from .observations.views import observations
 from .resolve.views import resolve
 from .status.views import status
+from .users.views import users
 
 app.register_blueprint(file_writer, url_prefix="/api/file-writer")
 app.register_blueprint(login)
@@ -80,5 +81,6 @@ app.register_blueprint(logsheet)
 app.register_blueprint(observations)
 app.register_blueprint(resolve)
 app.register_blueprint(status)
+app.register_blueprint(users)
 
 from . import views

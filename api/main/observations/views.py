@@ -57,11 +57,12 @@ def post_observation():
         str: URI to newly created observation request.
     """
     obs_instructions: dict = request.get_json()
+    sio.emit("set_obs_type", obs_instructions["obs_type"] )
 
     exp_ids: list[int] = __init_obs_requests(obs_instructions)
 
     obs_instructions["userid"] = session.get("userid")
-    obs_instructions["username"] = session.get("username")
+    obs_instructions["name"] = session.get("name")
 
     # The request data from the frontend will act like
     # instructions for how the camera must populate the
@@ -82,6 +83,7 @@ def end_observation():
     db.session.commit()
 
     get_all_log_data()
+    sio.emit( "set_obs_type", data=("object") )
 
     return {}
 
@@ -89,3 +91,4 @@ def end_observation():
 @sio.on("exposure_complete")
 def conclude_exposure():
     sio.emit("enable_request_form")
+    sio.emit("set_obs_type", data=("object"))

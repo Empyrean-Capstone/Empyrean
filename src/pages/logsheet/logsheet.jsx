@@ -1,30 +1,22 @@
-import { styled } from '@mui/material/styles';
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Unstable_Grid2'
-
-import { Logsheet } from '../../components/Logsheet/Logsheet'
 import { CalendarSearch } from '../../components/CalendarSearch/CalendarSearch'
+import { Logsheet } from '../../components/Logsheet/Logsheet'
+import { PaperPane } from '../../components/PaperPane/PaperPane'
+
+import Grid from '@mui/material/Unstable_Grid2'
 import Typography from '@mui/material/Typography';
 
-const Item = styled(Paper)(({ theme }) => ({
-	backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-	...theme.typography.body2,
-	padding: theme.spacing(1),
-	textAlign: 'center',
-	color: theme.palette.text.secondary,
-}));
 
 function GridComponent({ size, Component }) {
 	return (
 		<Grid containers item xs={size}>
-			<Item><Component /></Item>
+			<PaperPane><Component /></PaperPane>
 		</Grid>
 	)
 }
 
 function InstructionBox() {
 	return (
-		<Item>
+		<PaperPane>
 			<Typography variant="h6" align="left">
 				Instructions
 			</Typography>
@@ -34,7 +26,7 @@ function InstructionBox() {
 				search for observations that contain a substring, the parameters at left allow the user to search by means other
 				than strings.
 			</Typography>
-		</Item >
+		</PaperPane >
 	)
 }
 
@@ -53,4 +45,4 @@ function LogsheetPage() {
 	)
 }
 
-export { LogsheetPage, Item }
+export { LogsheetPage }
