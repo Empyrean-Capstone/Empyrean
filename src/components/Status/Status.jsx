@@ -154,10 +154,10 @@ function makeChipRow(row) {
 }
 
 const colorDict = {
-	"On": "success",
-	"Off": "error",
-	"Idle": "warning",
-	"Busy": "info",
+	"on": "success",
+	"off": "error",
+	"idle": "warning",
+	"busy": "info",
 }
 
 function Status() {
@@ -180,8 +180,8 @@ function Status() {
 			let statusColor = updates[key];
 			let color = null
 
-			if (statusColor !== "On" || statusColor !== "Off" ||
-				statusColor !== "Idle" || statusColor !== "Busy") {
+			if (statusColor !== "on" && statusColor !== "off" &&
+				statusColor !== "idle" && statusColor !== "busy") {
 				color = "primary"
 			}
 			else {
@@ -212,16 +212,20 @@ function Status() {
 
 	useEffect(() => {
 		fetch('/api/status/index').then(res => res.json()).then((result) => {
+
+			//sort result here
+
 			for (const index in result) {
+
 				const name = result[index]["statusName"]
 				const status = result[index]["statusValue"]
 				let color = null
 
 				if (
-					status !== "On" ||
-					status !== "Off" ||
-					status !== "Idle" ||
-					status !== "Busy"
+					status !== "on" &&
+					status !== "off" &&
+					status !== "idle" &&
+					status !== "busy"
 				) {
 					color = "primary";
 				}
