@@ -57,7 +57,6 @@ def post_observation():
         str: URI to newly created observation request.
     """
     obs_instructions: dict = request.get_json()
-    print( obs_instructions )
     sio.emit("set_obs_type", obs_instructions["obs_type"] )
 
     exp_ids: list[int] = __init_obs_requests(obs_instructions)

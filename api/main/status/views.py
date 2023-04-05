@@ -32,7 +32,6 @@ def index():
 def get_instrument_id(instrument_name):
     # make query to recieve the id of the requested object
     instrument = Instrument.query.filter_by(instrumentName=instrument_name).first()
-    print( instrument.instrumentId )
 
     # if no result, define a new object
     if instrument == None:
@@ -47,7 +46,6 @@ def get_instrument_id(instrument_name):
 
 @sio.on("update_status")
 def update_status(instrument_id, update_dict):
-    print( update_dict )
     for key, value in update_dict.items():
         status = Status.query.filter_by(instrumentID=instrument_id, statusName=key).first()
 
