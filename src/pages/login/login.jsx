@@ -2,54 +2,47 @@ import React from 'react';
 import axios from 'axios';
 
 import './style.css'
+import { loginFormSchema } from '../../validations/login'
+import { PaperPane } from '../../components/PaperPane';
 
 import Grid from '@mui/material/Unstable_Grid2'
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MuiAlert from '@mui/material/Alert';
-import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { LoadingButton } from "@mui/lab"
-import { styled } from '@mui/material/styles';
 import { useNavigate } from "react-router-dom";
+
 
 const Alert = React.forwardRef(function Alert(props, ref) {
 	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const Item = styled(Paper)(({ theme }) => ({
-	backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-	...theme.typography.body2,
-	padding: theme.spacing(1),
-	textAlign: 'center',
-	color: theme.palette.text.secondary,
-}));
-
 
 function Login() {
 	const navigate = useNavigate();
 
-	const [authState, setAuthState] = React.useState({
-		set: false,
-		msg: "",
-		severity: ""
-	});
-
-	const [creds, setCreds] = React.useState({
+	const defaultCredVals = {
 		username: "",
 		password: "",
-	});
+	}
+
+	const [authState, setAuthErr] = React.useState({ set: false, msg: "" });
+
+	const [creds, setCreds] = React.useState(defaultCredVals);
+
+	const [inputErrs, setInputErrs] = React.useState(defaultCredVals)
 
 	const handleCredChange = (prop) => (event) => {
 		setCreds({ ...creds, [prop]: event.target.value });
-		setAuthState("")
+		setAuthErr({ set: false, msg: "" })
 	};
 
-	const [isLoading, setLoading] = React.useState("");
+	const [isLoading, setLoading] = React.useState(false);
 
 	const [showPassword, setShowPassword] = React.useState(true);
 
@@ -65,7 +58,7 @@ function Login() {
 			}
 		>
 			<Grid item>
-				<Item
+				<PaperPane
 					sx={{
 						width: 400,
 						height: '20%',
@@ -77,7 +70,7 @@ function Login() {
 						sx={{ mt: 2, mb: 2 }}
 						required
 						fullWidth
-						disabled={isLoading !== ""}
+						disabled={isLoading}
 						type="text"
 						key={"Username"}
 						label={"Username"}
@@ -85,6 +78,8 @@ function Login() {
 						variant="filled"
 						value={creds["username"]}
 						onChange={handleCredChange("username")}
+						error={inputErrs["username"] === "" ? false : true}
+						helperText={inputErrs["username"]}
 						InputLabelProps={{
 							shrink: true,
 						}}
@@ -94,7 +89,7 @@ function Login() {
 						sx={{ mt: 2, mb: 2 }}
 						required
 						fullWidth
-						disabled={isLoading !== ""}
+						disabled={isLoading}
 						type={showPassword ? 'text' : 'password'}
 						key={"Password"}
 						label="Password"
@@ -102,6 +97,8 @@ function Login() {
 						variant="filled"
 						value={creds["password"]}
 						onChange={handleCredChange("password")}
+						error={inputErrs["password"] === "" ? false : true}
+						helperText={inputErrs["password"]}
 						InputProps={{
 							endAdornment: <InputAdornment position="end">
 								<IconButton
@@ -131,12 +128,29 @@ function Login() {
 							type="submit"
 							variant="contained"
 							onClick={() => {
-								setLoading("login");
+								function validateLoginRequest(values) {
+									try {
+										loginFormSchema.validateSync(values, { abortEarly: false })
 
-								//  const salt = bcrypt.genSaltSync(0);
-								//  values.password = bcrypt.hashSync(values.password, salt);
+										return true
+									} catch (validation_err) {
+										let errors = {}
+
+										validation_err.inner.forEach(error => {
+											if (error.path) {
+												errors[error.path] = error.message;
+											}
+										});
+
+										setInputErrs({ ...inputErrs, ...errors })
+										return false
+									}
+								}
+
 
 								const attemptLogin = async (values) => {
+									console.log(values)
+
 									try {
 										let auth_res = await axios.post(
 											`/api/auth_login/`,
@@ -150,34 +164,43 @@ function Login() {
 										}
 									}
 									catch (err) {
-										setAuthState({
+										setAuthErr({
 											set: true,
-											msg: "Username or password are incorrect",
-											severity: "error"
+											msg: "Credentials are incorrect",
 										})
 									}
 									finally {
-										setLoading("")
+										setLoading(false)
 									}
 								};
 
-								attemptLogin(creds);
+								setLoading(true);
+
+								setInputErrs(defaultCredVals)
+
+								const isFormValid = validateLoginRequest(creds)
+
+								//  const salt = bcrypt.genSaltSync(0);
+								//  values.password = bcrypt.hashSync(values.password, salt);
+
+								if (isFormValid) attemptLogin(creds);
+								else setLoading(false)
+
 							}}
 							loadingPosition="center"
-							loading={isLoading === "login"}
-							disabled={isLoading === "registration"}
+							loading={isLoading}
 						>
 							Login
 						</LoadingButton>
 					</ Stack>
 
 					<Snackbar open={authState.set} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
-						<Alert variant="standard" severity={authState.severity} sx={{ width: '100%' }}>
+						<Alert variant="standard" severity="error" sx={{ width: '100%' }}>
 							{authState.msg}
 						</Alert>
 					</Snackbar>
 
-				</Item >
+				</PaperPane >
 			</Grid>
 		</Grid >
 	)

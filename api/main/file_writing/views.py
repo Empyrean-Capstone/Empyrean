@@ -62,7 +62,7 @@ def __read_image_file(image_path: str) -> np.ndarray:
 
 def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_input: dict, filename: str):
     def enter_request_input(hdu, input: dict):
-        hdu.header["OBSERVER"] = input["username"]
+        hdu.header["OBSERVER"] = input["name"]
 
         # TODO: whats the difference between this and IMAGETYP?
         hdu.header["OBSTYPE"] = {

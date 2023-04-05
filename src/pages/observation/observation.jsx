@@ -1,26 +1,17 @@
 import './style.css'
 
-import { styled } from '@mui/material/styles';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2'
 
+import { PaperPane } from '../../components/PaperPane/PaperPane'
 import { Observe } from '../../components/Observe'
 import { Status } from '../../components/Status'
 import { Logsheet } from '../../components/Logsheet'
 
-const Item = styled(Paper)(({ theme }) => ({
-	backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-	...theme.typography.body2,
-	padding: theme.spacing(1),
-	textAlign: 'center',
-	color: theme.palette.text.secondary,
-}));
 
-// interesting reading: https://www.developerway.com/posts/react-component-as-prop-the-right-way
 function GridComponent({ size, Component, ...props }) {
 	return (
 		<Grid containers item xs={size}>
-			<Item><Component {...props}/></Item>
+			<PaperPane><Component {...props}/></PaperPane>
 		</Grid>
 	)
 }
@@ -40,4 +31,4 @@ function Observation() {
 	)
 }
 
-export { Observation, Item }
+export { Observation }
