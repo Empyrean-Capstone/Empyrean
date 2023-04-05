@@ -105,22 +105,18 @@ function Logsheet() {
 	const [isLogLoading, setLogLoading] = useState(false);
 	const socket = useContext(SocketContext);
 
+
 	useEffect(() => {
-		socket.on("setDateObservations", (logsheetDataStr) => {
-			let logObjs = JSON.parse(logsheetDataStr)
-			setLogMatrix(logObjs)
-		})
-
-		socket.on("setObservations", (logsheetDataStr) => {
-			let logObjs = JSON.parse(logsheetDataStr)
-
-			setLogMatrix(logObjs)
-			setLogLoading(false)
-		})
-
 		setLogLoading(true)
 		socket.emit("retrieveObservations");
 	}, [socket])
+
+	socket.on("setObservations", (logsheetDataStr) => {
+		let logObjs = JSON.parse(logsheetDataStr)
+		setLogMatrix(logObjs)
+
+		setLogLoading(false)
+	})
 
 	socket.on("updateObservations", (newLogJson) => {
 		let newLogObjs = JSON.parse(newLogJson)
@@ -132,7 +128,6 @@ function Logsheet() {
 			updatedMatrix[id] = { ...curLog, ...incomingData }
 			setLogMatrix((prevMatrix) => ({ ...prevMatrix, ...updatedMatrix }))
 		})
-
 	})
 
 
