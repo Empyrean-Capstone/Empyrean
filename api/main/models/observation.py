@@ -35,7 +35,7 @@ class Observation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_typ = db.Column(db.String)
     instrume = db.Column(db.String)
-    log_id = db.Column(db.String)
+    log_id = db.Column(db.Integer)
     mjdobs = db.Column(db.Float)
     object = db.Column(db.String)
     obs_id = db.Column(db.String)

@@ -37,7 +37,7 @@ def upgrade():
     sa.Column('airm', sa.Float(), nullable=True),
     sa.Column('observer', sa.String(), nullable=True),
     sa.Column('obs_id', sa.String(), nullable=True),
-    sa.Column('log_id', sa.String(), nullable=True),
+    sa.Column('log_id', sa.Integer(), nullable=True),
     sa.Column('mjdobs', sa.Float(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
