@@ -274,3 +274,15 @@ Step 2: Installation of Instruments:
 
 2. Each of these instruments can be run as a service, through the process in step 7 of the installation code
     Note: the program to be run for the spectrograph, as an expample, is python spectrograph.py
+
+
+
+
+
+
+
+
+
+NOTES:
+1. change the camera in the status view
+2. 
