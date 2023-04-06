@@ -24,6 +24,39 @@ def get_logs_json_str(observations: list):
 
 
 class Observation(db.Model):
+    """
+    The python object representation of the Observation table of the database
+    
+    Attributes:
+    -----------
+        airm : Float
+        ccd_temp: Float
+        date_made_open_source: date
+        date_obs : date
+        exp_time : int 
+        filename : str
+        gain : float
+        gamma : float
+        id : int
+        image_typ : str
+        instrume : str
+        log_id : str
+        mjdobs : float
+        object : str
+        obs_type : str
+        observer : str
+        offset : float
+        owner_id : int
+        reworder : str
+    
+    Methods:
+    --------
+        get_log_dict():
+            Get the values of the observations in a way that the frontend can read
+        set_attrs():
+            Set values of the observation to update or instantiate an observation
+    """
+    
     airm = db.Column(db.Float)
     ccd_temp = db.Column(db.Float)
     date_made_open_source = db.Column(db.DateTime)
@@ -46,6 +79,8 @@ class Observation(db.Model):
     reworder = db.Column(db.String)
 
     def __init__(self, init_dict):
+        """
+        """
         self.set_attrs(init_dict)
 
     def __iter__(self):
