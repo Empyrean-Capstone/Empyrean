@@ -10,15 +10,21 @@ Simbad.ROW_LIMIT = 1
 
 def get_airmass(sky_coord):
     """
-    TODO.
+    Gets the altitude and position of the object requested
 
-    Args:
-        sky_coord ():
+    Parameters:
+    -----------
+        sky_coord : 
+            Coordinates of the object requested
 
     Returns:
-
+    --------
+        double
+            Representing the altitude of the object
     """
+
     cur_time = Time.now()
+    #TODO: Get programmatic way to get the site
     location = EarthLocation.of_site("lowell")
 
     alt_az_coord = AltAz(obstime=cur_time, location=location)
@@ -30,12 +36,15 @@ def get_airmass(sky_coord):
 
 def query_for_target(target) -> tuple | dict:
     """
-    TODO.
+    Finds the coordinates of the requested object
 
     Args:
-        target ():
+        target : str
+            The object requested
 
     Returns:
+        dict:
+            Containing the sky coordinates for the requested object
 
     """
     # https://astroquery.readthedocs.io/en/latest/api/astroquery.simbad.SimbadClass.html#astroquery.simbad.SimbadClass

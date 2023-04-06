@@ -285,4 +285,7 @@ Step 2: Installation of Instruments:
 
 NOTES:
 1. change the camera in the status view
-2. 
+2. Talk to jacob about the primary camera
+3. Make the site in the observe a yaml value instead of hardcoded
+4. Double check the utils.py file with jacob
+5. Make sure the spectrograph switches ports before continuing
