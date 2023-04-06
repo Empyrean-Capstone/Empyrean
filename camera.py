@@ -15,7 +15,8 @@ import zwoasi as asi
 
 
 class Camera:
-    """TODO."""
+    """FIXME: This is an incomplete class to create a simulation
+    of the features found in the ZWOCamera class"""
 
     def __init__(self, device="/dev/cu.", socketio=None, simulator=False):
         """TODO."""
@@ -118,8 +119,7 @@ class Camera:
     def emit_status(self, status: dict) -> None:
         self.sio.emit("update_status", data=(self.id, status))
 
-"""
-"""
+
 class Zwocamera(Instrument.register):
     """
     A class that interfaces between a physical camera and the coordination

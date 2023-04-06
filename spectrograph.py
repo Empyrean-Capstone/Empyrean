@@ -75,15 +75,47 @@ class K8056(object):
         """Display card address on LEDs."""
         self._process(68, 1, 1)
 
-"""
-Wrapper class for whatever spectrograph is to be used.
-Interfaces with the backend in order to coordinate with other instruments.
-"""
 class Spectrograph(Instrument):
+    """
+    Wrapper class for whatever spectrograph is to be used.
+    Interfaces with the backend in order to coordinate with other instruments.
+
+    Attributes:
+    -----------
+        OBSERVING_MODES: dict
+            A constant to translate the observing modes to be chosen,
+            (object, dark, flat, thar) with the physical ports that need to
+            be flipped
+        status_dictionary: dict
+            The initial status of the spectrograph to be sent to the backend
+            and where the statuses are kept track of during the process of 
+            operation. 
+        device: None | K8056
+            The physical device to be controlled by this file.
+            NOTE: is None if there is no device, meaning a simulation is being
+                  run
+        simulator: boolean
+            A boolean value for whether or not a physical device is connected.
+            Set on instantiation
+            TODO: make so that simulation running is a flag on file run.
+
+    Mehtods:
+    --------
+        turn_on(port): None
+            Turns on one of the given ports (mirror, led, thar, tung)
+        turn_off(port): None
+            Turns off one of the given port
+        callbacks(): None
+            The callbacks unique to the spectrograph which need to be listened
+            to for correct operation of the spectrograph
+        get_instrument_name(): str
+            TODO: programmatic way to get the instrument name
+            Gets the name of the connected physical spectrograph
+    """
 
     # The following are the different observing modes to be used 
     # for the statuses. Use these dictionaries to update the statuses
-    observing_modes = {
+    OBSERVING_MODES = {
         "object": {
             "mirror": "off",
             "led": "off",
@@ -111,10 +143,14 @@ class Spectrograph(Instrument):
     }
 
     # Sets the initial status dictionary
-    status_dictionary = observing_modes["object"]
+    status_dictionary = OBSERVING_MODES["object"]
     
 
     def __init__(self, device="/dev/cu.", simulator=False):
+        """
+            Connects to the physical spectrograph if connected or else
+            defines the spectrograph as a simulation only
+        """
         if simulator:
             self.device = None  # Replace with instance of K8056
         else:
@@ -123,25 +159,44 @@ class Spectrograph(Instrument):
         self.simulation = simulator
         super().__init__()
 
-
-
     def turn_on(self, port):
+        """
+        Turns on the port of the given type
+        
+        Parameters: 
+        -----------
+            port: str
+                The port to be turned on
+                NOTE: can be ("mirror", "led", "thar", "tung")
+        """
         if self.device is not None:
             self.device.set(port)
 
     def turn_off(self, port):
+        """
+        Turns on the port of the given type
+        
+        Parameters: 
+        -----------
+            port: str
+                The port to be turned on
+                NOTE: can be ("mirror", "led", "thar", "tung")
+        """
         if self.device is not None:
             self.device.set(port)
 
     # TODO: find out how to find the model name of the spectrograph
     def get_instrument_name(self):
+        """
+        Gets the name of the connected spectrograph if conencted
+        """
         return "spectrograph"
     
     def callbacks(self):
             
         @Instrument.sio.on("set_obs_type")
         def set_obs_type(mode):
-            mode_ports = self.observing_modes[mode]
+            mode_ports = self.OBSERVING_MODES[mode]
 
             for i, val in enumerate(mode_ports):
                 if val == "on":

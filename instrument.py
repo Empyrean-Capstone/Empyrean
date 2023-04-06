@@ -84,6 +84,12 @@ class Instrument(metaclass=ABCMeta):
         are updated. 
         Note: The format of these statuses should be the same as the initial
               status dictionary
+
+        Parameters:
+        ----------
+            update_dict: dict
+                the dictionary of updates to the instruments statuses to 
+                be sent to the backend device
         """
         
         self.sio.emit( "update_status", (self.id, update_dict) )
