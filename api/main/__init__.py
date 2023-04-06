@@ -33,6 +33,7 @@ def __get_env_variable(name: str) -> str:
 # https://github.com/miguelgrinberg/Flask-SocketIO-Chat
 app = Flask(__name__)
 
+# Set config for the app
 app.config["SESSION_COOKIE_HTTPONLY"] = False
 app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_SECURE"] = True
@@ -49,7 +50,11 @@ migrate = Migrate(app, db)
 # for making good secret keys
 app.config["SECRET_KEY"] = "tk2icrNWnrIfG1pYOCrN6Q"
 
+# Allow requests from our react app
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+
+# Create socket server that the instruments and the React server can 
+# communicate with
 sio = SocketIO(
     app,
     cors_allowed_origins="*",
@@ -67,6 +72,9 @@ POSTGRES_PW = __get_env_variable("POSTGRES_PW")
 POSTGRES_DB = __get_env_variable("POSTGRES_DB")
 DATA_FILEPATH = __get_env_variable("DATA_FILEPATH")
 
+# Import and then register all blueprints to be connected to the app
+# NOTE: It seems like these need to be imported here instead of 
+#       at the top. It may be useful to research more into this
 from .file_writing.views import file_writer
 from .login.views import login
 from .logsheet.views import logsheet
@@ -83,4 +91,5 @@ app.register_blueprint(resolve)
 app.register_blueprint(status)
 app.register_blueprint(users)
 
+# Import the general routes to be connected into the app
 from . import views

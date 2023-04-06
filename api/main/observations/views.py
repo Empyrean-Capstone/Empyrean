@@ -8,6 +8,7 @@ from .. import sio
 from ..logsheet.views import get_all_log_data
 from ..models.observation import Observation, get_logs_json_str
 from ..status.views import get_current_obsid
+import time
 
 
 def __init_obs_records(request: dict) -> Observation:
@@ -25,11 +26,14 @@ def __init_obs_requests(obs_request: dict) -> list:
     observations: list[Observation] = []
     ids: list[int] = []
 
+    # For each of the observations requested, make an observation record
+    # in the database
     while i < int(obs_request["num_exposures"]):
         obs = __init_obs_records(obs_request)
         observations.append(obs)
         i += 1
 
+    # Let the frontend know that there are new observations for it to be appended
     sio.emit("updateObservations", get_logs_json_str(observations))
 
     ids = [obs.id for obs in observations]
@@ -42,9 +46,12 @@ def get_observations():
     """
     Return user's open observation collection to the user.
 
-    returns:
-        dict: dictionary of open observation requests
+    Returns:
+    --------
+        dict:
+            dictionary of open observation requests
     """
+
     return {}
 
 
@@ -53,11 +60,18 @@ def post_observation():
     """
     Create a new observation request for a specific user.
 
-    returns:
-        str: URI to newly created observation request.
+    Returns:
+    --------
+        str:
+            URI to newly created observation request.
     """
+    
     obs_instructions: dict = request.get_json()
+
+    # Have the spectrograph switch to the correct observation type'
+    # TODO: Ensure that the spectrograph has completed
     sio.emit("set_obs_type", obs_instructions["obs_type"] )
+    time.sleep(.25)
 
     exp_ids: list[int] = __init_obs_requests(obs_instructions)
 
@@ -75,6 +89,12 @@ def post_observation():
 
 @observations.post("/end")
 def end_observation():
+    """
+    If selected on the frontend, this is run, prematurely letting the camera
+    know to stop taking exposures. Then, this will delete all of the observations
+    that have not been completed.
+    """
+    
     sio.emit("end_exposure")
 
     cur_obsid: int = get_current_obsid()
@@ -90,5 +110,10 @@ def end_observation():
 
 @sio.on("exposure_complete")
 def conclude_exposure():
+    """
+    Allows the frontend to request another observation, and resets the 
+    spectrograph to its default values to preserve its lamps.
+    """
+    
     sio.emit("enable_request_form")
     sio.emit("set_obs_type", data=("object"))

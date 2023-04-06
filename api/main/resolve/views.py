@@ -9,9 +9,12 @@ def resolve_target():
     """
     Create a new observation request for a specific user.
 
-    returns:
-        str: URI to newly created observation request.
+    Returns:
+    --------
+        str:
+            URI to newly created observation request.
     """
+    
     resolution_input: dict = request.get_json()
     celestial_body: str = resolution_input["object"]
 
