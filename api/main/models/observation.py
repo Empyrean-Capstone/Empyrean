@@ -80,13 +80,36 @@ class Observation(db.Model):
 
     def __init__(self, init_dict):
         """
+        Intialized the observation with the given devault values
+        
+        Parameters:
+        -----------
+            init_diect : dict
+                Initial values for the attributes above
+                Note: not all are needed, many can be initialized initially 
+                      as null.
         """
+        
         self.set_attrs(init_dict)
 
     def __iter__(self):
+        """
+        Create an iterable list of the attributes of this object
+        """
+        
         return iter([self.id, self.object, "In Progress", str(self.date_obs), "None"])
 
     def get_log_dict(self):
+        """
+        Returns this object with fewer attributes to be used on the frontend
+        TODO: Find out how to calculate a correct signal-to-noise
+        
+        Returns:
+        --------
+            dict
+                A dictionary of the logsheet ready for representation
+        """
+        
         status: str = "Pending" if self.date_obs is None else "Complete"
         target: str = self.object if self.obs_type.lower() == "object" else self.obs_type.lower()
 
@@ -100,5 +123,15 @@ class Observation(db.Model):
         }
 
     def set_attrs(self, attrs: dict):
+        """
+        Sets the attributes of the object. Can be used to update or initialize
+        the object.
+        
+        Parameters:
+        -----------
+            attrs : dict
+                Of all of the attributes to be upgraded
+        """
+        
         for key, val in attrs.items():
             setattr(self, key.lower(), val)
