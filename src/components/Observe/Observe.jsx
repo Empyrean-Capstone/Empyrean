@@ -6,6 +6,7 @@ import React, { useContext, useEffect } from 'react';
 import axios from 'axios';
 
 import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -43,9 +44,11 @@ function Observe() {
 		}
 	}
 
-	const [isLoading, setLoading] = React.useState("");
+	const [isFormLoading, setFormLoading] = React.useState("");
+	const [logMatrix, setLogMatrix] = React.useState([]);
 
 	const [values, setValues] = React.useState({
+		log_id: "new",
 		object: "",
 		obs_type: activeButton,
 		right_ascension: "00:00:00.00",
@@ -69,7 +72,6 @@ function Observe() {
 	const defaultVals = {
 		right_ascension: "00:00:00.00",
 		declination: "+00:00:00.00",
-		altitude: "0",
 	}
 
 	const handleFieldChange = (prop) => (event) => {
@@ -103,7 +105,8 @@ function Observe() {
 		{ name: "Exposure Duration (secs)", value: "exposure_duration" },
 	]
 
-	function field_init(type) {
+
+	function ObsRequestField(type) {
 		return (
 			<TextField
 				disabled={activeButton !== "object" &&
@@ -126,13 +129,15 @@ function Observe() {
 		)
 	}
 
-	function button_init(name) {
+	function ObsTypeButton(name) {
 		return (
 			<Button
 				sx={[
 					{
+						mr: 1.65,
 						fontWeight: 'bold',
-						maxWidth: '20px',
+						maxWidth: '70px',
+						maxHeight: '37px'
 					},
 					activeButton === name ? styles["active"] : styles["inactive"]
 				]}
@@ -145,13 +150,68 @@ function Observe() {
 		)
 	}
 
+	function ObsTypeButtons(props) {
+		const buttonNames = props.nameArr
+		const buttons = buttonNames.map((name) => { return ObsTypeButton(name) })
+
+		return (
+			<ButtonGroup>
+				{buttons}
+			</ ButtonGroup >
+		)
+	}
+
+
+	const getLogsheets = async () => {
+		try {
+			await axios.get(
+				`/api/logsheets/`,
+				{
+					withCredentials: true
+				})
+		}
+		catch (err) { console.log(err) }
+	}
+
+
+	useEffect(() => {
+		getLogsheets()
+	}, [socket])
+
+	socket.on("setLogsheets", (logsheetArr) => {
+		setLogMatrix(logsheetArr)
+	})
+
+	socket.on("updateLogsheets", (logsheetArr) => {
+		setLogMatrix([...logMatrix, logsheetArr])
+	})
+
 	return (
 		<div>
 			<h2 className="horiz-align">Observe</h2>
 			<h5 className="horiz-align">Start observations from here</h5>
 
-			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
-				{(buttons.map(button_init))}
+			<Stack className="horiz-align vert-space" justifyContent="space-between" direction="row" spacing={1}>
+				<ObsTypeButtons nameArr={buttons} />
+
+				<FormControl size="small" style={{ minWidth: 300 }}>
+					<InputLabel>Logsheet</InputLabel>
+					<Select
+						id="logsheet-select"
+						value={values.log_id}
+						label="Logsheet"
+						onChange={handleFieldChange("log_id")}
+					>
+						<MenuItem value="new"><em>Create new logsheet...</em></MenuItem>
+						{logMatrix.map((logArr, index) => {
+							return (
+								<MenuItem key={index} value={logArr[0]}>
+									{logArr[1]}
+								</MenuItem>
+							)
+						})}
+					</Select>
+				</FormControl>
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
@@ -196,14 +256,14 @@ function Observe() {
 									setErrs({ ...errs, object: "No such object found" })
 								}
 
-								setLoading("");
+								setFormLoading("");
 							};
 
-							setLoading("Resolve")
+							setFormLoading("Resolve")
 							initResolution(props.values)
 						}}
 						loadingPosition="center"
-						loading={isLoading === "Resolve"}
+						loading={isFormLoading === "Resolve"}
 					>
 						Resolve
 					</LoadingButton>
@@ -211,11 +271,11 @@ function Observe() {
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
-				{fields_row1.map(field_init)}
+				{fields_row1.map(ObsRequestField)}
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
-				{fields_row2.map(field_init)}
+				{fields_row2.map(ObsRequestField)}
 
 				<FormControl
 					sx={{ m: 1, minWidth: 120 }}
@@ -237,7 +297,7 @@ function Observe() {
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={3}>
-				{fields_row3.map(field_init)}
+				{fields_row3.map(ObsRequestField)}
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={1}>
@@ -300,7 +360,7 @@ function Observe() {
 								}
 							}}
 
-							disabled={!isFormEnabled || (isLoading !== "" && isLoading !== "Start")}
+							disabled={!isFormEnabled || (isFormLoading !== "" && isFormLoading !== "Start")}
 						>
 							Start
 						</LoadingButton>
@@ -331,7 +391,7 @@ function Observe() {
 							}}
 
 							loadingPosition="center"
-							loading={isLoading === "Stop"}
+							loading={isFormLoading === "Stop"}
 							disabled={isFormEnabled}
 						>
 							Stop

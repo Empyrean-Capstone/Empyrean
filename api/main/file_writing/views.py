@@ -130,7 +130,6 @@ def __update_db_cols(headers, request_input: dict) -> dict:
         "object_name": headers["OBJECT"],
         "airm": headers["AIRM"],
         "obs_id": headers["OBSID"],
-        "log_id": headers["LOGID"],
         "mjdobs": headers["MJDOBS"],
         "filename": f"{headers['LOGID']}.fits",
         "date_made_open_source": request_input["date_made_open_source"],

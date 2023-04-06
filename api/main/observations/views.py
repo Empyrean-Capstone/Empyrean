@@ -5,7 +5,7 @@ from flask import request, session
 from main import db
 from . import observations
 from .. import sio
-from ..logsheet.views import get_all_log_data
+from ..logsheet.views import create_logsheet, get_all_log_data
 from ..models.observation import Observation, get_logs_json_str
 from ..status.views import get_current_obsid
 
@@ -24,6 +24,9 @@ def __init_obs_requests(obs_request: dict) -> list:
     obs: Observation
     observations: list[Observation] = []
     ids: list[int] = []
+
+    if obs_request["log_id"] == "new":
+        obs_request["log_id"], _ = create_logsheet(obs_request["userid"])
 
     while i < int(obs_request["num_exposures"]):
         obs = __init_obs_records(obs_request)
@@ -57,12 +60,12 @@ def post_observation():
         str: URI to newly created observation request.
     """
     obs_instructions: dict = request.get_json()
-    sio.emit("set_obs_type", obs_instructions["obs_type"] )
-
-    exp_ids: list[int] = __init_obs_requests(obs_instructions)
-
     obs_instructions["userid"] = session.get("userid")
     obs_instructions["name"] = session.get("name")
+
+    sio.emit("set_obs_type", obs_instructions["obs_type"])
+
+    exp_ids: list[int] = __init_obs_requests(obs_instructions)
 
     # The request data from the frontend will act like
     # instructions for how the camera must populate the
@@ -83,7 +86,7 @@ def end_observation():
     db.session.commit()
 
     get_all_log_data()
-    sio.emit( "set_obs_type", data=("object") )
+    sio.emit("set_obs_type", data=("object"))
 
     return {}
 

@@ -14,14 +14,16 @@ class Logsheet(db.Model):
     date_created = db.Column(db.DateTime, default=today)
     date_number = db.Column(db.String)
 
-    def __init__(self) -> None:
-        today = get_utc_today()
+    def __init__(self, userid) -> None:
+        def get_date_id_count():
+            today = get_utc_today()
+            cur_date_logs = Logsheet.query.filter_by(date_created=today).all()
+            date_id = len(cur_date_logs) + 1
 
-        cur_date_logs = Logsheet.query.filter_by(date_created=today).all()
+            return f"{today.strftime('%Y%m%d')}.{str(date_id).zfill(3)}"
 
-        date_id = len(cur_date_logs) + 1
-
-        self.date_number = today.strftime("%Y%m%d") + "." + str(date_id).zfill(3)
+        self.userid = userid
+        self.date_number = get_date_id_count()
 
     def __repr__(self):
         return {self.date_number}
