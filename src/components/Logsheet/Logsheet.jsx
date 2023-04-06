@@ -116,12 +116,14 @@ function Logsheet() {
 		let newLogObjs = JSON.parse(newLogJson)
 		let updatedMatrix = {}
 
-		Object.entries(newLogObjs).forEach(([id, incomingData]) => {
-			let curLog = logMatrix[id]
+		Object.entries(newLogObjs).map(([id, data]) => (
+			setLogMatrix((prevMatrix) => {
+				let curLog = prevMatrix[id]
+				updatedMatrix[id] = { ...curLog, ...data }
 
-			updatedMatrix[id] = { ...curLog, ...incomingData }
-			setLogMatrix((prevMatrix) => ({ ...prevMatrix, ...updatedMatrix }))
-		})
+				return { ...prevMatrix, ...updatedMatrix }
+			})
+		))
 	})
 
 
