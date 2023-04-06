@@ -22,11 +22,15 @@ def submit_data(image_path, exposure_data: dict, request_input: dict):
     """
     Save observation image data to FITS file format.
 
-    Args:
-        image_data(dict): image data resulting from requested exposure
+    Parameters:
+    -----------
+        image_data : dict
+            Image data resulting from requested exposure
 
     Returns:
-        200: all operations were successful
+    --------
+        200
+            All operations were successful
         TODO: add error status
     """
     timestr_fmt = "%Y-%m-%dT%X.%f"
