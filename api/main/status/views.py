@@ -88,16 +88,29 @@ def get_instrument_id(instrument_name) -> int:
     return instrument.instrumentId
 
 @sio.on("update_status")
-def update_status(instrument_id, update_dict):
+def update_status(instrument_id:int, update_dict:dict):
     """
     From the instruments, updates that instrument's statuses as they perform
     work. 
     
     Parameters:
-        instrument_id : int """
+    -----------
+        instrument_id : int 
+            The database id of the instrument to update the correct status
+        update_dict: dict
+            The dictionary of statuses to be updated. Each instrument details
+            how these statuses should be formatted.
+    
+    """
+    
+    # For each status in the dict, find the status, and update the values for it,
+    # Then, save the database changes.
     for key, value in update_dict.items():
         status = Status.query.filter_by(instrumentID=instrument_id, statusName=key).first()
 
+        # If the status was not found, create it as a status
+        # Primarily used on initialization of statuses for new instruments to 
+        # the system.
         if status == None:
             status = Status(instrumentID=instrument_id, statusName=key, statusValue=value)
             db.session.add(status)
@@ -106,8 +119,11 @@ def update_status(instrument_id, update_dict):
 
     db.session.commit()
 
+    # Let the frontend know that there have been changes to the database. 
     sio.emit("frontend_update_status", update_dict)
 
+    # If the camera has updated which observation it is exposing on, update
+    # the frontend that displays which observation is being worked on.
     if update_dict.get("obs_id") is not None:
         log_status: dict = {update_dict["obs_id"]: {"progress": "In Progress"}}
         sio.emit("updateObservations", json.dumps(log_status))
