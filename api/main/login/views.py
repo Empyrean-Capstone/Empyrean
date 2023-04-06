@@ -18,8 +18,11 @@ from ..models.user import User
 def get_user():
     """
     Get the current user's name.
+
     Returns:
-        str: the user's name
+    --------
+        str
+            The user's name
     """
     id = session.get("userid")
 
@@ -37,9 +40,13 @@ def get_user():
 def post_login():
     """
     Authenticate the user using their username and password.
+
     Returns:
-        200: The user was successfully logged in
-        401: User credentials did not match an existing user
+    --------
+        200
+            The user was successfully logged in
+        401
+            User credentials did not match an existing user
     """
     login_input: dict = request.get_json()
     username_req = login_input["username"]
@@ -73,9 +80,12 @@ def logout():
     Log the user out, ending their user session.
 
     Returns:
-        200: The user was successfully logged out
-        404: endpoint is valid but the requested
-             resource could not be found
+    --------
+        200
+            The user was successfully logged out
+        404
+            Endpoint is valid but the requested
+            resource could not be found
     """
     userid = session.pop("userid", None)
 
@@ -93,9 +103,12 @@ def validate_session():
     Check if the user has a valid session.
 
     Returns:
-        200: user has a valid session.
-        404: endpoint is valid but the requested
-             resource could not be found
+    --------
+        200
+            User has a valid session.
+        404
+            Endpoint is valid but the requested
+            resource could not be found
     """
     if session.get("username") is None:
         return "not found", 404
