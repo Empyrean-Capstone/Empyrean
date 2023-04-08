@@ -1,0 +1,47 @@
+name: Issue Report
+description: Report a problem with functionality, documentation, and otherwise
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        _Before reporting_ an issue, please search the [standing issues](https://github.com/Empyrean-Capstone/Empyrean/issues) and check the [Q & A](https://github.com/Empyrean-Capstone/Empyrean/discussions/categories/q-a) for duplicates. Please redirect any usage or "How to" questions to the aforementioned Q & A space. If asked here, they will be closed and reopened there.
+
+  - type: textarea
+    attributes:
+      label: "Problem"
+      description: "Describe the current, undesired behavior. May include stack traces, images, videos, et cetera."
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Steps to reproduce"
+      description: "Describe exactly how to reproduce the undesired behavior."
+      placeholder: |
+        1. start an observation
+        2. click a link
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Expected behavior"
+      description: "Describe the behavior you expect."
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: "Operating system/version"
+      placeholder: "macOS 11.5"
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: "Browser name/version"
+      placeholder: "Chrome 112.0.5615.62"
+    validations:
+      required: true
