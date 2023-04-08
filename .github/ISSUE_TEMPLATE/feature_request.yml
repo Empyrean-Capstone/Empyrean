@@ -1,0 +1,23 @@
+name: Feature Request
+description: Request an enhancement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        _Before requesting_ an enhancement, please search the [standing enhancement requests](https://github.com/Empyrean-Capstone/Empyrean/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement) and check the [discussion](https://github.com/Empyrean-Capstone/Empyrean/discussions/) for duplicates.
+
+  - type: textarea
+    attributes:
+      label: "Current behavior"
+      description: "Provide a description of what the application currently does or lacks to motivate the desired behavior."
+      placeholder: "This program doesn't make coffee, but it should because…"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Desired behavior"
+      description: "Describe what the new feature or behavior would look like. How does it solve the problem?"
+    validations:
+      required: true
