@@ -22,7 +22,13 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-
+/**
+ * Creates the Login page, which has the ability to
+ *     validate users using a username and password created
+ *     in the user management page.
+ * @return {JSX element} Returns a valid JSX element containing
+ *     the login page with text fields and login button.
+ */
 function Login() {
 	const navigate = useNavigate();
 
@@ -66,6 +72,7 @@ function Login() {
 				>
 					<img src={require("../../images/lowell.png")} alt="Logo" />
 
+					// Represents a text field with several advanced features.
 					<TextField
 						sx={{ mt: 2, mb: 2 }}
 						required
@@ -85,6 +92,7 @@ function Login() {
 						}}
 					/>
 
+					// Represents a text field with several advanced features.
 					<TextField
 						sx={{ mt: 2, mb: 2 }}
 						required
@@ -102,6 +110,7 @@ function Login() {
 						InputProps={{
 							endAdornment: <InputAdornment position="end">
 								<IconButton
+									// Allows a user to change password visibility for privacy.
 									aria-label="toggle password visibility"
 									onClick={() => setShowPassword((show) => !show)}
 									onMouseDown={(event) => {
@@ -128,6 +137,11 @@ function Login() {
 							type="submit"
 							variant="contained"
 							onClick={() => {
+								/**
+								 * Checks the login request and allows the user to login.
+								 * @param {JSX element} Takes in the username and password fields.
+								 * @return {Boolean} Response to user login request.
+								 */
 								function validateLoginRequest(values) {
 									try {
 										loginFormSchema.validateSync(values, { abortEarly: false })
@@ -147,7 +161,7 @@ function Login() {
 									}
 								}
 
-
+								// Sends a post request to authenticate a user.
 								const attemptLogin = async (values) => {
 									console.log(values)
 

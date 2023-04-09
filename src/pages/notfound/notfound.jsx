@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom";
 
+/**
+ * Creates a JSX element to be displayed as a NOT_FOUND
+ *     page, containing a link back to the login.
+ * @return {JSX element} Returns a JSX element as a NOT_FOUND
+ *     page.
+ */
 function NotFound() {
 	return (
 		<div>

@@ -2,6 +2,12 @@ import './style.css'
 import Grid from '@mui/material/Unstable_Grid2'
 import { PaperPane } from '../../components/PaperPane/PaperPane'
 
+/**
+ * Creates the About page, with information about Lowell Observatory
+ *     and general use cases of the software.
+ * @return {JSX element} Returns a valid JSX element containing the About
+ *     page.
+ */
 function About() {
 	return (
 		<div>

@@ -7,7 +7,13 @@ import { Observe } from '../../components/Observe'
 import { Status } from '../../components/Status'
 import { Logsheet } from '../../components/Logsheet'
 
-
+/**
+ * Creates a grid with a given size, component, and optional properties.
+ * @param {int | JSX element | JSX element} Takes in a integer size for 
+ *     the grid, the component to be put into a grid, and any additional
+ *     properties.
+ * @return {JSX element} Returns a valid JSX element as a grid.
+ */
 function GridComponent({ size, Component, ...props }) {
 	return (
 		<Grid containers item xs={size}>
@@ -16,6 +22,11 @@ function GridComponent({ size, Component, ...props }) {
 	)
 }
 
+/**
+ * Creates the Observation Page
+ * @return {JSX element} Returns a valid JSX element as the observation
+ *     page.
+ */
 function Observation() {
 	return (
 		<div>

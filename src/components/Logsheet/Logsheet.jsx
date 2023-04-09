@@ -15,7 +15,12 @@ import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import PanoramaIcon from '@mui/icons-material/Panorama';
 import PendingIcon from '@mui/icons-material/Pending';
 
-
+/**
+ * Gets and returns chip properties.
+ * @param {JSX element} Gets a chip row.
+ * @return {JSX element} Returns a JSX element containing icon,
+ *     label, and color.
+ */
 function getChipProps(params) {
 	const chipProps = {
 		"Pending": { color: "primary", icon: <PendingIcon /> },
@@ -31,7 +36,11 @@ function getChipProps(params) {
 	)
 }
 
-
+/**
+ * Displays the progress value of a row.
+ * @param {JSX element} Takes in a valid JSX element row.
+ * @return {string} returns the row's value string.
+ */
 function showProgress(params) {
 	if (params.value === "None") {
 		return <LinearProgress sx={{ width: "80%" }} />
@@ -40,7 +49,7 @@ function showProgress(params) {
 	return params.value
 }
 
-
+// Defines the columns for the logsheet data to be displayed.
 const columns = [
 	{
 		field: 'id',
@@ -83,6 +92,10 @@ const columns = [
 	},
 ];
 
+/**
+ * Returns a empty logsheet if no data is contained within.
+ * @return {JSX element} Returns a JSX element with an empty grid.
+ */
 function EmptyOverlay() {
 	return (
 		<GridEmptyOverlay
@@ -92,7 +105,12 @@ function EmptyOverlay() {
 	)
 }
 
-
+/** 
+ * Creates the logsheet component, involving data rows
+ *     from the database, as well as standard values.
+ * @return {JSX element} Returns a valid JSX element that contains
+ *     the logsheet component.
+ */
 function Logsheet() {
 	const tableHeight = 1000
 	const [logMatrix, setLogMatrix] = useState([]);

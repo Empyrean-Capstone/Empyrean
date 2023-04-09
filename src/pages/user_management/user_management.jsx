@@ -39,6 +39,10 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 
+/**
+ * Creates an empty overlay grid if there are no users in the system.
+ * @return {JSX element} Returns an empty JSX element grid.
+ */
 function EmptyOverlay() {
 	return (
 		<GridEmptyOverlay
@@ -48,7 +52,7 @@ function EmptyOverlay() {
 	)
 }
 
-
+// Defines the style color, background color, and font size.
 const StyledTooltip = styled(({ className, ...props }) => (
 	<Tooltip {...props} classes={{ popper: className }} />
 ))(({ theme }) => ({
@@ -63,9 +67,14 @@ const StyledTooltip = styled(({ className, ...props }) => (
 	},
 }));
 
-
-// Not passing props correctly:
-// https://github.com/mui/material-ui/issues/33476
+/**
+ * Renders an error message.
+ * @param {JSX element} Takes in a field that has an error attached to it.
+ * @note Not passing props correctly:
+ * @see https://github.com/mui/material-ui/issues/33476
+ * @return {JSX element} Returns a valid JSX element containing the error
+ *     message.
+ */
 function renderEditName(props) {
 	const { error, errormessage } = props;
 
@@ -81,6 +90,11 @@ function renderEditName(props) {
 }
 
 
+/**
+ * Creates the User Management page.
+ * @return {JSX element} Returns a valid JSX element containing the
+ *     user management page.
+ */
 function ManageUsers() {
 	const apiRef = useGridApiRef();
 	const tableHeight = 1000
@@ -95,11 +109,16 @@ function ManageUsers() {
 
 	const handleCloseSnackbar = () => setSnackbar(null);
 
-
+	/**
+	 * Creates a user for the user table.
+	 * @return {JSX element} Returns a valid JSX element containing the add
+	 *     user button.
+	 */
 	function GridToolbarAddRow() {
 		const handleClick = () => {
 			setCanAddUser(false)
 
+			// Sends a get request to the users for permission to create.
 			const createUser = async () => {
 				try {
 					let createRes = await axios.get(
@@ -157,6 +176,11 @@ function ManageUsers() {
 		);
 	}
 
+	/**
+	 * Creates a custom toolbar using a grid.
+	 * @return {JSX element} Returns a JSX element containing the
+	 *     custom toolbar.
+	 */
 	function CustomToolbar() {
 		return (
 			<GridToolbarContainer>
@@ -168,13 +192,15 @@ function ManageUsers() {
 		);
 	}
 
-	// There is currently no means of manualing triggering
-	// preProcessEditCellProps, which is the canonical way
-	// of validating MUI data grid rows. This callback only
-	// fires on text change, that I'm aware of. We can force
-	// it to run by manually setting a cell value.
-	//
-	// https://github.com/mui/mui-x/issues/5009
+	/**
+	 * Validates a row when it is updated.
+	 * @note There is currently no means of manualing triggering
+	 *     preProcessEditCellProps, which is the canonical way
+	 *     of validating MUI data grid rows. This callback only
+	 *     fires on text change, that we're aware of. We can force
+	 *     it to run by manually setting a cell values.
+	 * @see https://github.com/mui/mui-x/issues/5009
+	 */
 	function validateOnLeave(id) {
 		const row = apiRef.current.getRowWithUpdatedValues(id)
 
@@ -207,6 +233,7 @@ function ManageUsers() {
 		setCanAddUser(true)
 	};
 
+	// Sends a post request to delete a user from the database.
 	const deleteUser = async (rowID) => {
 		try {
 			let deleteRes = await axios.post(
@@ -233,6 +260,7 @@ function ManageUsers() {
 		}
 	};
 
+	// Handles trying to delete the last user or deleting any other user.
 	const handleDeleteClick = (id) => () => {
 		if (rows.length > 1) {
 			deleteUser(id)
@@ -246,6 +274,7 @@ function ManageUsers() {
 		}
 	};
 
+	// Handles cancelling an operation.
 	const handleCancelClick = (id) => () => {
 		setRowModesModel({
 			...rowModesModel,
@@ -262,6 +291,7 @@ function ManageUsers() {
 		setCanAddUser(true)
 	};
 
+	// Sends a post request to update user rows.
 	const processRowUpdate = (newRow) => {
 		const updateUser = async (updatedRow) => {
 			try {
@@ -314,11 +344,24 @@ function ManageUsers() {
 	};
 
 
+	/**
+	 * Checks string length is valid
+	 * @param {string | int} Takes in a string and integer length.
+	 * @return {Boolean | NULL} Returns true if the str is null or less than
+	 *     the passed in length, or null if not.
+	 */
 	function validateStrLen(str, len) {
 		if (str === null || str.length < len) return true
 		return null
 	}
 
+	/**
+	 * Confirms a string is unique.
+	 * @param {int | string | string} Takes in the current ID, the string
+	 *     to check, and the column name.
+	 * @return {NULL | string } Returns null if the current ID is not in the
+	 *     columns, returns the string if it already exists.
+	 */
 	function ensureStrUnique(curID, str, columnName) {
 		const existingValues = rows.map((row) => {
 			if (curID !== row.id) return row[columnName]
@@ -329,7 +372,12 @@ function ManageUsers() {
 		return existingValues.includes(str)
 	}
 
-
+	/**
+	 * Defines all of the columns for user fields. This includes
+	 *     several advanced features depending on the column.
+	 * @return {JSX element} Contains several return values for some
+	 *     columns.
+	 */
 	const columns = [
 		{
 			field: "id",
@@ -455,6 +503,13 @@ function ManageUsers() {
 		},
 	];
 
+	/**
+	 * Initializes Rows in the grid.
+	 * @param {int | string | string | string | boolean} Takes in various fields
+	 *     each with proper values.
+	 * @return {int | string | string | string | boolean} Returns the passed in values
+	 *     as a valid row.
+	 */
 	function initRows(id, username, name, password, isadmin) {
 		return { id, name, username, password, isadmin }
 	}
