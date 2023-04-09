@@ -9,7 +9,12 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 
-
+/**
+ * Creates a way to search the logsheet component via two dates,
+ *     returning all observations between them.
+ * @return {JSX element} Returns a valid component to be used
+ *     within the logsheet page.
+ */
 function CalendarSearch() {
 	const [logMatrix, setLogMatrix] = useState([]);
 	const [selectedStartDate, setSelectedStartDate] = useState(null)
@@ -39,7 +44,14 @@ function CalendarSearch() {
 			endYear: selectedEndDate["$y"],
 		})
 	}
-
+	
+	/**
+	 * Provides a way to select a date from a provided
+	 *     calender.
+	 * @props {const date} Takes in a start and\or end date
+	 * @return {JSX element} Returns a valid element used
+	 *     within this component
+	 */
 	function DateSelect(props) {
 		return (
 			<LocalizationProvider dateAdapter={AdapterDayjs}>

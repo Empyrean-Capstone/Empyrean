@@ -6,6 +6,8 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Fade from '@mui/material/Fade';
 
+//All import statements in this format are for specific pages
+//and\or components.
 import './App.css';
 import { SocketContext, socket } from './context/socket';
 import { About } from './pages/about/about';
@@ -17,8 +19,14 @@ import { ManageUsers } from './pages/user_management'
 import { NotFound } from './pages/notfound'
 import { Observation } from './pages/observation'
 
-
-// https://stackoverflow.com/a/71414958
+/**
+ * Wraps the page with a user Authentication module,
+ *     which requires users to be logged in to access
+ *     specific pages.
+ * @props {Boolean} Level of authentication required to
+ *     access a page.
+ * @see https://stackoverflow.com/a/71414958
+ */
 const AuthWrapper = ({ props }) => {
 	const location = useLocation();
 
@@ -32,6 +40,8 @@ const AuthWrapper = ({ props }) => {
 			setLoading(true);
 
 			try {
+				//Sends a post request with axios to validate 
+				//the login information.
 				const auth = await axios.post(
 					`/api/auth_login/validate/`,
 					{ "needs_admin": needsAdmin },
@@ -75,7 +85,13 @@ const AuthWrapper = ({ props }) => {
 	return auth ? <Outlet /> : <Navigate to="/" replace />; // or auth property if object
 }
 
-
+/**
+ * Returns the app as a web page. Many pages and components within also
+ *     have this same structure. The structure must be composed of valid
+ *     tags and can contain functions and constant values.
+ * @return {JSX element} Returns a webpage with valid routes to specific
+ *     pages.
+ */
 function App() {
 
 	return (

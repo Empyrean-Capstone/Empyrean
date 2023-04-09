@@ -20,7 +20,12 @@ import FilterCenterFocusIcon from '@mui/icons-material/FilterCenterFocus';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
-
+/**
+ * Creates a JSX element to be used on all pages as a footer,
+ *     which contains a link to the About and Contact pages.
+ * @return {JSX element} Returns a valid JSX Footer with links
+ *     to About and Contact.
+ */
 function Footer() {
 	return (
 		<>
@@ -41,7 +46,13 @@ function Footer() {
 	)
 }
 
-
+/**
+ * Defines a way to create navigation links in the navigation
+ *     bar on the side of the webpage.
+ * @params {JSX element} Element to be put into the nav bar.
+ * @return {JSX element} Returns a valid JSX element that contains
+ *     a navigation link.
+ */
 function CreateNavLinks({ items }) {
 	const navigate = useNavigate()
 	const { pathname } = useLocation()
@@ -82,6 +93,11 @@ function CreateNavLinks({ items }) {
 	return linkList
 }
 
+/**
+ * Creates a button to log a user out.
+ * @return {JSX element} Returns a JSX element to log
+ *      a user out.
+ */
 function LogOutLink() {
 	const navigate = useNavigate()
 
@@ -137,7 +153,7 @@ function LogOutLink() {
 	)
 }
 
-
+//defines custom styled nav bar values
 const CustomNav = styled(List)({
 	'& .MuiListItemButton-root': {
 		paddingLeft: 24,
@@ -152,6 +168,11 @@ const CustomNav = styled(List)({
 	},
 });
 
+/**
+ * Creates a valid Layout for the page
+ * @return {JSX element} Returns a valid JSX element
+ *     that defines the overall layout of a page.
+ */
 function Layout() {
 	const drawerWidth = 285
 
@@ -162,6 +183,7 @@ function Layout() {
 	})
 
 	useEffect(() => {
+		//sends a get request to determine login status
 		(async () => {
 			const res = await axios.get(
 				`/api/auth_login/`,
@@ -179,7 +201,7 @@ function Layout() {
 		};
 	}, [setUserInfo]);
 
-
+	//defines the links in the nav bar
 	const navLinks = [
 		{
 			text: 'Request Observations',
@@ -193,6 +215,7 @@ function Layout() {
 		},
 	]
 
+	//defines the link to the manage users page
 	const manageUsers = {
 		text: 'Manage Users',
 		icon: <ManageAccountsIcon />,

@@ -1,6 +1,13 @@
 import './style.css'
 import {BrowserRoute, Route, Switch, Link} from 'react-router-dom'
 
+/**
+ * Creates a footer component with links to 
+ *     the about and contact pages.
+ * @return {JSX element} Returns a JSX footer
+ *     for use with every page that contains links
+ *     to About and Contact pages.
+ */
 function Footer() {
 	return (
 		<div>
