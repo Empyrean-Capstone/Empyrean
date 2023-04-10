@@ -2,6 +2,12 @@ from serial import Serial
 from time import sleep
 import socketio
 
+from instrument import Instrument
+
+
+OFF_STATUS: dict = {"value": "Off", "color": "warning"}
+ON_STATUS: dict = {"value": "On", "color": "success"}
+
 
 class K8056(object):
     """
@@ -75,86 +81,140 @@ class K8056(object):
         self._process(68, 1, 1)
 
 
-class Spectrograph:
+class Spectrograph(Instrument):
+    """
+    Wrapper class for whatever spectrograph is to be used.
+    Interfaces with the backend in order to coordinate with other instruments.
+
+    Attributes:
+    -----------
+        OBSERVING_MODES: dict
+            A constant to translate the observing modes to be chosen,
+            (object, dark, flat, thar) with the physical ports that need to
+            be flipped
+        status_dictionary: dict
+            The initial status of the spectrograph to be sent to the backend
+            and where the statuses are kept track of during the process of
+            operation.
+        device: None | K8056
+            The physical device to be controlled by this file.
+            NOTE: is None if there is no device, meaning a simulation is being
+                  run
+        simulator: boolean
+            A boolean value for whether or not a physical device is connected.
+            Set on instantiation
+            TODO: make so that simulation running is a flag on file run.
+
+    Mehtods:
+    --------
+        turn_on(port): None
+            Turns on one of the given ports (mirror, led, thar, tung)
+        turn_off(port): None
+            Turns off one of the given port
+        callbacks(): None
+            The callbacks unique to the spectrograph which need to be listened
+            to for correct operation of the spectrograph
+        get_instrument_name(): str
+            TODO: programmatic way to get the instrument name
+            Gets the name of the connected physical spectrograph
+    """
+
+    # The following are the different observing modes to be used
+    # for the statuses. Use these dictionaries to update the statuses
+    OBSERVING_MODES = {
+        "object": {
+            "Mirror": OFF_STATUS,
+            "LED": OFF_STATUS,
+            "ThAr": OFF_STATUS,
+            "Tung": OFF_STATUS,
+        },
+        "dark": {
+            "Mirror": ON_STATUS,
+            "LED": OFF_STATUS,
+            "ThAr": OFF_STATUS,
+            "Tung": OFF_STATUS,
+        },
+        "flat": {
+            "Mirror": ON_STATUS,
+            "LED": ON_STATUS,
+            "ThAr": OFF_STATUS,
+            "Tung": OFF_STATUS,
+        },
+        "thar": {
+            "Mirror": ON_STATUS,
+            "LED": OFF_STATUS,
+            "ThAr": ON_STATUS,
+            "Tung": OFF_STATUS,
+        },
+    }
+
+    # Sets the initial status dictionary
+    status_dictionary = OBSERVING_MODES["object"]
+
     def __init__(self, device="/dev/cu.", simulator=False):
+        """
+        Connects to the physical spectrograph if connected or else
+        defines the spectrograph as a simulation only
+        """
         if simulator:
             self.device = None  # Replace with instance of K8056
         else:
             self.device = K8056(device)
 
         self.simulation = simulator
-        self.id = sio.call("get_instrument_id", "spectrograph")
-
-        print(self.id)
-
-        #  self.ports = {1: "mirror", 2: "led", 3: "thar", 4: "tung"}
-        #  self.status = {0: 0, 1: 0, 2: 0, 3: 0}
-
-        # 0 = object, 1=dark, 2= flat, 3=thar
-        self.observing_modes = {
-            "object": {
-                "mirror": "off",
-                "led": "off",
-                "thar": "off",
-                "tung": "off",
-            },
-            "dark": {
-                "mirror": "on",
-                "led": "off",
-                "thar": "off",
-                "tung": "off",
-            },
-            "flat": {
-                "mirror": "on",
-                "led": "on",
-                "thar": "off",
-                "tung": "off",
-            },
-            "thar": {
-                "mirror": "on",
-                "led": "off",
-                "thar": "on",
-                "tung": "off",
-            },
-        }
-
-    def set_mode(self, mode):
-        mode_ports = self.observing_modes[mode]
-
-        for i, val in enumerate(mode_ports):
-            if val == "on":
-                self.turn_on(i)
-            else:
-                self.turn_off(i)
-
-        sio.emit("update_status", data=(self.id, mode_ports))
-
-        #  for jj in range(4):
-        #      if self.observing_modes[mode][jj] == 0:
-        #          self.turn_off(jj)
-        #      else:
-        #          self.turn_on(jj)
+        super().__init__()
 
     def turn_on(self, port):
+        """
+        Turns on the port of the given type
+
+        Parameters:
+        -----------
+            port: str
+                The port to be turned on
+                NOTE: can be ("mirror", "led", "thar", "tung")
+        """
         if self.device is not None:
             self.device.set(port)
 
     def turn_off(self, port):
+        """
+        Turns on the port of the given type
+
+        Parameters:
+        -----------
+            port: str
+                The port to be turned on
+                NOTE: can be ("mirror", "led", "thar", "tung")
+        """
         if self.device is not None:
             self.device.set(port)
 
+    # TODO: find out how to find the model name of the spectrograph
+    def get_instrument_name(self):
+        """
+        Gets the name of the connected spectrograph if conencted
+        """
+        return "spectrograph"
 
-if __name__ == "__main__":
-    sio = socketio.Client()
-    sio.connect("http://0.0.0.0:5000")
+    def callbacks(self):
+        @Instrument.sio.on("set_obs_type")
+        def set_obs_type(mode):
+            mode_ports = self.OBSERVING_MODES[mode]
 
-    # TODO ask for ID based on name
+            for i, val in enumerate(mode_ports):
+                if val == "on":
+                    self.turn_on(i)
+                else:
+                    self.turn_off(i)
+
+            Instrument.sio.emit("update_status", data=(self.id, mode_ports))
+
+
+def main():
     # if ID is not found register in the database
     spectrograph = Spectrograph(simulator=True)
 
-    # this is listening for the server to emit this message
-    @sio.on("set_obs_type")
-    def change_spectrograph_state(mode):
-        spectrograph.set_mode(mode)
 
-        return {}
+if __name__ == "__main__":
+    main()
