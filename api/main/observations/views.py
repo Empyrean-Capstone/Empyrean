@@ -59,20 +59,26 @@ def get_observations():
 def post_observation():
     """
     Create a new observation request for a specific user.
+    Is a two part function with setup_camera
 
-    Returns:
-    --------
-        str:
-            URI to newly created observation request.
     """
     
     obs_instructions: dict = request.get_json()
 
     # Have the spectrograph switch to the correct observation type'
     # TODO: Ensure that the spectrograph has completed
-    sio.emit("set_obs_type", obs_instructions["obs_type"] )
-    time.sleep(.25)
+    sio.emit("prepare_observation", obs_instructions["obs_type"] )
 
+
+@sio.on("spectrograph_changed_ports")
+def setup_camera( obs_instructions ):
+    """
+    Is the second part of the post observation function
+    Takes the observation instructions from the spectrograph and sends this data
+    to the camera. Also makes observations for the database
+    """
+
+    print(obs_instructions)
     exp_ids: list[int] = __init_obs_requests(obs_instructions)
 
     obs_instructions["userid"] = session.get("userid")
