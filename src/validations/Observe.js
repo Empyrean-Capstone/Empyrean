@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 
 
+//regex for obeserve component
 // https://skyandtelescope.org/astronomy-resources/right-ascension-declination-celestial-coordinates/
 const requestFieldsRegex = {
 	// from 00:00:00.00 to 24:00:00, with max
@@ -15,6 +16,7 @@ const requestFieldsRegex = {
 	altitude: new RegExp("^(-?(([0-8][0-9]?|9)(.[0-9][0-9])?|90(.00)?))$"),
 }
 
+//yup adjustments to ensure correct format
 const requestFormSchema = yup.object().shape({
 	object: yup
 		.string()

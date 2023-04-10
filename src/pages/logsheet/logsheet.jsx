@@ -5,7 +5,12 @@ import { PaperPane } from '../../components/PaperPane/PaperPane'
 import Grid from '@mui/material/Unstable_Grid2'
 import Typography from '@mui/material/Typography';
 
-
+/**
+ * Creates a grid component with a given size
+ * @param {int | JSX element} Passed the size of a grid as an int and the
+ *     JSX element to be put into a grid.
+ * @return {JSX element} Returns a valid JSX element as a grid.
+ */
 function GridComponent({ size, Component }) {
 	return (
 		<Grid containers item xs={size}>
@@ -14,6 +19,11 @@ function GridComponent({ size, Component }) {
 	)
 }
 
+/**
+ * Creates a box that houses the instructions for the user's benefit.
+ * @return {JSX element} Returns a valid JSX element containing logsheet
+ *     instruction information.
+ */
 function InstructionBox() {
 	return (
 		<PaperPane>
@@ -30,7 +40,10 @@ function InstructionBox() {
 	)
 }
 
-
+/**
+ * Creates the Logsheet Page.
+ * @return {JSX element} Returns a valid JSX element as a page.
+ */
 function LogsheetPage() {
 	return (
 		<div>

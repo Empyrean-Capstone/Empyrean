@@ -1,3 +1,7 @@
+/**
+ * Creates a JSX element to be used as a Header
+ * @return {JSX element} Returns a valid JSX Header element
+ */
 function Header() {
 	return (
 		<header>

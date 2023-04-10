@@ -1,5 +1,11 @@
 import { PaperPane } from '../../components/PaperPane/PaperPane'
 
+/**
+ * Creates the Contact page, which has information about the github
+ *     and other contact information.
+ * @return {JSX element} Returns a valid JSX element that contains the Contact
+ *     page.
+ */
 function Contact() {
 	return (
 		<PaperPane>

@@ -1,6 +1,7 @@
-// resources:
-// For async posts to backend: https://medium.com/@adrianhuber17/how-to-build-a-simple-real-time-application-using-flask-react-and-socket-io-7ec2ce2da977
-//
+/**
+ * Resources:
+ * @see For async posts to backend: https://medium.com/@adrianhuber17/how-to-build-a-simple-real-time-application-using-flask-react-and-socket-io-7ec2ce2da977
+ */
 
 import React, { useContext, useEffect } from 'react';
 import axios from 'axios';
@@ -19,9 +20,15 @@ import './style.css'
 import { requestFormSchema } from '../../validations/Observe'
 import { SocketContext } from '../../context/socket'
 
-
+/**
+ * Creates the Observe component.
+ * @return {JSX element} Returns the Observe component with all
+ *     valid fields, buttons, and other values.
+ */
 function Observe() {
 	const [activeButton, setActiveButton] = React.useState("object");
+
+	//observation types
 	const buttons = ["object", "dark", "flat", "thar"]
 
 	const styles = {
@@ -45,6 +52,7 @@ function Observe() {
 
 	const [isLoading, setLoading] = React.useState("");
 
+	//observation values
 	const [values, setValues] = React.useState({
 		object: "",
 		obs_type: activeButton,
@@ -56,6 +64,7 @@ function Observe() {
 		exposure_duration: 0,
 	});
 
+	//error string default values
 	const [errs, setErrs] = React.useState({
 		object: "",
 		obs_type: "",
@@ -103,6 +112,11 @@ function Observe() {
 		{ name: "Exposure Duration (secs)", value: "exposure_duration" },
 	]
 
+	/**
+	 * Creates a text field with a variety of advanced features and layout
+	 *     options.
+	 * @return {JSX Text Field} Returns a valid JSX text field with advanced options.
+	 */
 	function field_init(type) {
 		return (
 			<TextField
@@ -126,6 +140,10 @@ function Observe() {
 		)
 	}
 
+	/**
+	 * Creates a React Button with some advanced options.
+	 * @return {JSX Button} Returns a Button component.
+	 */
 	function button_init(name) {
 		return (
 			<Button
@@ -175,10 +193,12 @@ function Observe() {
 					<LoadingButton
 						className="button short-button"
 						variant="contained"
-						// https://stackoverflow.com/questions/38154469/submit-form-with-mui
 						type="submit"
 						sx={{ fontSize: "9pt" }}
 						onClick={() => {
+							// sends a post request to resolve the requested object and set
+							//     the observation values.
+							// @see https://stackoverflow.com/questions/38154469/submit-form-with-mui
 							const initResolution = async (values) => {
 								try {
 									let res = await axios.post(`/api/resolve/`, values);
@@ -247,10 +267,15 @@ function Observe() {
 							className="button"
 							color="success"
 							variant="contained"
-							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
 							type="submit"
 							sx={{}}
 							onClick={() => {
+								/**
+								 * Checks the observation fields for validity.
+								 * @see https://stackoverflow.com/questions/38154469/submit-form-with-mui
+								 * @param {JSX element} Takes in the fields from the observe component.
+								 * @return {Boolean} Returns a boolean whether the fields are valid.
+								 */
 								function validateObservationRequest(values) {
 									try {
 										requestFormSchema.validateSync(values, { abortEarly: false })
@@ -271,6 +296,7 @@ function Observe() {
 									}
 								}
 
+								// sends a post request to begin observations with the current values.
 								const initObservation = async (values) => {
 									try {
 										const resp = await axios.post(
@@ -313,10 +339,11 @@ function Observe() {
 							className="button"
 							color="error"
 							variant="contained"
-							// https://stackoverflow.com/questions/38154469/submit-form-with-mui
 							type="submit"
 							sx={{}}
 							onClick={() => {
+								// sends a post request to end an observation.
+								// @see https://stackoverflow.com/questions/38154469/submit-form-with-mui
 								const endObservation = async () => {
 									try {
 										const resp = await axios.post(`/api/observations/end`, null);
