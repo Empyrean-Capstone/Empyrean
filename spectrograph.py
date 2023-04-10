@@ -206,6 +206,12 @@ class Spectrograph(Instrument):
 
             Instrument.sio.emit("update_status", data=(self.id, mode_ports))
 
+        @Instrument.sio.on("prepare_observation")
+        def prepare_observation( mode, obs_instructions ):
+            set_obs_type(mode)
+
+            Instrument.sio.emit( "spectrograph_changed_ports", obs_instructions )
+
     
 def main():
     # if ID is not found register in the database
