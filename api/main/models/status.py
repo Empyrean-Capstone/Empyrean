@@ -1,10 +1,10 @@
 from main import db, app
-import json
+
 
 class Status(db.Model):
     """
-    The python representation of the Status table of the database 
-    
+    The python representation of the Status table of the database
+
     Attributes:
     -----------
         id : int
@@ -16,36 +16,35 @@ class Status(db.Model):
         statusValue : str
             Value of the status
     """
-    
-    __tablename__ = 'status'
 
-    id = db.Column( db.Integer, primary_key = True )
-    instrumentID = db.Column( db.Integer )
-    statusName = db.Column( db.String() )
-    statusValue = db.Column( db.String() )
+    __tablename__ = "status"
 
-    def __init__(self, instrumentID, statusName, statusValue):
-        """
-        Sets the value of the status default values
-        """
-        
+    id = db.Column(db.Integer, primary_key=True)
+    instrumentID = db.Column(db.Integer)
+    statusName = db.Column(db.String())
+    statusValue = db.Column(db.String())
+    color = db.Column(db.String())
+
+    def __init__(self, instrumentID, statusName, statusValue, color="primary"):
+        """Sets the value of the status default values."""
         self.instrumentID = instrumentID
         self.statusName = statusName
         self.statusValue = statusValue
+        self.color = color
 
-    def serialize( self ):
+    def serialize(self):
         """
         Returns the status in a way that the frontend can use
-        
-        Returns: 
+
+        Returns:
         --------
             dict:
                 Values of the status to be read by the frontend
         """
-        
-        return {"id": self.id,
-                "instrumentID": self.instrumentID,
-                "statusName": self.statusName,
-                "statusValue": self.statusValue }
-
-    
+        return {
+            "id": self.id,
+            "instrumentID": self.instrumentID,
+            "statusName": self.statusName,
+            "statusValue": self.statusValue,
+            "color": self.color
+        }

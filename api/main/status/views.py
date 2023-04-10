@@ -7,11 +7,12 @@ from .. import sio
 from . import status
 from ..models import Status, Instrument
 
+
 # FIXME: must have a way to designate the current camera
 def get_current_camera() -> int:
     """
     Gets the most recent camera in use
-    
+
     Returns:
     --------
         int:
@@ -22,9 +23,9 @@ def get_current_camera() -> int:
 
 def get_current_obsid() -> int:
     """
-    Finds the status of the current camera, looking for the observation id 
+    Finds the status of the current camera, looking for the observation id
     of the current observation
-    
+
     Returns:
     --------
         int
@@ -34,32 +35,34 @@ def get_current_obsid() -> int:
 
     # There is a status that every camera must have and update which is
     # the id of the observation being taken
-    cur_camera_status = Status.query.filter_by(
-        instrumentID=cur_camera_id, statusName="obs_id").first()
+    cur_camera_status = Status.query.filter_by(instrumentID=cur_camera_id, statusName="obs_id").first()
 
     cur_obsid: int = int(cur_camera_status.statusValue)
 
     return cur_obsid
 
-@status.get('/index')
+
+@status.get("/index")
 def index():
     """
     Returns all of the statuses in the database.
-    Used on the frontpage for management. These are the values on load which are 
+    Used on the frontpage for management. These are the values on load which are
     then updated in real time
-    
-    Returns: 
+
+    Returns:
     --------
         list
-            List of all of the serialized statuses. A serialized status is a 
+            List of all of the serialized statuses. A serialized status is a
             simplified version of the status, only including what is needed for
             the status table to preset the data. See the /main/models/status.py
             for details on what the serialize function does.
     """
-    result = Status.query.all()
-    for index in range(len(result)):
-        result[index] = result[index].serialize()
-    return result
+    results = Status.query.all()
+
+    serialized_results: list = [res.serialize() for res in results]
+
+    return sorted(serialized_results, key=lambda k: (k["instrumentID"], k["statusName"]))
+
 
 @sio.on("get_instrument_id")
 def get_instrument_id(instrument_name) -> int:
@@ -71,7 +74,7 @@ def get_instrument_id(instrument_name) -> int:
 
     Returns:
         int
-            The database id of the instrument that made the request. 
+            The database id of the instrument that made the request.
     """
     # make query to recieve the id of the requested object
     instrument = Instrument.query.filter_by(instrumentName=instrument_name).first()
@@ -81,51 +84,66 @@ def get_instrument_id(instrument_name) -> int:
         new_instrument = Instrument(instrument_name)
         db.session.add(new_instrument)
         db.session.commit()
-        instrument = (
-        Instrument.query.filter_by(instrumentName=instrument_name).first()
-        )
+        instrument = Instrument.query.filter_by(instrumentName=instrument_name).first()
 
     return instrument.instrumentId
 
+
 @sio.on("update_status")
-def update_status(instrument_id:int, update_dict:dict):
+def update_status(instrument_id: int, update_dict: dict):
     """
     From the instruments, updates that instrument's statuses as they perform
-    work. 
-    
+    work.
+
     Parameters:
     -----------
-        instrument_id : int 
+        instrument_id : int
             The database id of the instrument to update the correct status
         update_dict: dict
             The dictionary of statuses to be updated. Each instrument details
             how these statuses should be formatted.
-    
+
     """
-    
+    status_rows: list = []
+
     # For each status in the dict, find the status, and update the values for it,
     # Then, save the database changes.
-    for key, value in update_dict.items():
-        status = Status.query.filter_by(instrumentID=instrument_id, statusName=key).first()
+    for status_name, status_entry in update_dict.items():
+        status = Status.query.filter_by(instrumentID=instrument_id, statusName=status_name).first()
+
+        status_val = status_entry["value"]
+        status_color = status_entry["color"]
 
         # If the status was not found, create it as a status
-        # Primarily used on initialization of statuses for new instruments to 
+        # Primarily used on initialization of statuses for new instruments to
         # the system.
         if status == None:
-            status = Status(instrumentID=instrument_id, statusName=key, statusValue=value)
+            status = Status(
+                instrumentID=instrument_id,
+                statusName=status_name,
+                statusValue=status_val,
+                color=status_color,
+            )
             db.session.add(status)
+
         else:
-            status.statusValue = value
+            status.statusValue = status_val
+            status.color = status_color
+
+        status_rows.append(status.serialize())
 
     db.session.commit()
 
-    # Let the frontend know that there have been changes to the database. 
-    sio.emit("frontend_update_status", update_dict)
+    # Let the frontend know that there have been changes to the database.
+    sio.emit("frontend_update_status", status_rows)
 
     # If the camera has updated which observation it is exposing on, update
     # the frontend that displays which observation is being worked on.
-    if update_dict.get("obs_id") is not None:
-        log_status: dict = {update_dict["obs_id"]: {"progress": "In Progress"}}
+    if update_dict.get("Observation ID") is not None:
+        cur_obs_id_status: dict = update_dict["Observation ID"]
+        cur_id: str = cur_obs_id_status["value"]
+
+        log_status: dict = {cur_id: {"progress": "In Progress"}}
         sio.emit("updateObservations", json.dumps(log_status))
 
 
@@ -133,6 +151,6 @@ def update_status(instrument_id:int, update_dict:dict):
 def update_request_form():
     """
     On completion of an observation, this emit allows for more observations
-    to be made. 
+    to be made.
     """
     sio.emit("enable_request_form")
