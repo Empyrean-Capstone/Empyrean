@@ -47,16 +47,15 @@ class Camera:
 
             continue_obs = True
 
-            for kk in trange(int(nexp)):
-                for jj in trange(int(itime)):
+            for cur_exp in trange(int(nexp)):
+                for exp_prog in trange(int(itime)):
                     self.emit_status({"camera": "Busy"})
 
                     data = {
-                        "obs_id": request_input["OBSID"],
-                        "itime_elapsed": jj,
-                        "itime_total": int(itime),
-                        "exp_number": int(kk),
-                        "nexp_total": int(nexp),
+                        "Observation ID": request_input["OBSID"],
+                        "Exposure Duration": f"{exp_prog}/{itime}",
+                        "exp_number": int(cur_exp),
+                        "Current Exposure": f"{cur_exp}/{nexp}",
                     }
 
                     self.emit_status(data)
@@ -70,11 +69,11 @@ class Camera:
             self.sio.emit("set_obs_type", 0)
 
             data = {
-                "obs_id": request_input["OBSID"],
-                "itime_elapsed": 0,
+                "Observation ID": request_input["OBSID"],
+                "Exposure Duration": 0,
                 "exp_number": 0,
                 "itime_total": 1,
-                "nexp_total": 1,
+                "Current Exposure": 1,
             }
 
             self.emit_status(data)
@@ -98,9 +97,9 @@ class Camera:
 
         for kk in trange(int(num_exposures)):
             data = {
-                "obs_id": request_input["OBSID"],
+                "Observation ID": request_input["OBSID"],
                 "exp_number": int(kk),
-                "nexp_total": int(num_exposures),
+                "Current Exposure": int(num_exposures),
             }
 
             self.emit_status(data)
@@ -120,7 +119,7 @@ class Camera:
         self.sio.emit("update_status", data=(self.id, status))
 
 
-class Zwocamera(Instrument.register):
+class Zwocamera(Instrument):
     """
     A class that interfaces between a physical camera and the coordination
     backend
@@ -133,7 +132,7 @@ class Zwocamera(Instrument.register):
             The properties of the connected camera
         status_dictionary: dict
             The default values of the camera to be sent to the database
-            Also keeps the current value as work is done. 
+            Also keeps the current value as work is done.
 
     Methods:
     --------
@@ -150,14 +149,13 @@ class Zwocamera(Instrument.register):
             uses the camera attribute to take exposures of the given timeframe
     """
 
-    # Default values for the camera 
+    # Default values for the camera
     status_dictionary = {
-                "exp_number": "N/A",
-                "itime_elapsed": "N/A",
-                "nexp_total": "N/A",
-                "camera": "Idle",
-                "obs_id": "N/A"
-            }
+        "Camera": {"value": "Idle", "color": "success"},
+        "Current Exposure": {"value": "N/A", "color": "primary"},
+        "Exposure Duration": {"value": "N/A", "color": "primary"},
+        "Observation ID": {"value": "N/A", "color": "primary"},
+    }
 
     def __init__(self, device="ZWO ASI2600MM Pro"):
         """
@@ -168,7 +166,7 @@ class Zwocamera(Instrument.register):
         """
 
         # TODO: remove
-        env_filename = "../ASI_linux_mac_SDK_V1.28/lib/x64/libASICamera2.so.1.27"
+        env_filename = "../../ASI_linux_mac_SDK_V1.28/lib/x64/libASICamera2.so.1.27"
         #  env_filename = "/Users/joellama/ASI_linux_mac_SDK_V1.28/lib/mac/libASICamera2.dylib"
 
         asi.init(env_filename)
@@ -200,19 +198,19 @@ class Zwocamera(Instrument.register):
         super().__init__()
 
     def get_instrument_name(self):
-        """ Returns the name of the camera currently connected
-        
+        """Returns the name of the camera currently connected
+
         TODO: Make programatic
         """
-        
+
         return "ZWO ASI2600MM Pro"
 
     def callbacks(self):
         """
         Contains all of the endpoints that the camera will listend to
-        in order to take actions 
+        in order to take actions
         """
-        
+
         @Instrument.sio.on("begin_exposure")
         def sequence(obs_instructions, pending_obs):
             self.sequence(obs_instructions, pending_obs)
@@ -229,23 +227,27 @@ class Zwocamera(Instrument.register):
                 self.camera.stop_exposure()
             except:
                 pass
-            
+
     # Helper Methods (private, internal usage only)
     @staticmethod
     def __convert_camera_status(status):
         # Basic switch to convert int to status for the backend
 
         if status == 0:
-            return "Idle"
+            return {"value": "Idle", "color": "success"}
+
         elif status == 1:
-            return "Busy"
+            return {"value": "Busy", "color": "warning"}
+
+        # TODO: potentially remove this
         elif status == 2:
-            return "Finished"
+            return {"value": "Finished", "color": "primary"}
+
+        # TODO: find out under what circumstances this is actually used
         else:
-            return "Unknown"
+            return {"value": "Unknown", "color": "primary"}
 
-
-    def __get_camera_status_str(self) -> str:
+    def __get_camera_status_str(self) -> dict:
         # gets the current status of the camera based on if the camera is working
         status = self.camera.get_exposure_status()
         return self.__convert_camera_status(status)
@@ -253,9 +255,9 @@ class Zwocamera(Instrument.register):
     # Public Methods
     def sequence(self, request_instructions: dict, exposure_ids: list[int]):
         """
-        When requested by the backend, makes the requested number and 
-        type of exposures. 
-        
+        When requested by the backend, makes the requested number and
+        type of exposures.
+
         Parameters
         ----------
         request_instructions: dict
@@ -263,27 +265,36 @@ class Zwocamera(Instrument.register):
             the time of exposures, and information required for generating fits
             files after completion like the object type
         exposure_ids: list[int]
-            The database ids of the exposures made. Currently stubs of 
-            observations, this list is passed back to the backend once 
+            The database ids of the exposures made. Currently stubs of
+            observations, this list is passed back to the backend once
             the exposures are made
         """
-        
-        self.camera.exposure_terminated = False
 
-        num_exposures = int(request_instructions["num_exposures"])
+        self.exposure_terminated = False
+
+        ttl_num_exposures = int(request_instructions["num_exposures"])
         exposure_duration = int(request_instructions["exposure_duration"])
 
         # updates frontend status
-        self.update_status({"nexp_total": num_exposures, "itime_total": exposure_duration})
+        self.update_status(Instrument.make_num_status({"Current Exposure": f"0 / {ttl_num_exposures}"}))
 
-        kk: int = 0
+        cur_exp_ind: int = 0
         cur_exp_data: dict = {}
         # For each exposure id, take an exposure, while the request is active
         # Note: Requests can be stopped at any time by the frontend
-        while kk < len(exposure_ids) and not self.exposure_terminated:
-            cur_id: int = exposure_ids[kk]
+        while cur_exp_ind < len(exposure_ids) and not self.exposure_terminated:
+            cur_id: int = exposure_ids[cur_exp_ind]
+            status = self.camera.get_exposure_status()
 
-            self.update_status({"obs_id": cur_id, "exp_number": kk})
+            self.update_status({
+            "Camera": self.__convert_camera_status(status),
+            **Instrument.make_num_status(
+                    {
+                        "Current Exposure": f"{cur_exp_ind + 1} / {ttl_num_exposures}",
+                        "Observation ID": cur_id,
+                    }
+                )
+            })
 
             tstart = Time.now()
             image = self.expose(exptime=exposure_duration)
@@ -307,34 +318,27 @@ class Zwocamera(Instrument.register):
                 Instrument.sio.emit("save_img", data=(tmp.name, cur_exp_data, request_instructions))
 
                 cur_exp_data.clear()
-                kk += 1
-
+                cur_exp_ind += 1
 
         self.exposure_terminated = False
 
         # reset values to their original value in the database
-        self.update_status(
-            {
-                "exp_number": 0,
-                "itime_elapsed": 0,
-                "nexp_total": 0,
-            }
-        )
+        self.update_status(self.status_dictionary)
 
         self.complete()
 
     def expose(self, exptime=30):
         """
         Takes a single exposure for the camera
-        
+
         Parameters
         ----------
             exptime : int
                 The amount of time to expose
         """
-        
+
         # set values for the physical camera, including how long to expose for
-        self.camera.set_control_value(asi.ASI_EXPOSURE, int(exptime * 1e-6))
+        self.camera.set_control_value(asi.ASI_EXPOSURE, int(exptime * 1e6))
         self.camera.set_control_value(asi.ASI_GAIN, 46)
         self.camera.set_image_type(asi.ASI_IMG_RAW16)
 
@@ -362,16 +366,26 @@ class Zwocamera(Instrument.register):
             time.sleep(initial_sleep)
 
         status = self.camera.get_exposure_status()
+        self.update_status({"Camera": self.__convert_camera_status(status)})
+
+        start_time = time.time()
 
         while status == asi.ASI_EXP_WORKING:
             status = self.camera.get_exposure_status()
+            time_elapsed = str(int(time.time() - start_time))
+            self.update_status(Instrument.make_num_status({"Exposure Duration": f"{time_elapsed} / {exptime}"}))
+            time.sleep(poll)
 
-        self.update_status({"camera": self.__convert_camera_status(status), "itime_elapsed": 0})
+        time_elapsed = str(int(time.time() - start_time))
+        self.update_status(Instrument.make_num_status({"Exposure Duration": f"{time_elapsed} / {exptime}"}))
+        time.sleep(poll)
+
+        self.update_status({"Camera": self.__convert_camera_status(status)})
 
         buffer_ = None
         data = self.camera.get_data_after_exposure(buffer_)
 
-        self.update_status({"camera": self.__get_camera_status_str()})
+        self.update_status({"Camera": self.__get_camera_status_str()})
 
         whbi = self.camera.get_roi_format()
         shape = [whbi[1], whbi[0]]
@@ -388,7 +402,7 @@ class Zwocamera(Instrument.register):
 
         img = img.reshape(shape)
 
-        self.update_status({"camera": self.__get_camera_status_str()})
+        self.update_status({"Camera": self.__get_camera_status_str()})
 
         return img
 
@@ -396,10 +410,10 @@ class Zwocamera(Instrument.register):
         """Let the backend know that the camera has completed its exposures"""
         Instrument.sio.emit("exposure_complete")
 
+
 def main():
     camera = Zwocamera(device="ZWO ASI120MM-S")
 
+
 if __name__ == "__main__":
     main()
-
-    
