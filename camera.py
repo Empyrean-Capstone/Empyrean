@@ -1,6 +1,5 @@
 """TODO."""
 
-import socketio
 import sys
 import tempfile
 import time
@@ -113,7 +112,7 @@ class Camera:
             time.sleep(1)
             self.return_image_data(image, request_input)
             time.sleep(1)
-            
+
         self.sio.emit("set_obs_type", 0)
         self.emit_status({"camera": "Finished"})
 
@@ -193,6 +192,7 @@ class Zwocamera(Instrument):
 
         self.camera = asi.Camera(idx)
         self.camera_info = self.camera.get_camera_property()
+        self.name = self.camera_info["Name"]
 
         self.exposure_terminated = False
 
@@ -201,12 +201,8 @@ class Zwocamera(Instrument):
         super().__init__()
 
     def get_instrument_name(self):
-        """Returns the name of the camera currently connected
-
-        TODO: Make programatic
-        """
-
-        return "ZWO ASI2600MM Pro"
+        """Return the name of the camera currently connected."""
+        return self.name
 
     def callbacks(self):
         """
@@ -230,7 +226,6 @@ class Zwocamera(Instrument):
                 self.camera.stop_exposure()
             except:
                 pass
-
 
     # Helper Methods (private, internal usage only)
     @staticmethod
@@ -290,15 +285,17 @@ class Zwocamera(Instrument):
             cur_id: int = exposure_ids[cur_exp_ind]
             status = self.camera.get_exposure_status()
 
-            self.update_status({
-            "Camera": self.__convert_camera_status(status),
-            **Instrument.make_num_status(
-                    {
-                        "Current Exposure": f"{cur_exp_ind + 1} / {ttl_num_exposures}",
-                        "Observation ID": cur_id,
-                    }
-                )
-            })
+            self.update_status(
+                {
+                    "Camera": self.__convert_camera_status(status),
+                    **Instrument.make_num_status(
+                        {
+                            "Current Exposure": f"{cur_exp_ind + 1} / {ttl_num_exposures}",
+                            "Observation ID": cur_id,
+                        }
+                    ),
+                }
+            )
 
             tstart = Time.now()
             image = self.expose(exptime=exposure_duration)
@@ -360,7 +357,6 @@ class Zwocamera(Instrument):
         except:
             pass
 
-
         # ensure that the camera is not exposing before continuing
         while self.camera.get_exposure_status() == asi.ASI_EXP_WORKING:
             # make sure we actually are not already exposing
@@ -381,10 +377,6 @@ class Zwocamera(Instrument):
             time_elapsed = str(int(time.time() - start_time))
             self.update_status(Instrument.make_num_status({"Exposure Duration": f"{time_elapsed} / {exptime}"}))
             time.sleep(poll)
-
-        time_elapsed = str(int(time.time() - start_time))
-        self.update_status(Instrument.make_num_status({"Exposure Duration": f"{time_elapsed} / {exptime}"}))
-        time.sleep(poll)
 
         self.update_status({"Camera": self.__convert_camera_status(status)})
 
@@ -411,7 +403,7 @@ class Zwocamera(Instrument):
         self.update_status({"Camera": self.__get_camera_status_str()})
 
         return img
-        
+
 
     def complete(self):
         """Let the backend know that the camera has completed its exposures"""
