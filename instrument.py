@@ -1,7 +1,10 @@
 from abc import ABCMeta, abstractmethod
 import socketio
+
 value = "Dummy value"
 host = "http://0.0.0.0:5000"
+
+
 class Instrument(metaclass=ABCMeta):
     """
     Interface for the standard Instrument to be implemented by other instruments
@@ -32,32 +35,32 @@ class Instrument(metaclass=ABCMeta):
             socket connection
         callbacks(): None
             Inside this function is a list of events that the instrument should
-            be listening for. 
+            be listening for.
             Note: Must be implemented in subclasses
     """
 
     # should be set to default values
     status_dictionary = {
-
         "status_name1": {"value": value, "color": value},
-        "status_name2": {"value": value, "color": value}
+        "status_name2": {"value": value, "color": value},
     }
 
-    sio = socketio.Client(request_timeout=60,
+    sio = socketio.Client(
+        request_timeout=60,
         logger=True,
-        engineio_logger=True,)
+        engineio_logger=True,
+    )
 
     def __init__(self):
         """
         Initializes the socket, id, statuses in the backend, and the callbacks
-        that subclasses will implement. The super for this function must 
-        be called for the normal operation of this instrument. 
+        that subclasses will implement. The super for this function must
+        be called for the normal operation of this instrument.
         """
-        
-        self.sio.connect( host )
+        self.sio.connect(host)
         self.name = self.get_instrument_name()
-        self.id = self.sio.call( 'get_instrument_id', self.name )
-        self.update_status( self.status_dictionary )
+        self.id = self.sio.call("get_instrument_id", self.name)
+        self.update_status(self.status_dictionary)
         self.callbacks()
         self.sio.wait()
 
@@ -65,7 +68,7 @@ class Instrument(metaclass=ABCMeta):
         """
         Disconnects the socket if ever the Instrument is de-instantiated
         """
-        
+
         self.sio.disconnect()
 
     @abstractmethod
@@ -74,32 +77,51 @@ class Instrument(metaclass=ABCMeta):
         Should be a programmatic method of collecting the name of a given
         instrument.
         """
-        
+
         pass
 
     def update_status(self, update_dict):
         """
         Sends an emmision to the backend with the new statuses of a given
         instrument, using the id as an identifier so that the correct statuses
-        are updated. 
+        are updated.
         Note: The format of these statuses should be the same as the initial
               status dictionary
 
         Parameters:
         ----------
             update_dict: dict
-                the dictionary of updates to the instruments statuses to 
+                the dictionary of updates to the instruments statuses to
                 be sent to the backend device
         """
-        
-        self.sio.emit( "update_status", (self.id, update_dict) )
+
+        self.sio.emit("update_status", (self.id, update_dict))
+
+    @staticmethod
+    def make_num_status(num_vals: dict):
+        """
+        Format a dictionary of numerical values to provide the desired color.
+
+        Note: The format of these statuses should be the same as the initial
+              status dictionary
+
+        Parameters:
+        ----------
+            TODO:
+        """
+        out_vals: dict = {}
+
+        for status_name, status_val in num_vals.items():
+            out_vals[status_name] = {"value": status_val, "color": "primary"}
+
+        return out_vals
 
     @abstractmethod
     def callbacks(self):
         """
-        Initializes the endpoints that the backend might call that this 
+        Initializes the endpoints that the backend might call that this
         instrument will want to listen for. As many of these can be implemented.
-        NOTE: Use the documentation for the socketio.Client class for more 
+        NOTE: Use the documentation for the socketio.Client class for more
               information about how these events are created. However,
               one example is given below.
         NOTE: below is an example of instantiating an event for sio
@@ -107,17 +129,18 @@ class Instrument(metaclass=ABCMeta):
         def function_name(self):
             pass
         """
-        #put all sio endpoints in this function when implemented
+        # put all sio endpoints in this function when implemented
         pass
-
-
 
 
 """
 Each file should have a main method that runs the this code, plus whatever other code to be implemented
 """
+
+
 def main():
     instrument = Instrument()
+
 
 if __name__ == "__main__":
     main()
