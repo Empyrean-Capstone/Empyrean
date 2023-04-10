@@ -72,7 +72,7 @@ function Login() {
 				>
 					<img src={require("../../images/lowell.png")} alt="Logo" />
 
-					// Represents a text field with several advanced features.
+					{/*Represents a text field with several advanced features.*/}
 					<TextField
 						sx={{ mt: 2, mb: 2 }}
 						required
@@ -92,7 +92,7 @@ function Login() {
 						}}
 					/>
 
-					// Represents a text field with several advanced features.
+					{/*Represents a text field with several advanced features.*/}
 					<TextField
 						sx={{ mt: 2, mb: 2 }}
 						required
