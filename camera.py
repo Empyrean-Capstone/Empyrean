@@ -4,6 +4,7 @@ import socketio
 import sys
 import tempfile
 import time
+
 from instrument import Instrument
 
 from astropy.time import Time
@@ -30,6 +31,7 @@ class Camera:
         self.id = self.sio.emit("get_id", "camera")
 
     # Does Nothing
+
     def expose(self, request_input):
         """
         TODO.
@@ -111,7 +113,7 @@ class Camera:
             time.sleep(1)
             self.return_image_data(image, request_input)
             time.sleep(1)
-
+            
         self.sio.emit("set_obs_type", 0)
         self.emit_status({"camera": "Finished"})
 
@@ -191,6 +193,7 @@ class Zwocamera(Instrument):
 
         self.camera = asi.Camera(idx)
         self.camera_info = self.camera.get_camera_property()
+
         self.exposure_terminated = False
 
         self.camera.set_control_value(asi.ASI_BANDWIDTHOVERLOAD, self.camera.get_controls()["BandWidth"]["MinValue"])
@@ -227,6 +230,7 @@ class Zwocamera(Instrument):
                 self.camera.stop_exposure()
             except:
                 pass
+
 
     # Helper Methods (private, internal usage only)
     @staticmethod
@@ -339,6 +343,7 @@ class Zwocamera(Instrument):
 
         # set values for the physical camera, including how long to expose for
         self.camera.set_control_value(asi.ASI_EXPOSURE, int(exptime * 1e6))
+
         self.camera.set_control_value(asi.ASI_GAIN, 46)
         self.camera.set_image_type(asi.ASI_IMG_RAW16)
 
@@ -354,6 +359,7 @@ class Zwocamera(Instrument):
             raise
         except:
             pass
+
 
         # ensure that the camera is not exposing before continuing
         while self.camera.get_exposure_status() == asi.ASI_EXP_WORKING:
@@ -405,6 +411,7 @@ class Zwocamera(Instrument):
         self.update_status({"Camera": self.__get_camera_status_str()})
 
         return img
+        
 
     def complete(self):
         """Let the backend know that the camera has completed its exposures"""
