@@ -2,8 +2,8 @@
 # https://github.com/actions/setup-python
 # https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Setup environment
 
+name: Node Build
 on:
   push:
     branches: [ "main", "ci-cd" ]

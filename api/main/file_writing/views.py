@@ -137,17 +137,18 @@ def __update_db_cols(headers, request_input: dict) -> dict:
         "mjdobs": headers["MJDOBS"],
         "filename": f"{headers['LOGID']}.fits",
         "date_made_open_source": request_input["date_made_open_source"],
+        "status": "Complete"
         # TODO: need to determine if we need these and get them
         #  "ccd_temp": headers["CCD-TEMP"],
         #  "gamma": headers[""],
         #  "roworder": headers["ROWORDER"],
     }
 
-    cur_observation = Observation.query.filter_by(id=headers["OBSID"]).first()
-    cur_observation.set_attrs(cols)
+    cur_obs = Observation.query.filter_by(id=headers["OBSID"]).first()
+    cur_obs.set_attrs(cols)
     db.session.commit()
 
-    sio.emit("updateObservations", get_logs_json_str([cur_observation]))
+    sio.emit("updateObservations", get_logs_json_str([cur_obs]))
 
     # TODO: return error if operation fails
     return headers

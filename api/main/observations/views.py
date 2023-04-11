@@ -70,13 +70,13 @@ def post_observation():
 
     set_system_status(True)
 
+
     obs_instructions: dict = request.get_json()
 
     obs_instructions["owner_id"] = session.get("userid")
     obs_instructions["observer"] = session.get("name")
 
     # Have the spectrograph switch to the correct observation type'
-    # TODO: Ensure that the spectrograph has completed
     sio.emit("prepare_observation", data=(obs_instructions["obs_type"], obs_instructions))
 
     return {}
@@ -127,7 +127,8 @@ def conclude_exposure():
     Allows the frontend to request another observation, and resets the
     spectrograph to its default values to preserve its lamps.
     """
-
+    
+    sio.emit("enable_request_form")
     sio.emit("set_obs_type", data=("object"))
 
     system_status = Status.query.filter_by(statusName="System").first()
