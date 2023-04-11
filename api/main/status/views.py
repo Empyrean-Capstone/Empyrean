@@ -1,6 +1,7 @@
 """TODO."""
 
 import json
+from flask import session
 
 from main import db
 from .. import sio
@@ -65,6 +66,30 @@ def index():
     serialized_results: list = [res.serialize() for res in results]
 
     return sorted(serialized_results, key=lambda k: (k["instrumentID"], k["statusName"]))
+
+
+@status.get("/is_system_busy")
+def get_system_status():
+    """TODO."""
+    is_batch_owner: bool = False
+
+    system_status_row = Status.query.filter_by(statusName="System").first()
+    system_status: str = system_status_row.statusValue
+
+    if system_status == "Busy":
+        cur_obsid: int = get_current_obsid()
+        cur_obs = Observation.query.filter_by(id=cur_obsid).first()
+        is_batch_owner = str(cur_obs.owner_id) == session.get("userid")
+
+    sio.emit("update_request_form", data=(system_status, is_batch_owner))
+
+    return "success", 200
+
+
+def set_system_status(is_batch_owner: bool):
+    system_status = Status.query.filter_by(statusName="System").first()
+    sio.emit("update_request_form", data=(system_status.statusValue, is_batch_owner))
+    return "success", 200
 
 
 @sio.on("get_instrument_id")

@@ -66,7 +66,7 @@ def __read_image_file(image_path: str) -> np.ndarray:
 
 def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_input: dict, filename: str):
     def enter_request_input(hdu, input: dict):
-        hdu.header["OBSERVER"] = input["name"]
+        hdu.header["OBSERVER"] = input["observer"]
 
         # TODO: whats the difference between this and IMAGETYP?
         hdu.header["OBSTYPE"] = {
@@ -123,7 +123,6 @@ def __update_db_cols(headers, request_input: dict) -> dict:
     cols = {
         "id": headers["OBSID"],
         "observer": headers["OBSERVER"],
-        "owner_id": request_input["userid"],
         "obs_type": headers["OBSTYPE"],
         "exp_time": headers["EXPTIME"],
         "image_typ": headers["IMAGETYP"],

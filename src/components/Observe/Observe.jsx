@@ -89,15 +89,44 @@ function Observe() {
 
 	const props = { values, handleFieldChange }
 
-	const [isFormEnabled, setFormEnabled] = React.useState(true)
+	const [isFormEnabled, setFormEnabled] = React.useState()
+	const [isStopEnabled, setStopEnabled] = React.useState()
 
 	const socket = useContext(SocketContext);
 
+
+	const getSystemStatus = async () => {
+		try {
+			await axios.get(
+				`/api/status/is_system_busy`,
+				null,
+				{
+					withCredentials: true
+				}
+			)
+		}
+		catch (error) {
+			console.error(error)
+		}
+	}
+
 	useEffect(() => {
-		socket.on("enable_request_form", () => {
+		getSystemStatus()
+	}, [])
+
+	function setForm(status, isBatchOwner) {
+		if (status === "Ready") {
 			setFormEnabled(true)
-		})
-	}, [socket, setFormEnabled])
+		}
+
+		else if (isBatchOwner) {
+			setStopEnabled(true)
+		}
+	}
+
+	socket.on("update_request_form", (systemStatus, isBatchOwner) => {
+		setForm(systemStatus, isBatchOwner)
+	})
 
 
 	const fields_row1 = [
@@ -359,7 +388,7 @@ function Observe() {
 
 							loadingPosition="center"
 							loading={isLoading === "Stop"}
-							disabled={isFormEnabled}
+							disabled={isFormEnabled || !isStopEnabled}
 						>
 							Stop
 						</LoadingButton>
