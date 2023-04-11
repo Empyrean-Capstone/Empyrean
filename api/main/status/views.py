@@ -35,7 +35,10 @@ def get_current_obsid() -> int:
 
     # There is a status that every camera must have and update which is
     # the id of the observation being taken
-    cur_camera_status = Status.query.filter_by(instrumentID=cur_camera_id, statusName="obs_id").first()
+    cur_camera_status = Status.query.filter_by(
+        instrumentID=cur_camera_id,
+        statusName="Observation ID"
+    ).first()
 
     cur_obsid: int = int(cur_camera_status.statusValue)
 
