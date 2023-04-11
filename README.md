@@ -1,70 +1,38 @@
-# Getting Started with Create React App
+# 🔭 Empyrean
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+![Node Build](https://github.com/Empyrean-Capstone/Empyrean/actions/workflows/setup.yml/badge.svg)
+</br>
+</br>
 
-In the project directory, you can run:
 
-### `npm start`
+> Thus all suspended did my mind gaze fixed,</br>
+immovable, intent, ever enkindled by its</br>
+gazing.</br>
+&mdash; *[Paradiso, Canto XXXIII](https://archive.org/details/paradisoofdantea00dantrich/page/406/mode/2up)*
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Empyrean** is a web-based control system for astronomy cameras and spectrographs, designed to lower barriers to operation by abstracting away details other such tools saddle upon the astronomer. Using the Client-Server model, the aforementioned astronomical devices may connect to our application via interfaces, allowing various pairings of hardware to be controlled from the comfort of a simple reactive web UI.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+## ⚙️ Features
+- Simple and intuitive user interface using recognizable styling
+- Handles multiple users
+- Back-end interface allows different types of cameras and spectrographs to connect to our system
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+## 🗺️ Roadmap
+The most recent stable release can be seen in the `Releases` section on the repository's home page. Each release will contain a changelog discussing features and fixes that have been added or made since the last release. The repository abides by [semantic versioning](https://semver.org/) and each release will be of a minor or major version.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To see what features and fixes are planned for our next release, please
+1. navigate to our [issue tracker](https://github.com/Empyrean-Capstone/Empyrean/issues)
+2. click the `Milestones` dropdown
+3. select the milestone whose version number immediately succeeds the version number of the last stable release
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🚨 Call to Action
+Join our project and provide assistance by:
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Solving a ticket in [our list of open issues](https://github.com/Empyrean-Capstone/Empyrean/issues).
+    - When creating a [pull request](https://github.com/Empyrean-Capstone/Empyrean/pulls), kindly consider the time it takes for reviewing and testing, and maintain proper coding style. Please see our documentation for discussion about our chosen methods of formatting and documenting our source code.
+- Contributing feature requests by opening a new issue or [discussion](https://github.com/Empyrean-Capstone/Empyrean/discussions).
+- Drawing attention to our tool by [![starring Empyrean](https://img.shields.io/github/stars/Empyrean-Capstone/Empyrean?style=social&label=starring%20Empyrean)](https://github.com/Empyrean-Capstone/Empyrean/)
