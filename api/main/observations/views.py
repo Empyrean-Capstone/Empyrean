@@ -62,12 +62,14 @@ def post_observation():
     Is a two part function with setup_camera
 
     """
-    
+
     obs_instructions: dict = request.get_json()
 
     # Have the spectrograph switch to the correct observation type'
     # TODO: Ensure that the spectrograph has completed
-    sio.emit("prepare_observation", obs_instructions["obs_type"] )
+    sio.emit("prepare_observation", data=(obs_instructions["obs_type"], obs_instructions) )
+
+    return {}
 
 
 @sio.on("spectrograph_changed_ports")
@@ -100,7 +102,7 @@ def end_observation():
     know to stop taking exposures. Then, this will delete all of the observations
     that have not been completed.
     """
-    
+
     sio.emit("end_exposure")
 
     cur_obsid: int = get_current_obsid()
@@ -117,9 +119,9 @@ def end_observation():
 @sio.on("exposure_complete")
 def conclude_exposure():
     """
-    Allows the frontend to request another observation, and resets the 
+    Allows the frontend to request another observation, and resets the
     spectrograph to its default values to preserve its lamps.
     """
-    
+
     sio.emit("enable_request_form")
     sio.emit("set_obs_type", data=("object"))
