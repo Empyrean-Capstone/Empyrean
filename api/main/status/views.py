@@ -1,11 +1,12 @@
 """TODO."""
 
 import json
+from flask import session
 
 from main import db
 from .. import sio
 from . import status
-from ..models import Status, Instrument
+from ..models import Instrument, Observation, Status
 
 
 # FIXME: must have a way to designate the current camera
@@ -35,7 +36,7 @@ def get_current_obsid() -> int:
 
     # There is a status that every camera must have and update which is
     # the id of the observation being taken
-    cur_camera_status = Status.query.filter_by(instrumentID=cur_camera_id, statusName="obs_id").first()
+    cur_camera_status = Status.query.filter_by(instrumentID=cur_camera_id, statusName="Observation ID").first()
 
     cur_obsid: int = int(cur_camera_status.statusValue)
 
@@ -62,6 +63,30 @@ def index():
     serialized_results: list = [res.serialize() for res in results]
 
     return sorted(serialized_results, key=lambda k: (k["instrumentID"], k["statusName"]))
+
+
+@status.get("/is_system_busy")
+def get_system_status():
+    """TODO."""
+    is_batch_owner: bool = False
+
+    system_status_row = Status.query.filter_by(statusName="System").first()
+    system_status: str = system_status_row.statusValue
+
+    if system_status == "Busy":
+        cur_obsid: int = get_current_obsid()
+        cur_obs = Observation.query.filter_by(id=cur_obsid).first()
+        is_batch_owner = str(cur_obs.owner_id) == session.get("userid")
+
+    sio.emit("update_request_form", data=(system_status, is_batch_owner))
+
+    return "success", 200
+
+
+def set_system_status(is_batch_owner: bool):
+    system_status = Status.query.filter_by(statusName="System").first()
+    sio.emit("update_request_form", data=(system_status.statusValue, is_batch_owner))
+    return "success", 200
 
 
 @sio.on("get_instrument_id")

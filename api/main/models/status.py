@@ -46,5 +46,18 @@ class Status(db.Model):
             "instrumentID": self.instrumentID,
             "statusName": self.statusName,
             "statusValue": self.statusValue,
-            "color": self.color
+            "color": self.color,
         }
+
+    def set_attrs(self, attrs: dict):
+        """
+        For all of the attributes, sets their value to the default value given
+
+        Parameters:
+        -----------
+            attrs: dict
+                The values to set the user's attributes to
+        """
+
+        for key, val in attrs.items():
+            setattr(self, key, val)
