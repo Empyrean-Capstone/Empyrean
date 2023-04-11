@@ -4,7 +4,12 @@ import socketio
 
 from instrument import Instrument
 
-
+PORTS = {
+    "Mirror": 1,
+    "LED": 2,
+    "ThAr": 3,
+    "Tung": 4
+}
 OFF_STATUS: dict = {"value": "Off", "color": "warning"}
 ON_STATUS: dict = {"value": "On", "color": "success"}
 
@@ -151,7 +156,7 @@ class Spectrograph(Instrument):
     # Sets the initial status dictionary
     status_dictionary = OBSERVING_MODES["object"]
 
-    def __init__(self, device="/dev/cu.", simulator=False):
+    def __init__(self, device="/dev/cu.usbserial-AK068Y10", simulator=False):
         """
         Connects to the physical spectrograph if connected or else
         defines the spectrograph as a simulation only
@@ -174,8 +179,10 @@ class Spectrograph(Instrument):
                 The port to be turned on
                 NOTE: can be ("mirror", "led", "thar", "tung")
         """
+
         if self.device is not None:
             self.device.set(port)
+
 
     def turn_off(self, port):
         """
@@ -187,8 +194,10 @@ class Spectrograph(Instrument):
                 The port to be turned on
                 NOTE: can be ("mirror", "led", "thar", "tung")
         """
+
         if self.device is not None:
-            self.device.set(port)
+            self.device.clear(port)
+
 
     # TODO: find out how to find the model name of the spectrograph
     def get_instrument_name(self):
@@ -202,11 +211,14 @@ class Spectrograph(Instrument):
         def set_obs_type(mode):
             mode_ports = self.OBSERVING_MODES[mode]
 
-            for i, val in enumerate(mode_ports):
-                if val == "on":
-                    self.turn_on(i)
+            for port_name, settings in mode_ports.items():
+                status_val = settings["value"]
+                port_num = PORTS[port_name]
+
+                if status_val == "On":
+                    self.turn_on(port_num)
                 else:
-                    self.turn_off(i)
+                    self.turn_off(port_num)
 
             Instrument.sio.emit("update_status", data=(self.id, mode_ports))
 
@@ -220,7 +232,7 @@ class Spectrograph(Instrument):
 
 def main():
     # if ID is not found register in the database
-    spectrograph = Spectrograph(simulator=True)
+    spectrograph = Spectrograph()
 
 
 if __name__ == "__main__":

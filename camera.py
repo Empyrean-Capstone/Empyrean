@@ -1,10 +1,12 @@
 """TODO."""
 
+from dotenv import load_dotenv
 import sys
 import tempfile
 import time
 
 from instrument import Instrument
+import utils
 
 from astropy.time import Time
 from tqdm.auto import trange
@@ -404,14 +406,16 @@ class Zwocamera(Instrument):
 
         return img
 
-
     def complete(self):
         """Let the backend know that the camera has completed its exposures"""
         Instrument.sio.emit("exposure_complete")
 
 
 def main():
-    camera = Zwocamera(device="ZWO ASI120MM-S")
+    load_dotenv()
+    zwo_model_choice: str = utils.get_env_variable("ZWO_MODEL")
+
+    camera = Zwocamera(device=zwo_model_choice)
 
 
 if __name__ == "__main__":
