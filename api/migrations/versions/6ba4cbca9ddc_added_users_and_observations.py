@@ -39,6 +39,7 @@ def upgrade():
     sa.Column('obs_id', sa.String(), nullable=True),
     sa.Column('log_id', sa.String(), nullable=True),
     sa.Column('mjdobs', sa.Float(), nullable=True),
+    sa.Column('status', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',

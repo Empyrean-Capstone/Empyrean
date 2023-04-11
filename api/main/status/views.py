@@ -5,7 +5,7 @@ import json
 from main import db
 from .. import sio
 from . import status
-from ..models import Status, Instrument
+from ..models import Instrument, Observation, Status
 
 
 # FIXME: must have a way to designate the current camera
@@ -140,14 +140,20 @@ def update_status(instrument_id: int, update_dict: dict):
     # Let the frontend know that there have been changes to the database.
     sio.emit("frontend_update_status", status_rows)
 
+    obs_id_status = update_dict.get("Observation ID")
+
     # If the camera has updated which observation it is exposing on, update
     # the frontend that displays which observation is being worked on.
-    if update_dict.get("Observation ID") is not None:
-        cur_obs_id_status: dict = update_dict["Observation ID"]
-        cur_id: str = cur_obs_id_status["value"]
+    if obs_id_status is not None:
+        cur_id: str = obs_id_status["value"]
 
-        log_status: dict = {cur_id: {"progress": "In Progress"}}
-        sio.emit("updateObservations", json.dumps(log_status))
+        if type(cur_id) is int:
+            cur_obs = Observation.query.filter_by(id=cur_id).first()
+            cur_obs.set_attrs({"status": "In Progress"})
+            db.session.commit()
+
+            log_status: dict = {cur_id: {"progress": "In Progress"}}
+            sio.emit("updateObservations", json.dumps(log_status))
 
 
 @sio.on("observation_complete")
