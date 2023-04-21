@@ -3,9 +3,8 @@
 import json
 from flask import session
 
-from main import db
-from .. import sio
 from . import status
+from .. import db, sio
 from ..models import Instrument, Observation, Status
 
 

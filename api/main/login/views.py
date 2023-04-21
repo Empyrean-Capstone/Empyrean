@@ -9,8 +9,8 @@ http status references:
 
 from flask import request, session
 
-from main import db
 from . import login
+from .. import db
 from ..models.user import User
 
 
