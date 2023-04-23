@@ -93,3 +93,6 @@ app.register_blueprint(users)
 
 # Import the general routes to be connected into the app
 from . import views
+
+# Import the models for the tests
+from . import models
