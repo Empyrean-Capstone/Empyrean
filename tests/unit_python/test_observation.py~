@@ -1,5 +1,0 @@
-
-from api.main.models.observation import Observation
-import pytest
-
-def test_new_observation
