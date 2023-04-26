@@ -12,6 +12,7 @@ from flask import request, session
 from . import login
 from .. import db
 from ..models.user import User
+from passlib.hash import sha256_crypt
 
 
 @login.get("/")
@@ -62,7 +63,7 @@ def post_login():
         return "unauthorized", 401
 
     else:
-        if cur_user is not None and password_req == cur_user.password:
+        if cur_user is not None and sha256_crypt.verify(password_req, cur_user.password):
             session["userid"] = str(cur_user.id)
             session["username"] = cur_user.username
             session["name"] = cur_user.name
