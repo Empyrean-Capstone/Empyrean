@@ -3,9 +3,8 @@
 import json
 from flask import request
 
-from main import db
 from . import users
-from .. import sio
+from .. import db, sio
 from ..models.user import User
 
 
@@ -35,7 +34,7 @@ def register_new_user():
 @users.post("/update/")
 def update_user():
     """
-        Takes in updates to a user from the frontend and changes that user's 
+        Takes in updates to a user from the frontend and changes that user's
         attributes in the backend
 
         Parameters:
@@ -44,7 +43,7 @@ def update_user():
                 The updated attributes of the given user
                 NOTE: Comes as a JSON request that needs
                       to be parsed
-        
+
         Returns:
         --------
             200:
@@ -81,13 +80,13 @@ def update_user():
 def delete_user():
     """
     Delets a user from the database permanently
-    
+
     Args:
     -----
         delete_req : dict
             The attributes of the user to be deleted
             NOTE: Initially a json in request that must be parsed
-    
+
     Returns:
     --------
         200:

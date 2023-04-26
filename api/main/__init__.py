@@ -53,7 +53,7 @@ app.config["SECRET_KEY"] = "tk2icrNWnrIfG1pYOCrN6Q"
 # Allow requests from our react app
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
-# Create socket server that the instruments and the React server can 
+# Create socket server that the instruments and the React server can
 # communicate with
 sio = SocketIO(
     app,
@@ -73,7 +73,7 @@ POSTGRES_DB = __get_env_variable("POSTGRES_DB")
 DATA_FILEPATH = __get_env_variable("DATA_FILEPATH")
 
 # Import and then register all blueprints to be connected to the app
-# NOTE: It seems like these need to be imported here instead of 
+# NOTE: It seems like these need to be imported here instead of
 #       at the top. It may be useful to research more into this
 from .file_writing.views import file_writer
 from .login.views import login
