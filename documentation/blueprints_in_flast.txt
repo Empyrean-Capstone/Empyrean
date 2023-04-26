@@ -35,7 +35,7 @@ Creating a new blueprint:
     where the route will have the url of the desired endpoint.
 
 3. Finally, add this blueprint with the parent level __init__.py, with the line: 
-    app.register_blueprint( example, url_prefix="/example" )
+    app.register_blueprint( example, url_prefix="api/example" )
     The first argument is the name of the object created in the __init__.py file of the blueprint, and the url_prefix is 
     the prefix added to all of the routes in the local views.py folder.
 
