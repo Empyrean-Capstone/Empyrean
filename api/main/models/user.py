@@ -1,10 +1,10 @@
-from main import db, app
+from api.main import db, app
 
 
 class User(db.Model):
     """
     Holds the model for the User table in the database.
-    
+
     Attributes:
     -----------
         id : int
@@ -17,7 +17,7 @@ class User(db.Model):
            The actual name of the user or organization
         isadmin: bool
             Represents the role of the user
-        
+
     Methods:
     --------
         get_creds()
@@ -25,7 +25,7 @@ class User(db.Model):
         set_attrs( attrs )
             Updates the attributes of the object
     """
-    
+
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -37,13 +37,12 @@ class User(db.Model):
     def __init__(self, init_data: dict):
         """
         Initializes the user with values
-        
-        Parameters: 
+
+        Parameters:
         -----------
-            init_data : dict 
+            init_data : dict
                 Default values for the new user
         """
-
         if type(init_data) is dict:
             self.set_attrs(init_data)
         else:
@@ -66,19 +65,19 @@ class User(db.Model):
             list
                 The list of all attributes of the object
         """
-        
+
         return [item for item in self]
 
     def set_attrs(self, attrs: dict):
         """
         For all of the attributes, sets their value to the default value given
-        
+
         Parameters:
         -----------
             attrs: dict
                 The values to set the user's attributes to
         """
-        
+
         for key, val in attrs.items():
             key = str(key).lower()
             setattr(self, key, val)

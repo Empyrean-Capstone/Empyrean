@@ -1,7 +1,7 @@
 """TODO."""
 
 import json
-from main import db
+from api.main import db
 
 
 def get_logs_json_str(observations: list):

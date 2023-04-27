@@ -1,17 +1,17 @@
-from main import db
+from api.main import db
 
 class Instrument( db.Model ):
     """
     The python object implementation of the Instrument table of the database
-    
+
     Attributes:
     -----------
-        instrumentID : int 
+        instrumentID : int
             Identifier of the instrument
         instrumentName : str
             The name of the instrument
     """
-    
+
     __tablename__ = 'instrument'
 
     instrumentId = db.Column( db.Integer, primary_key = True )
@@ -37,4 +37,5 @@ class Instrument( db.Model ):
         """
         if instrumentID == None:
             return f'{self.instrumentName} is not yet in a database'
+
         return 'ID: {}. \n Name: {}'.format( self.instrumentId, self.instrumentName )

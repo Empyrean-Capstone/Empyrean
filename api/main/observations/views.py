@@ -2,9 +2,9 @@
 
 from flask import request, session
 
-from main import db
 from . import observations
 from .. import sio
+from .. import db
 from ..logsheet.views import get_all_log_data
 from ..models import Status
 from ..models.observation import Observation, get_logs_json_str
@@ -127,7 +127,7 @@ def conclude_exposure():
     Allows the frontend to request another observation, and resets the
     spectrograph to its default values to preserve its lamps.
     """
-    
+
     sio.emit("enable_request_form")
     sio.emit("set_obs_type", data=("object"))
 

@@ -11,7 +11,11 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
-
+/**
+ * Creates Status Rows.
+ * @param {JSX element} The given status name and status text.
+ * @return {JSX element} Returns a TableRow with the given cells.
+ */
 function makeChipRow(row) {
 	return (
 		<TableRow
@@ -32,6 +36,10 @@ function makeChipRow(row) {
 }
 
 
+/**
+ * Creates the Status Component.
+ * @return {JSX element} Returns a valid JSX component with all rows for given statuses.
+ */
 function Status() {
 	const socket = useContext(SocketContext);
 
@@ -40,6 +48,9 @@ function Status() {
 		data: []
 	})
 
+	/**
+	 * Updates the loaded rows using React useCallback.
+	 */
 	const updateData = useCallback((updates) => {
 		let tempData = stateData.data;
 

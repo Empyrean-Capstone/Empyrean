@@ -1,4 +1,4 @@
-from main import db, app
+from api.main import db, app
 
 
 class Status(db.Model):
