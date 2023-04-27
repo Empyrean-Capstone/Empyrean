@@ -90,8 +90,10 @@ class Observation(db.Model):
                 Note: not all are needed, many can be initialized initially
                       as null.
         """
-
-        self.set_attrs(init_dict)
+        if type(init_dict) is dict:
+            self.set_attrs(init_dict)
+        else:
+            raise ValueError( 'init_dict must be iterable like a dictionary' )
 
     def __iter__(self):
         """
@@ -133,4 +135,5 @@ class Observation(db.Model):
         """
 
         for key, val in attrs.items():
-            setattr(self, key.lower(), val)
+            key = str(key).lower()
+            setattr(self, key, val)
