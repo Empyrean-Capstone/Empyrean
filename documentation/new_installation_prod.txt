@@ -244,6 +244,12 @@ Step 1: Installation of main project:
     Move to the api directory:
     $ cd /path/to/project/root/Empyrean/api
 
+    Upload the base database. This has a basic login for the user, which has the 
+    username: root
+    password: password
+    This can be used to first login, but should be deleted as soon as possible. 
+    $ psql {created database} < ../documentation/base_database.sql 
+
     Upgrade the database:
     $ flask db upgrade
 
