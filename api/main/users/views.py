@@ -66,6 +66,7 @@ def update_user():
 
     # If no exception, update the attributes of the user, save and return
     else:
+        print( updated_user_req )
         cur_user.set_attrs(updated_user_req)
 
         db.session.add(cur_user)

@@ -96,6 +96,8 @@ function renderEditName(props) {
  *     user management page.
  */
 function ManageUsers() {
+	const shownPassword = "*******";
+
 	const apiRef = useGridApiRef();
 	const tableHeight = 1000
 
@@ -323,8 +325,10 @@ function ManageUsers() {
 			id: newRow.id,
 			name: newRow.name,
 			username: newRow.username,
-			password: newRow.password,
 			isadmin: newRow.isadmin,
+		}
+		if(newRow.password !== shownPassword){
+			rowData["password"] = newRow.shownPassword;
 		}
 
 		updateUser(rowData)
@@ -430,11 +434,12 @@ function ManageUsers() {
 			}
 		},
 		{
-			field: "password",
+			field: "shownPassword",
 			headerName: "Password",
 			sortable: true,
 			width: 200,
 			editable: true,
+			description: "The User's password, hidden from view. Please rewrite whole password if changes are needed.",
 			renderEditCell: renderEditName,
 			preProcessEditCellProps: async (params) => {
 				let hasError = null
@@ -511,9 +516,10 @@ function ManageUsers() {
 	 *     as a valid row.
 	 */
 	function initRows(id, username, name, password, isadmin) {
-		return { id, name, username, password, isadmin }
+		return { id, name, username, password, isadmin, shownPassword }
 	}
 
+	// Gathers all of the 
 	useEffect(() => {
 		socket.on("setUsers", (userDataStr) => {
 			let users = JSON.parse(userDataStr)

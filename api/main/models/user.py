@@ -1,4 +1,5 @@
 from api.main import db, app
+from passlib.hash import sha256_crypt
 
 
 class User(db.Model):
@@ -79,5 +80,7 @@ class User(db.Model):
         """
 
         for key, val in attrs.items():
-            key = str(key).lower()
-            setattr(self, key, val)
+            if key == "password":
+                val = sha256_crypt.hash(val)
+            setattr(self, key.lower(), val)
+
