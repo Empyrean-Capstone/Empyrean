@@ -104,11 +104,8 @@ Step 1: Installation of web interface
     Move to the api directory:
     $ cd /path/to/project/root/Empyrean/api
 
-    Migrate the current migrations with:
-    $ flask db migrate -m "Migration message"
-
     Upgrade the database:
-    $ flask db upgrade
+    $ flask db upgrade head
 
 11. Ensure Working product 
     At this point, the base product should be working with a database, so everything should be set up.

@@ -114,7 +114,7 @@ Step 1: Installation of main project:
     $ sudo service start nginx
 
     On Mac:
-    $ nginx 
+    $ sudo brew services start nginx 
     Now nginx should start on startup and after power outages, allowing us to be able to serve our server automatically 
 
 7. Start Eventlet as a service 
