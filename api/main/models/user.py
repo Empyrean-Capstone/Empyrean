@@ -15,7 +15,7 @@ class User(db.Model):
         password: str
             Represents the password of the user
         name: str
-            The actual name of the user or organization
+           The actual name of the user or organization
         isadmin: bool
             Represents the role of the user
 
@@ -44,8 +44,10 @@ class User(db.Model):
             init_data : dict
                 Default values for the new user
         """
-
-        self.set_attrs(init_data)
+        if type(init_data) is dict:
+            self.set_attrs(init_data)
+        else:
+            raise ValueError( 'init_data must be iterable like a dictionary' )
 
     def __iter__(self):
         """
@@ -81,3 +83,4 @@ class User(db.Model):
             if key == "password":
                 val = sha256_crypt.hash(val)
             setattr(self, key.lower(), val)
+

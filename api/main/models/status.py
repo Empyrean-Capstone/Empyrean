@@ -20,17 +20,37 @@ class Status(db.Model):
     __tablename__ = "status"
 
     id = db.Column(db.Integer, primary_key=True)
-    instrumentID = db.Column(db.Integer)
-    statusName = db.Column(db.String())
-    statusValue = db.Column(db.String())
-    color = db.Column(db.String())
+    instrumentID = db.Column(db.Integer, nullable=False)
+    statusName = db.Column(db.String(), nullable=False)
+    statusValue = db.Column(db.String(), nullable=False)
+    color = db.Column(db.String(), nullable=False)
 
-    def __init__(self, instrumentID, statusName, statusValue, color="primary"):
+    def __init__(self,
+                 instrumentID:int,
+                 statusName:str,
+                 statusValue:str,
+                 color="primary"):
         """Sets the value of the status default values."""
-        self.instrumentID = instrumentID
-        self.statusName = statusName
-        self.statusValue = statusValue
-        self.color = color
+        try:
+            instrumentID = int(instrumentID)
+        except:
+            raise ValueError('instrumentID must be castable as an integer')
+        try:
+            statusName = str(statusName)
+            statusValue =  str(statusValue)
+            color = str(color)
+        except:
+            raise ValueError('statusName, statusValue, and color must be castable as strings')
+        if(instrumentID <= 0 or 
+           statusName.strip() == "" or 
+           statusValue.strip() == "" or 
+           color.strip() == ""):
+            raise ValueError('instrumentID cannot be less than 0, and no other attribute can be empty or whitespace')
+        else:
+            self.instrumentID = instrumentID
+            self.statusName = statusName
+            self.statusValue = statusValue
+            self.color = color
 
     def serialize(self):
         """
