@@ -12,19 +12,21 @@
 		"@mui/x-date-pickers": "^6.0.3",
 		"@mui/x-date-pickers-pro": "^6.0.3",
 		"@testing-library/jest-dom": "^5.16.5",
-		"@testing-library/react": "^13.4.0",
-		"@testing-library/user-event": "^13.5.0",
+		"@testing-library/user-event": "^14.4.3",
 		"axios": "^1.3.2",
 		"bcryptjs": "^2.4.3",
 		"dayjs": "^1.11.7",
+		"mock-socket": "^9.2.1",
 		"mui": "^0.0.1",
 		"postgresql": "^0.0.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-scripts": "5.0.1",
+		"react-testing-library": "^8.0.1",
 		"react-virtuoso": "^4.0.6",
 		"socket.io": "^4.6.1",
 		"socket.io-client": "^4.6.1",
+		"socket.io-mock": "^1.3.2",
 		"web-vitals": "^2.1.4",
 		"yup": "^1.0.2"
 	},
@@ -55,6 +57,21 @@
 	},
 	"proxy": "http://localhost:5000/",
 	"devDependencies": {
-		"react-router-dom": "^6.7.0"
+		"@babel/preset-env": "^7.21.5",
+		"@babel/preset-react": "^7.18.6",
+		"@testing-library/react": "^14.0.0",
+		"babel-jest": "^29.5.0",
+		"enzyme": "^3.11.0",
+		"jest": "^27.5.1",
+		"jest-dom": "^4.0.0",
+		"jest-mock-axios": "^4.7.1",
+		"jest-websocket-mock": "^2.4.0",
+		"react-router-dom": "^6.7.0",
+		"react-test-renderer": "^18.2.0"
+	},
+	"jest": {
+		"moduleNameMapper": {
+			"axios": "axios/dist/node/axios.cjs"
+		}
 	}
 }

@@ -16,23 +16,9 @@ import Stack from '@mui/material/Stack';
  *     within the logsheet page.
  */
 function CalendarSearch() {
-	const [logMatrix, setLogMatrix] = useState([]);
 	const [selectedStartDate, setSelectedStartDate] = useState(null)
 	const [selectedEndDate, setSelectedEndDate] = useState(null)
 	const socket = useContext(SocketContext);
-
-	socket.on("updateObservations", (newLogJson) => {
-		let newLogObjs = JSON.parse(newLogJson)
-		let updatedMatrix = {}
-
-		Object.entries(newLogObjs).forEach(([id, incomingData]) => {
-			let curLog = logMatrix[id]
-
-			updatedMatrix[id] = { ...curLog, ...incomingData }
-			setLogMatrix((prevMatrix) => ({ ...prevMatrix, ...updatedMatrix }))
-		})
-
-	})
 
 	const handleClick = () => {
 		socket.emit("retrieveDateObservations", {
@@ -56,6 +42,7 @@ function CalendarSearch() {
 		return (
 			<LocalizationProvider dateAdapter={AdapterDayjs}>
 				<DatePicker
+					className={props.className}
 					value={props.value}
 					format="YYYY-MM-DD"
 					disableFuture={true}
@@ -80,6 +67,7 @@ function CalendarSearch() {
 			<Stack className="horiz-align vert-space" direction="row" spacing={2}>
 
 				<DateSelect
+					className={"selectorOne"}
 					helperText={"Start Date"}
 					minDate={null}
 					value={selectedStartDate}
@@ -87,6 +75,7 @@ function CalendarSearch() {
 				/>
 
 				<DateSelect
+					className={"selectorTwo"}
 					helperText={"End Date"}
 					minDate={selectedStartDate}
 					value={selectedEndDate}
@@ -95,7 +84,7 @@ function CalendarSearch() {
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={2}>
-				<Button variant="contained" color="success" onClick={handleClick}>Submit</Button>
+				<Button data-testid='submitButton' variant="contained" color="success" onClick={handleClick}>Submit</Button>
 			</Stack>
 
 		</>
