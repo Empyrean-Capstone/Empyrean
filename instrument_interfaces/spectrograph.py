@@ -1,6 +1,6 @@
+from dotenv import load_dotenv
 from serial import Serial
 from time import sleep
-import socketio
 
 from instrument import Instrument
 
@@ -231,8 +231,15 @@ class Spectrograph(Instrument):
 
 
 def main():
-    # if ID is not found register in the database
-    spectrograph = Spectrograph()
+    load_dotenv()
+
+    simulation_choice: str = utils.get_env_variable("SHELYAK_SIMULATE")
+
+    must_simulate: bool = False
+    if simulation_choice.lower() == "true":
+        must_simulate = True
+
+    spectrograph = Spectrograph(simulator=must_simulate)
 
 
 if __name__ == "__main__":

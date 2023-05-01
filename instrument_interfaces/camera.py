@@ -160,19 +160,14 @@ class Zwocamera(Instrument):
         "Observation ID": {"value": "N/A", "color": "primary"},
     }
 
-    def __init__(self, device="ZWO ASI2600MM Pro"):
+    def __init__(self, lib_path, device="ZWO ASI2600MM Pro"):
         """
         Parameters
         ----------
         device : str
             The name of the device to be connected
         """
-
-        # TODO: remove
-        env_filename = "../../ASI_linux_mac_SDK_V1.28/lib/x64/libASICamera2.so.1.27"
-        #  env_filename = "/Users/joellama/ASI_linux_mac_SDK_V1.28/lib/mac/libASICamera2.dylib"
-
-        asi.init(env_filename)
+        asi.init(lib_path)
 
         num_cameras = asi.get_num_cameras()
 
@@ -407,15 +402,17 @@ class Zwocamera(Instrument):
         return img
 
     def complete(self):
-        """Let the backend know that the camera has completed its exposures"""
+        """Let the backend know that the camera has completed its exposures."""
         Instrument.sio.emit("exposure_complete")
 
 
 def main():
     load_dotenv()
-    zwo_model_choice: str = utils.get_env_variable("ZWO_MODEL")
 
-    camera = Zwocamera(device=zwo_model_choice)
+    zwo_model_choice: str = utils.get_env_variable("ZWO_MODEL")
+    zwo_lib_path: str = utils.get_env_variable("ZWO_LIB_PATH")
+
+    camera = Zwocamera(zwo_lib_path, device=zwo_model_choice)
 
 
 if __name__ == "__main__":
