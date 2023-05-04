@@ -42,7 +42,6 @@ function CalendarSearch() {
 		return (
 			<LocalizationProvider dateAdapter={AdapterDayjs}>
 				<DatePicker
-					className={props.className}
 					value={props.value}
 					format="YYYY-MM-DD"
 					disableFuture={true}
@@ -67,7 +66,6 @@ function CalendarSearch() {
 			<Stack className="horiz-align vert-space" direction="row" spacing={2}>
 
 				<DateSelect
-					className={"selectorOne"}
 					helperText={"Start Date"}
 					minDate={null}
 					value={selectedStartDate}
@@ -75,7 +73,6 @@ function CalendarSearch() {
 				/>
 
 				<DateSelect
-					className={"selectorTwo"}
 					helperText={"End Date"}
 					minDate={selectedStartDate}
 					value={selectedEndDate}
@@ -84,7 +81,7 @@ function CalendarSearch() {
 			</Stack>
 
 			<Stack className="horiz-align vert-space" direction="row" spacing={2}>
-				<Button data-testid='submitButton' variant="contained" color="success" onClick={handleClick}>Submit</Button>
+				<Button variant="contained" color="success" onClick={handleClick}>Submit</Button>
 			</Stack>
 
 		</>
