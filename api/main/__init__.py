@@ -33,22 +33,27 @@ def __get_env_variable(name: str) -> str:
 # https://github.com/miguelgrinberg/Flask-SocketIO-Chat
 app = Flask(__name__)
 
+# loads .env file into the envrionment correctly.
+load_dotenv()
+
 # Set config for the app
 app.config["SESSION_COOKIE_HTTPONLY"] = False
 app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_SECURE"] = True
-
-# loads .env file into the envrionment correctly.
-load_dotenv()
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# see https://flask.palletsprojects.com/en/2.2.x/quickstart/#sessions
+# for making good secret keys
+app.config["SECRET_KEY"] = "tk2icrNWnrIfG1pYOCrN6Q"
+
+
+# init the database
 db = SQLAlchemy(app)
 from .models import *
 
 migrate = Migrate(app, db)
 
-# see https://flask.palletsprojects.com/en/2.2.x/quickstart/#sessions
-# for making good secret keys
-app.config["SECRET_KEY"] = "tk2icrNWnrIfG1pYOCrN6Q"
 
 # Allow requests from our react app
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
