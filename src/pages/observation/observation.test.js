@@ -1,10 +1,10 @@
 import React from 'react';
 import {render} from "@testing-library/react"
-import {About} from './about'
+import {Observation} from './observation'
 import '@testing-library/jest-dom'
 
-describe("<About />", () => {
+describe("<Observation />", () => {
     it("renders without crashing", () => {
-        render(<About/>)
+        render(<Observation/>)
     })
 })

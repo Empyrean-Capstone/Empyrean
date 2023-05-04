@@ -11,7 +11,7 @@ jest.mock('react-router-dom', () => ({
   useLocation: () => mockedUseLocation,
 }));
 
-describe("<Layout />", () => {
+describe("<Login />", () => {
     it("renders without crashing", () => {
         render(<Login/>)
     })

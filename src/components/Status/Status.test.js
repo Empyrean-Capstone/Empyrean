@@ -1,10 +1,10 @@
 import React from 'react';
 import {render} from "@testing-library/react"
-import {Header} from './Header'
+import {Status} from './Status'
 import '@testing-library/jest-dom'
 
-describe("<Header />", () => {
+describe("<Status />", () => {
     it("renders without crashing", () => {
-        render(<Header/>)
+        render(<Status/>)
     })
 })

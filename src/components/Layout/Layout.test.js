@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom'
-
 import {render, screen} from "@testing-library/react"
 import {Layout} from './Layout'
 import '@testing-library/jest-dom'
@@ -48,7 +47,7 @@ describe("<Layout />", () => {
         expect(screen.getByRole('button', {name: /Log Out/i})).toBeEnabled
     })
 
-    it("enables log out button", () => {
+    it("correctly links to the about page", () => {
         render(
         <BrowserRouter>
         <Layout/>
@@ -57,7 +56,7 @@ describe("<Layout />", () => {
         expect(screen.getByRole('link', {name: /About/i}).href).toBe("http://localhost/about")
     })
 
-    it("enables log out button", () => {
+    it("correctly links to the contact page", () => {
         render(
         <BrowserRouter>
         <Layout/>
