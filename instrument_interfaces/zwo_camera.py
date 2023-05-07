@@ -5,124 +5,17 @@ import sys
 import tempfile
 import time
 
-from instrument import Instrument
-import utils
+from instrument_interfaces import utils
+from instrument_interfaces.instrument import Instrument
 
 from astropy.time import Time
-from tqdm.auto import trange
 import numpy as np
 
 # source and docs: https://github.com/python-zwoasi/python-zwoasi
 import zwoasi as asi
 
 
-class Camera:
-    """FIXME: This is an incomplete class to create a simulation
-    of the features found in the ZWOCamera class"""
-
-    def __init__(self, device="/dev/cu.", socketio=None, simulator=False):
-        """TODO."""
-        self.sio = socketio
-        if simulator:
-            self.simulation = True
-            self.device = None  # Replace with instance of K8056
-        else:
-            self.simulation = False
-            self.device = Zwocamera()
-        self.id = self.sio.emit("get_id", "camera")
-
-    # Does Nothing
-
-    def expose(self, request_input):
-        """
-        TODO.
-
-        Args:
-            nexp ():
-            itime ():
-        """
-        if self.simulation:
-            global continue_obs
-            data: dict = {}
-
-            nexp = request_input["num_exposures"]
-            itime = request_input["exposure_duration"]
-
-            continue_obs = True
-
-            for cur_exp in trange(int(nexp)):
-                for exp_prog in trange(int(itime)):
-                    self.emit_status({"camera": "Busy"})
-
-                    data = {
-                        "Observation ID": request_input["OBSID"],
-                        "Exposure Duration": f"{exp_prog}/{itime}",
-                        "exp_number": int(cur_exp),
-                        "Current Exposure": f"{cur_exp}/{nexp}",
-                    }
-
-                    self.emit_status(data)
-
-                    time.sleep(1)
-
-                if continue_obs == False:
-                    break
-
-            self.emit_status({"camera": "Idle"})
-            self.sio.emit("set_obs_type", 0)
-
-            data = {
-                "Observation ID": request_input["OBSID"],
-                "Exposure Duration": 0,
-                "exp_number": 0,
-                "itime_total": 1,
-                "Current Exposure": 1,
-            }
-
-            self.emit_status(data)
-
-            # return type of exposure will be a one dim array from numpy.frombuffer()
-            return []
-
-    def return_image_data(self, image, request_input):
-        self.sio.emit("save_img", {"image": image, "exposure_data": request_input})
-
-    def sequence(self, request_input):
-        """
-        TODO.
-
-        Args:
-            data ():
-        """
-        data: dict = {}
-
-        num_exposures = int(request_input["num_exposures"])
-
-        for kk in trange(int(num_exposures)):
-            data = {
-                "Observation ID": request_input["OBSID"],
-                "exp_number": int(kk),
-                "Current Exposure": int(num_exposures),
-            }
-
-            self.emit_status(data)
-
-            tstart = Time.now()
-            image = self.expose(request_input)
-            tend = Time.now()
-
-            time.sleep(1)
-            self.return_image_data(image, request_input)
-            time.sleep(1)
-
-        self.sio.emit("set_obs_type", 0)
-        self.emit_status({"camera": "Finished"})
-
-    def emit_status(self, status: dict) -> None:
-        self.sio.emit("update_status", data=(self.id, status))
-
-
-class Zwocamera(Instrument):
+class ZwoCamera(Instrument):
     """
     A class that interfaces between a physical camera and the coordination
     backend
@@ -160,7 +53,7 @@ class Zwocamera(Instrument):
         "Observation ID": {"value": "N/A", "color": "primary"},
     }
 
-    def __init__(self, lib_path, device="ZWO ASI2600MM Pro"):
+    def __init__(self, lib_path: str, device: str="ZWO ASI2600MM Pro"):
         """
         Parameters
         ----------
@@ -188,8 +81,9 @@ class Zwocamera(Instrument):
             sys.exit(0)
 
         self.camera = asi.Camera(idx)
-        self.camera_info = self.camera.get_camera_property()
-        self.name = self.camera_info["Name"]
+
+        camera_info = self.camera.get_camera_property()
+        self.name = camera_info["Name"]
 
         self.exposure_terminated = False
 
@@ -412,7 +306,7 @@ def main():
     zwo_model_choice: str = utils.get_env_variable("ZWO_MODEL")
     zwo_lib_path: str = utils.get_env_variable("ZWO_LIB_PATH")
 
-    camera = Zwocamera(zwo_lib_path, device=zwo_model_choice)
+    camera = ZwoCamera(zwo_lib_path, device=zwo_model_choice)
 
 
 if __name__ == "__main__":
