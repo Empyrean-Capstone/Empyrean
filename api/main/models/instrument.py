@@ -1,4 +1,4 @@
-from api.main import db
+from main import db
 
 class Instrument( db.Model ):
     """
@@ -35,7 +35,7 @@ class Instrument( db.Model ):
         """
         Allows for a printable representation of the given instrument
         """
-        if instrumentID == None:
+        if self.instrumentID == None:
             return f'{self.instrumentName} is not yet in a database'
 
         return 'ID: {}. \n Name: {}'.format( self.instrumentId, self.instrumentName )
