@@ -1,5 +1,9 @@
-from api.main import db, app
+"""TODO."""
+
+
 from passlib.hash import sha256_crypt
+
+from main import db, app
 
 
 class User(db.Model):
@@ -47,7 +51,7 @@ class User(db.Model):
         if type(init_data) is dict:
             self.set_attrs(init_data)
         else:
-            raise ValueError( 'init_data must be iterable like a dictionary' )
+            raise ValueError("init_data must be iterable like a dictionary")
 
     def __iter__(self):
         """
@@ -83,4 +87,3 @@ class User(db.Model):
             if key == "password":
                 val = sha256_crypt.hash(val)
             setattr(self, key.lower(), val)
-

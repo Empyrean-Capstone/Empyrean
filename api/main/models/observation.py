@@ -79,7 +79,7 @@ class Observation(db.Model):
     reworder = db.Column(db.String)
     status = db.Column(db.String, default="Pending")
 
-    def __init__(self, init_dict):
+    def __init__(self, init_dict: dict):
         """
         Intialized the observation with the given devault values
 
@@ -90,10 +90,7 @@ class Observation(db.Model):
                 Note: not all are needed, many can be initialized initially
                       as null.
         """
-        if type(init_dict) is dict:
-            self.set_attrs(init_dict)
-        else:
-            raise ValueError( 'init_dict must be iterable like a dictionary' )
+        self.set_attrs(init_dict)
 
     def __iter__(self):
         """
@@ -112,7 +109,9 @@ class Observation(db.Model):
             dict
                 A dictionary of the logsheet ready for representation
         """
-        target: str = self.object if self.obs_type.lower() == "object" else self.obs_type.lower()
+        target: str = (
+            self.object if self.obs_type.lower() == "object" else self.obs_type.lower()
+        )
 
         return {
             self.id: {

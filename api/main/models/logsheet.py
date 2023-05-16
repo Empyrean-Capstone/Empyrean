@@ -1,5 +1,9 @@
-from api.main import db
+"""TODO."""
+
 from datetime import datetime
+
+from main import db
+
 
 class Logsheet(db.Model):
     """
@@ -29,3 +33,19 @@ class Logsheet(db.Model):
         """
 
         super().__init__()
+
+
+    def set_attrs(self, attrs: dict):
+        """
+        Sets the attributes of the object. Can be used to update or initialize
+        the object.
+
+        Parameters:
+        -----------
+            attrs : dict
+                Of all of the attributes to be upgraded
+        """
+
+        for key, val in attrs.items():
+            key = str(key).lower()
+            setattr(self, key, val)

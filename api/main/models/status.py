@@ -25,32 +25,40 @@ class Status(db.Model):
     statusValue = db.Column(db.String(), nullable=False)
     color = db.Column(db.String(), nullable=False)
 
-    def __init__(self,
-                 instrumentID:int,
-                 statusName:str,
-                 statusValue:str,
-                 color="primary"):
+    def __init__(
+        self, instrumentID: int, statusName: str, statusValue: str, color="primary"
+    ):
         """Sets the value of the status default values."""
         try:
             instrumentID = int(instrumentID)
-        except:
-            raise ValueError('instrumentID must be castable as an integer')
+        except Exception as exc:
+            raise ValueError("instrumentID must be castable as an integer") from exc
+
         try:
             statusName = str(statusName)
-            statusValue =  str(statusValue)
+            statusValue = str(statusValue)
             color = str(color)
-        except:
-            raise ValueError('statusName, statusValue, and color must be castable as strings')
-        if(instrumentID <= 0 or 
-           statusName.strip() == "" or 
-           statusValue.strip() == "" or 
-           color.strip() == ""):
-            raise ValueError('instrumentID cannot be less than 0, and no other attribute can be empty or whitespace')
-        else:
-            self.instrumentID = instrumentID
-            self.statusName = statusName
-            self.statusValue = statusValue
-            self.color = color
+
+        except Exception as exc:
+            raise ValueError(
+                "statusName, statusValue, and color must be castable as strings"
+            ) from exc
+
+        # Surrogate keys < 1 are frowned upon
+        if (
+            instrumentID < 1
+            or statusName.strip() == ""
+            or statusValue.strip() == ""
+            or color.strip() == ""
+        ):
+            raise ValueError(
+                "instrumentID cannot be less than 1, and no other attribute can be empty or whitespace"
+            )
+
+        self.instrumentID = instrumentID
+        self.statusName = statusName
+        self.statusValue = statusValue
+        self.color = color
 
     def serialize(self):
         """
