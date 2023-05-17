@@ -1,4 +1,4 @@
-from api.main import db
+from main import db
 from datetime import datetime
 
 class Logsheet(db.Model):

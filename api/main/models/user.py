@@ -1,4 +1,4 @@
-from api.main import db, app
+from main import db, app
 from passlib.hash import sha256_crypt
 
 
