@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  api:
+    build: ./api
+    container_name: empyrean_api_c
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./api:/api
+
+  db:
+    container_name: empyrean_db_c
+    environment:
+      - POSTGRES_DB=empyrean
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    image: "postgres:15.3"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  src:
+    build: .
+    container_name: empyrean_src_c
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+    volumes:
+      - ./src:/app/src
