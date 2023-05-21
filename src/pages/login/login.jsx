@@ -52,171 +52,174 @@ function Login() {
 
 	const [showPassword, setShowPassword] = React.useState(true);
 
-	return (
-		<Grid
-			container
-			spacing={0}
-			display="flex"
-			alignItems="center"
-			justifyContent="center"
-			sx={{ backgroundColor: "#ebeef2" }}
-			style={{ minHeight: '100vh' }
+	function handleSubmit(event) {
+		/**
+		 * Checks the login request and allows the user to login.
+		 * @param {JSX element} Takes in the username and password fields.
+		 * @return {Boolean} Response to user login request.
+		 */
+		function validateLoginRequest(values) {
+			try {
+				loginFormSchema.validateSync(values, { abortEarly: false })
+
+				return true
+			} catch (validation_err) {
+				let errors = {}
+
+				validation_err.inner.forEach(error => {
+					if (error.path) {
+						errors[error.path] = error.message;
+					}
+				});
+
+				setInputErrs({ ...inputErrs, ...errors })
+				return false
 			}
-		>
-			<Grid item>
-				<PaperPane
-					sx={{
-						width: 400,
-						height: '20%',
-					}}
-				>
-					<img src={require("../../images/lowell.png")} alt="Logo" />
+		}
 
-					{/*Represents a text field with several advanced features.*/}
-					<TextField
-						sx={{ mt: 2, mb: 2 }}
-						required
-						fullWidth
-						disabled={isLoading}
-						type="text"
-						key={"Username"}
-						label={"Username"}
-						id="username"
-						variant="filled"
-						value={creds["username"]}
-						onChange={handleCredChange("username")}
-						error={inputErrs["username"] === "" ? false : true}
-						helperText={inputErrs["username"]}
-						InputLabelProps={{
-							shrink: true,
-						}}
-					/>
+		// Sends a post request to authenticate a user.
+		const attemptLogin = async (values) => {
+			try {
+				let auth_res = await axios.post(
+					`/api/auth_login/`,
+					values,
+					{
+						withCredentials: true
+					}
+				)
 
-					{/*Represents a text field with several advanced features.*/}
-					<TextField
-						sx={{ mt: 2, mb: 2 }}
-						required
-						fullWidth
-						disabled={isLoading}
-						type={showPassword ? 'text' : 'password'}
-						key={"Password"}
-						label="Password"
-						id="filled-start-adornment"
-						variant="filled"
-						value={creds["password"]}
-						onChange={handleCredChange("password")}
-						error={inputErrs["password"] === "" ? false : true}
-						helperText={inputErrs["password"]}
-						InputProps={{
-							endAdornment: <InputAdornment position="end">
-								<IconButton
-									// Allows a user to change password visibility for privacy.
-									aria-label="toggle password visibility"
-									onClick={() => setShowPassword((show) => !show)}
-									onMouseDown={(event) => {
-										event.preventDefault();
-									}}
-									edge="end"
-								>
-									{showPassword ? <VisibilityOff /> : <Visibility />}
-								</IconButton>
-							</InputAdornment>
-						}}
-						InputLabelProps={{
-							shrink: true,
-						}}
-					/>
+				console.log(auth_res.status)
 
-					<Stack
-						alignItems="center"
-						justifyContent="center"
-						direction="row" spacing={3}
+				if (auth_res.status === 200) {
+					navigate("/observation");
+				}
+			}
+			catch (err) {
+				setAuthErr({
+					set: true,
+					msg: "Credentials are incorrect",
+				})
+			}
+			finally {
+				setLoading(false)
+			}
+		};
+
+		event.preventDefault()
+
+		setLoading(true);
+
+		setInputErrs(defaultCredVals)
+
+		const isFormValid = validateLoginRequest(creds)
+
+		if (isFormValid) attemptLogin(creds);
+		else setLoading(false)
+	}
+
+	return (
+		<form onSubmit={handleSubmit}>
+			<Grid
+				container
+				spacing={0}
+				display="flex"
+				alignItems="center"
+				justifyContent="center"
+				sx={{ backgroundColor: "#ebeef2" }}
+				style={{ minHeight: '100vh' }
+				}
+			>
+				<Grid item>
+					<PaperPane
+						sx={{
+							width: 400,
+							height: '20%',
+						}}
 					>
-						<LoadingButton
+						<img src={require("../../images/lowell.png")} alt="Logo" />
+
+						{/*Represents a text field with several advanced features.*/}
+						<TextField
 							sx={{ mt: 2, mb: 2 }}
-							type="submit"
-							variant="contained"
-							onClick={() => {
-								/**
-								 * Checks the login request and allows the user to login.
-								 * @param {JSX element} Takes in the username and password fields.
-								 * @return {Boolean} Response to user login request.
-								 */
-								function validateLoginRequest(values) {
-									try {
-										loginFormSchema.validateSync(values, { abortEarly: false })
-
-										return true
-									} catch (validation_err) {
-										let errors = {}
-
-										validation_err.inner.forEach(error => {
-											if (error.path) {
-												errors[error.path] = error.message;
-											}
-										});
-
-										setInputErrs({ ...inputErrs, ...errors })
-										return false
-									}
-								}
-
-								// Sends a post request to authenticate a user.
-								const attemptLogin = async (values) => {
-									console.log(values)
-
-									try {
-										let auth_res = await axios.post(
-											`/api/auth_login/`,
-											values,
-											{
-												withCredentials: true
-											}
-										)
-										if (auth_res.status === 200) {
-											navigate("/observation");
-										}
-									}
-									catch (err) {
-										setAuthErr({
-											set: true,
-											msg: "Credentials are incorrect",
-										})
-									}
-									finally {
-										setLoading(false)
-									}
-								};
-
-								setLoading(true);
-
-								setInputErrs(defaultCredVals)
-
-								const isFormValid = validateLoginRequest(creds)
-
-								//  const salt = bcrypt.genSaltSync(0);
-								//  values.password = bcrypt.hashSync(values.password, salt);
-
-								if (isFormValid) attemptLogin(creds);
-								else setLoading(false)
-
+							required
+							fullWidth
+							disabled={isLoading}
+							type="text"
+							key={"Username"}
+							label={"Username"}
+							id="username"
+							variant="filled"
+							value={creds["username"]}
+							onChange={handleCredChange("username")}
+							error={inputErrs["username"] === "" ? false : true}
+							helperText={inputErrs["username"]}
+							InputLabelProps={{
+								shrink: true,
 							}}
-							loadingPosition="center"
-							loading={isLoading}
+						/>
+
+						{/*Represents a text field with several advanced features.*/}
+						<TextField
+							sx={{ mt: 2, mb: 2 }}
+							required
+							fullWidth
+							disabled={isLoading}
+							type={showPassword ? 'text' : 'password'}
+							key={"Password"}
+							label="Password"
+							id="filled-start-adornment"
+							variant="filled"
+							value={creds["password"]}
+							onChange={handleCredChange("password")}
+							error={inputErrs["password"] === "" ? false : true}
+							helperText={inputErrs["password"]}
+							InputProps={{
+								endAdornment: <InputAdornment position="end">
+									<IconButton
+										// Allows a user to change password visibility for privacy.
+										aria-label="toggle password visibility"
+										onClick={() => setShowPassword((show) => !show)}
+										onMouseDown={(event) => {
+											event.preventDefault();
+										}}
+										edge="end"
+									>
+										{showPassword ? <VisibilityOff /> : <Visibility />}
+									</IconButton>
+								</InputAdornment>
+							}}
+							InputLabelProps={{
+								shrink: true,
+							}}
+						/>
+
+						<Stack
+							alignItems="center"
+							justifyContent="center"
+							direction="row" spacing={3}
 						>
-							Login
-						</LoadingButton>
-					</ Stack>
+							<LoadingButton
+								sx={{ mt: 2, mb: 2 }}
+								type="submit"
+								variant="contained"
 
-					<Snackbar open={authState.set} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
-						<Alert variant="standard" severity="error" sx={{ width: '100%' }}>
-							{authState.msg}
-						</Alert>
-					</Snackbar>
+								loadingPosition="center"
+								loading={isLoading}
+							>
+								<span>Login</span>
+							</LoadingButton>
+						</ Stack>
 
-				</PaperPane >
-			</Grid>
-		</Grid >
+						<Snackbar open={authState.set} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+							<Alert variant="standard" severity="error" sx={{ width: '100%' }}>
+								{authState.msg}
+							</Alert>
+						</Snackbar>
+
+					</PaperPane >
+				</Grid>
+			</Grid >
+		</form>
 	)
 }
 
