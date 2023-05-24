@@ -47,13 +47,40 @@ app.config["SECRET_KEY"] = "tk2icrNWnrIfG1pYOCrN6Q"
 
 # init the database
 db = SQLAlchemy(app)
-from .models import *
+from . import models
+
+# initialize all tables and default items
+with app.app_context():
+    db.create_all()
+
+    default_user_data: dict = {
+        "name": "Admin",
+        "username": "admin",
+        "password": "password",
+        "isadmin": True,
+    }
+
+    default_user = models.user.User.query.filter_by(username=default_user_data["username"]).first()
+
+    if not default_user:
+        default_user = models.user.User(default_user_data)
+        db.session.add(default_user)
+        db.session.commit()
+
+    system_status = models.status.Status.query.filter_by(statusName="System").first()
+
+    if not system_status:
+        system_status = models.status.Status(1, "System", "Ready", "success")
+        db.session.add(system_status)
+        db.session.commit()
 
 migrate = Migrate(app, db)
 
 
+
 # Allow requests from our react app
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+
 
 # Create socket server that the instruments and the React server can
 # communicate with
@@ -69,6 +96,7 @@ sio = SocketIO(
 
 
 DATA_FILEPATH = app.config["DATA_FILEPATH"]
+
 
 # Import and then register all blueprints to be connected to the app
 # NOTE: It seems like these need to be imported here instead of
@@ -88,9 +116,3 @@ app.register_blueprint(observations)
 app.register_blueprint(resolve)
 app.register_blueprint(status)
 app.register_blueprint(users)
-
-# Import the general routes to be connected into the app
-from . import views
-
-# Import the models for the tests
-from . import models
