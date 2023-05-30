@@ -7,7 +7,7 @@ import time
 from astropy.time import Time
 import numpy as np
 
-from instrument_interfaces.instrument import Instrument
+from instrument import Instrument
 
 
 class SimulatedCamera(Instrument):

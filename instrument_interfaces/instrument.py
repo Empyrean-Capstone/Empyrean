@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
 import socketio
 
-value = "Dummy value"
-host = "http://0.0.0.0:5000"
+VALUE = "Dummy value"
+HOST = "http://localhost:5000/"
 
 
 class Instrument(metaclass=ABCMeta):
@@ -41,8 +41,8 @@ class Instrument(metaclass=ABCMeta):
 
     # should be set to default values
     status_dictionary = {
-        "status_name1": {"value": value, "color": value},
-        "status_name2": {"value": value, "color": value},
+        "status_name1": {"value": VALUE, "color": VALUE},
+        "status_name2": {"value": VALUE, "color": VALUE},
     }
 
     sio = socketio.Client(
@@ -57,7 +57,7 @@ class Instrument(metaclass=ABCMeta):
         that subclasses will implement. The super for this function must
         be called for the normal operation of this instrument.
         """
-        self.sio.connect(host)
+        self.sio.connect(HOST)
         self.name = self.get_instrument_name()
         self.id = self.sio.call("get_instrument_id", self.name)
         self.update_status(self.status_dictionary)
