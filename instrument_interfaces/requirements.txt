@@ -5,3 +5,8 @@ python-socketio==5.7.2
 requests==2.28.1
 websocket-client==1.5.1
 zwoasi==0.1.0.1
+
+
+# spectrograph
+pyserial==3.5
+python-dotenv==0.21.0

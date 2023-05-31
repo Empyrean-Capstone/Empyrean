@@ -1,0 +1,10 @@
+FROM python:3.11
+
+WORKDIR /instrument_interfaces
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY __init__.py .env utils.py instrument.py spectrograph.py ./
+
+CMD ["python", "spectrograph.py"]

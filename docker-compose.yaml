@@ -32,7 +32,9 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
 
   camera:
-    build: ./instrument_interfaces
+    build:
+      context: ./instrument_interfaces
+      dockerfile: Dockerfile.camera
     container_name: empyrean_cam_c
     depends_on:
       api:
@@ -40,6 +42,16 @@ services:
     network_mode: "host"
     volumes:
       - tmp_dir:/tmp
+
+  spectrograph:
+    build:
+      context: ./instrument_interfaces
+      dockerfile: Dockerfile.spectrograph
+    container_name: empyrean_spectro_c
+    depends_on:
+      api:
+        condition: service_healthy
+    network_mode: "host"
 
   src:
     build: .
