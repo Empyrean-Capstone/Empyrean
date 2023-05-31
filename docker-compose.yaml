@@ -17,6 +17,7 @@ services:
       - "5000:5000"
     volumes:
       - ./api:/api
+      - ./fits-data:/fits_data
       - tmp_dir:/tmp
 
   db:
