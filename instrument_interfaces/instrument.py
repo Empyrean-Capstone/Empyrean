@@ -1,5 +1,9 @@
+"""TODO."""
+
+
 from abc import ABCMeta, abstractmethod
 import socketio
+
 
 VALUE = "Dummy value"
 HOST = "http://localhost:5000/"
@@ -78,8 +82,6 @@ class Instrument(metaclass=ABCMeta):
         instrument.
         """
 
-        pass
-
     def update_status(self, update_dict):
         """
         Sends an emmision to the backend with the new statuses of a given
@@ -130,12 +132,6 @@ class Instrument(metaclass=ABCMeta):
             pass
         """
         # put all sio endpoints in this function when implemented
-        pass
-
-
-"""
-Each file should have a main method that runs the this code, plus whatever other code to be implemented
-"""
 
 
 def main():

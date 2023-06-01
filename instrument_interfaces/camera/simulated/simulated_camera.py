@@ -7,10 +7,20 @@ import time
 from astropy.time import Time
 import numpy as np
 
-from instrument import Instrument
+from instrument_interfaces.instrument import Instrument
 
 
 class SimulatedCamera(Instrument):
+    """
+    TODO.
+
+    Attributes:
+        camera:
+        name:
+        exposure_terminated:
+        exposure_terminated:
+        exposure_terminated:
+    """
     status_dictionary = {
         "Camera": {"value": "Idle", "color": "success"},
         "Current Exposure": {"value": "N/A", "color": "primary"},

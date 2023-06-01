@@ -4,7 +4,7 @@ Integration tests for Zwocamera.
 Note: requires that camera is plugged in.
 """
 
-from zwo_camera import ZwoCamera
+from instrument_interfaces.camera.zwo.zwo_camera import ZwoCamera
 
 import pytest
 
