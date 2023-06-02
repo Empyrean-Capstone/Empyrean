@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./api
+    container_name: empyrean_api_c
+    depends_on:
+      - db
+    healthcheck:
+      test: curl --fail http://localhost:5000/api/observations/ || exit 1
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./api:/api
+      - ./fits-data:/fits_data
+      - tmp_dir:/tmp
+
+  db:
+    container_name: empyrean_db_c
+    environment:
+      - POSTGRES_DB=empyrean
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    image: "postgres:15.3"
+    restart: always
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  camera:
+    build:
+      context: ./instrument_interfaces
+      dockerfile: Dockerfile.camera
+    container_name: empyrean_cam_c
+    depends_on:
+      api:
+        condition: service_healthy
+    network_mode: "host"
+    volumes:
+      - tmp_dir:/tmp
+
+  spectrograph:
+    build:
+      context: ./instrument_interfaces
+      dockerfile: Dockerfile.spectrograph
+    container_name: empyrean_spectro_c
+    depends_on:
+      api:
+        condition: service_healthy
+    network_mode: "host"
+
+  src:
+    build: .
+    container_name: empyrean_src_c
+    ports:
+      - "3000:80"
+    volumes:
+      - ./src:/app/src
+
+volumes:
+  tmp_dir:

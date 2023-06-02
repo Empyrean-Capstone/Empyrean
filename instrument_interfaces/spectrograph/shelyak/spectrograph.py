@@ -1,9 +1,14 @@
+"""TODO."""
+
+
+from time import sleep
+
 from dotenv import load_dotenv
 from serial import Serial
-from time import sleep
 
 from instrument_interfaces import utils
 from instrument_interfaces.instrument import Instrument
+
 
 PORTS = {
     "Mirror": 1,

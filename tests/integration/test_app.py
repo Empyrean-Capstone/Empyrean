@@ -216,7 +216,7 @@ def test_camera_exposure_complete():
     test_cam = setup()
 
     with app.app_context():
-        new_system_status = status.Status(0, "System", "Busy", "warning")
+        new_system_status = status.Status(1, "System", "Busy", "warning")
         db.session.add(new_system_status)
         db.session.commit()
 

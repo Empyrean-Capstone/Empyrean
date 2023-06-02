@@ -1,0 +1,20 @@
+FROM python:3.11
+
+WORKDIR /instrument_interfaces
+
+# spectrograph type to use
+ARG DIR=./spectrograph/shelyak
+
+COPY $DIR/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+	 # used by all spectrographs
+COPY __init__.py utils.py instrument.py \
+		 # dependent on the spectrograph in use
+		 $DIR/.env $DIR/spectrograph.py \
+		 # destination in container relative to $WORKDIR
+		 ./
+
+ENV PYTHONPATH "${PYTHONPATH}:/"
+
+CMD ["python", "spectrograph.py"]

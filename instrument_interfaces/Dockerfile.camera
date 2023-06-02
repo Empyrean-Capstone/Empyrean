@@ -1,0 +1,20 @@
+FROM python:3.11
+
+WORKDIR /instrument_interfaces
+
+# camera type to use
+ARG DIR=./camera/simulated
+
+COPY $DIR/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+	 # used by all cameras
+COPY __init__.py instrument.py \
+		 # dependent upon specific camera
+		 $DIR/simulated_camera.py \
+		 # destination in container relative to $WORKDIR
+		 ./
+
+ENV PYTHONPATH "${PYTHONPATH}:/"
+
+CMD ["python", "simulated_camera.py"]
