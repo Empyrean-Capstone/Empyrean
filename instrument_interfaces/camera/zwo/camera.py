@@ -5,8 +5,8 @@ import sys
 import tempfile
 import time
 
-import utils
-from instrument import Instrument
+from instrument_interfaces import utils
+from instrument_interfaces.instrument import Instrument
 
 from astropy.time import Time
 import numpy as np
