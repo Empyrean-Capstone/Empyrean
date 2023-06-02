@@ -1,6 +1,0 @@
-This is a series of gotchas so that no two people are stuck on the same problem for the same amount of time
-
-1. When working with the database, make sure to look for stuff with flask-sqlalchemy. This 
-    is because the full sqlalchemy has a lot of bells and whistles that are irrelevant to flask.
-    In particular, sessions do not seem to be necessary with flask, as they are inherant in the 
-    creation of the db object. 
