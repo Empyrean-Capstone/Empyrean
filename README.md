@@ -1,7 +1,8 @@
 # 🔭 Empyrean
 
 
-![Node Build](https://github.com/Empyrean-Capstone/Empyrean/actions/workflows/setup.yml/badge.svg)
+![Node Build Health](https://github.com/Empyrean-Capstone/Empyrean/actions/workflows/setup.yml/badge.svg)
+![Containerization Health](https://github.com/Empyrean-Capstone/Empyrean/actions/workflows/build_services.yml/badge.svg)
 </br>
 </br>
 
