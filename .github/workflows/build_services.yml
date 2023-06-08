@@ -4,7 +4,7 @@
 
 name: Containerization Health
 on:
-  push:
+  pull_request:
     branches: ["main"]
     paths:
       - "package.json"
@@ -13,9 +13,6 @@ on:
       - "api/**"
       - "instrument_interfaces/**"
       - ".github/workflows/**"
-
-  pull_request:
-    branches: ["main"]
 
 jobs:
   build_containers:

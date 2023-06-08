@@ -5,14 +5,12 @@
 
 name: Node Build Health
 on:
-  push:
-    branches: ["main", "ci-cd"]
+  pull_request:
+    branches: ["main"]
     paths:
       - "package.json"
       - "src/**"
       - ".github/workflows/**"
-  pull_request:
-    branches: ["main"]
 
 jobs:
   build_frontend:
