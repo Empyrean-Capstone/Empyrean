@@ -1,0 +1,24 @@
+# Sources:
+# https://stackoverflow.com/a/69677236
+
+
+name: Containerization Health
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "package.json"
+      - "pyproject.toml"
+      - "src/**"
+      - "api/**"
+      - "instrument_interfaces/**"
+      - ".github/workflows/**"
+
+jobs:
+  build_containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build image
+        run: docker-compose build

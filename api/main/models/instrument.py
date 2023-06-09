@@ -1,4 +1,4 @@
-from api.main import db
+from main import db
 
 
 class Instrument(db.Model):

@@ -1,7 +1,8 @@
 # 🔭 Empyrean
 
 
-![Node Build](https://github.com/Empyrean-Capstone/Empyrean/actions/workflows/setup.yml/badge.svg)
+![Node Build Health](https://github.com/Empyrean-Capstone/Empyrean/actions/workflows/setup.yml/badge.svg)
+![Containerization Health](https://github.com/Empyrean-Capstone/Empyrean/actions/workflows/build_services.yml/badge.svg)
 </br>
 </br>
 
@@ -30,9 +31,6 @@ To see what features and fixes are planned for our next release, please
 
 
 ## 🚨 Call to Action
-Join our project and provide assistance by:
+- Check out our [instructions for contribution](./CONTRIBUTING.md) if you are interested in participating in the development of Empyrean
 
-- Solving a ticket in [our list of open issues](https://github.com/Empyrean-Capstone/Empyrean/issues).
-    - When creating a [pull request](https://github.com/Empyrean-Capstone/Empyrean/pulls), kindly consider the time it takes for reviewing and testing, and maintain proper coding style. Please see our documentation for discussion about our chosen methods of formatting and documenting our source code.
-- Contributing feature requests by opening a new issue or [discussion](https://github.com/Empyrean-Capstone/Empyrean/discussions).
-- Drawing attention to our tool by [![starring Empyrean](https://img.shields.io/github/stars/Empyrean-Capstone/Empyrean?style=social&label=starring%20Empyrean)](https://github.com/Empyrean-Capstone/Empyrean/)
+- Don't hesitate to <sub>[![star Empyrean](https://img.shields.io/github/stars/Empyrean-Capstone/Empyrean?style=social&label=star%20Empyrean)](https://github.com/Empyrean-Capstone/Empyrean/)</sub> to draw attention to the work we're doing!

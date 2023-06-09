@@ -2,12 +2,12 @@
 import os
 import sys
 
-from flask import Flask
-from flask_socketio import SocketIO
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from dotenv import load_dotenv
+from flask import Flask
+from flask_cors import CORS
+from flask_migrate import Migrate
+from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
 
 
 # config helpers
@@ -30,18 +30,15 @@ def __get_env_variable(name: str) -> str:
     return key
 
 
-# https://github.com/miguelgrinberg/Flask-SocketIO-Chat
-app = Flask(__name__)
-
 # loads .env file into the envrionment correctly.
 load_dotenv()
 
-# Set config for the app
-app.config["SESSION_COOKIE_HTTPONLY"] = False
-app.config["SESSION_COOKIE_SAMESITE"] = "None"
-app.config["SESSION_COOKIE_SECURE"] = True
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# https://github.com/miguelgrinberg/Flask-SocketIO-Chat
+app = Flask(__name__)
+
+cfg_class = __get_env_variable("FLASK_CFG_CLASS")
+app.config.from_object("main.app_config." + cfg_class)
+
 
 # see https://flask.palletsprojects.com/en/2.2.x/quickstart/#sessions
 # for making good secret keys
@@ -50,13 +47,40 @@ app.config["SECRET_KEY"] = "tk2icrNWnrIfG1pYOCrN6Q"
 
 # init the database
 db = SQLAlchemy(app)
-from .models import *
+from . import models
+
+# initialize all tables and default items
+with app.app_context():
+    db.create_all()
+
+    default_user_data: dict = {
+        "name": "Admin",
+        "username": "admin",
+        "password": "password",
+        "isadmin": True,
+    }
+
+    default_user = models.user.User.query.filter_by(username=default_user_data["username"]).first()
+
+    if not default_user:
+        default_user = models.user.User(default_user_data)
+        db.session.add(default_user)
+        db.session.commit()
+
+    system_status = models.status.Status.query.filter_by(statusName="System").first()
+
+    if not system_status:
+        system_status = models.status.Status(1, "System", "Ready", "success")
+        db.session.add(system_status)
+        db.session.commit()
 
 migrate = Migrate(app, db)
 
 
+
 # Allow requests from our react app
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+
 
 # Create socket server that the instruments and the React server can
 # communicate with
@@ -70,12 +94,9 @@ sio = SocketIO(
     ping_timeout=60,
 )
 
-# Set variables from .env to global scope
-POSTGRES_URL = __get_env_variable("POSTGRES_URL")
-POSTGRES_USER = __get_env_variable("POSTGRES_USER")
-POSTGRES_PW = __get_env_variable("POSTGRES_PW")
-POSTGRES_DB = __get_env_variable("POSTGRES_DB")
-DATA_FILEPATH = __get_env_variable("DATA_FILEPATH")
+
+DATA_FILEPATH = app.config["DATA_FILEPATH"]
+
 
 # Import and then register all blueprints to be connected to the app
 # NOTE: It seems like these need to be imported here instead of
@@ -95,9 +116,3 @@ app.register_blueprint(observations)
 app.register_blueprint(resolve)
 app.register_blueprint(status)
 app.register_blueprint(users)
-
-# Import the general routes to be connected into the app
-from . import views
-
-# Import the models for the tests
-from . import models

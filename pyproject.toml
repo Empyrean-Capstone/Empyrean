@@ -10,4 +10,10 @@ version = "0.1.0"
 addopts = [
 	"--import-mode=importlib",
 ]
-pythonpath = "api"
+pythonpath = [
+	"api",
+	"instrument_interfaces"
+]
+testpaths = [
+	"tests"
+]
