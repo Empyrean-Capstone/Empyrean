@@ -15,6 +15,7 @@ def get_logs_json_str(observations: list):
     Returns:
         str: jsonified dictionary of observation data
     """
+
     rows: dict = {}
 
     for obs in observations:
@@ -110,6 +111,7 @@ class Observation(db.Model):
             dict
                 A dictionary of the logsheet ready for representation
         """
+
         target: str = (
             self.object if self.obs_type.lower() == "object" else self.obs_type.lower()
         )
