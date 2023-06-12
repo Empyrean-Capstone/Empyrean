@@ -60,7 +60,9 @@ with app.app_context():
         "isadmin": True,
     }
 
-    default_user = models.user.User.query.filter_by(username=default_user_data["username"]).first()
+    default_user = models.user.User.query.filter_by(
+        username=default_user_data["username"]
+    ).first()
 
     if not default_user:
         default_user = models.user.User(default_user_data)
@@ -75,7 +77,6 @@ with app.app_context():
         db.session.commit()
 
 migrate = Migrate(app, db)
-
 
 
 # Allow requests from our react app
@@ -109,7 +110,7 @@ from .resolve.views import resolve
 from .status.views import status
 from .users.views import users
 
-app.register_blueprint(file_writer, url_prefix="/api/file-writer")
+app.register_blueprint(file_writer)
 app.register_blueprint(login)
 app.register_blueprint(logsheet)
 app.register_blueprint(observations)
