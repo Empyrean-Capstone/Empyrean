@@ -1,5 +1,6 @@
 """Endpoints related to resolving celestial targets."""
 
+
 from flask import request
 from . import resolve, utils
 
@@ -14,7 +15,7 @@ def resolve_target():
         str:
             URI to newly created observation request.
     """
-    
+
     resolution_input: dict = request.get_json()
     celestial_body: str = resolution_input["object"]
 

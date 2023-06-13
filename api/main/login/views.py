@@ -8,11 +8,10 @@ http status references:
 
 
 from flask import request, session
+from passlib.hash import sha256_crypt
 
 from . import login
-from .. import db
 from ..models.user import User
-from passlib.hash import sha256_crypt
 
 
 @login.get("/")
@@ -25,9 +24,9 @@ def get_user():
         str
             The user's name
     """
-    id = session.get("userid")
+    user_id = session.get("userid")
 
-    if id is None:
+    if user_id is None:
         return "", 401
 
     username = session.get("username")
@@ -62,17 +61,15 @@ def post_login():
     except (AttributeError, TypeError):
         return "unauthorized", 401
 
-    else:
-        if cur_user is not None and sha256_crypt.verify(password_req, cur_user.password):
-            session["userid"] = str(cur_user.id)
-            session["username"] = cur_user.username
-            session["name"] = cur_user.name
-            session["isadmin"] = cur_user.isadmin
+    if cur_user is not None and sha256_crypt.verify(password_req, cur_user.password):
+        session["userid"] = str(cur_user.id)
+        session["username"] = cur_user.username
+        session["name"] = cur_user.name
+        session["isadmin"] = cur_user.isadmin
 
-            return "success", 200
+        return "success", 200
 
-        else:
-            return "unauthorized", 401
+    return "unauthorized", 401
 
 
 @login.post("/logout/")
