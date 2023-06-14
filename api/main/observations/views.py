@@ -1,5 +1,6 @@
 """Endpoints related to observation requests."""
 
+
 from flask import request, session
 
 from . import observations
@@ -8,11 +9,11 @@ from .. import db
 from ..logsheet.views import get_all_log_data
 from ..models import Status
 from ..models.observation import Observation, get_logs_json_str
-from ..status.views import get_current_obsid, get_system_status, set_system_status
+from ..status.views import get_current_obsid, set_system_status
 
 
-def __init_obs_records(request: dict) -> Observation:
-    new_observe = Observation(request)
+def __init_obs_records(obs_req: dict) -> Observation:
+    new_observe = Observation(obs_req)
 
     db.session.add(new_observe)
     db.session.commit()
@@ -23,20 +24,20 @@ def __init_obs_records(request: dict) -> Observation:
 def __init_obs_requests(obs_request: dict) -> list:
     i: int = 0
     obs: Observation
-    observations: list[Observation] = []
+    obs_reqs: list[Observation] = []
     ids: list[int] = []
 
     # For each of the observations requested, make an observation record
     # in the database
     while i < int(obs_request["num_exposures"]):
         obs = __init_obs_records(obs_request)
-        observations.append(obs)
+        obs_reqs.append(obs)
         i += 1
 
     # Let the frontend know that there are new observations for it to be appended
-    sio.emit("updateObservations", get_logs_json_str(observations))
+    sio.emit("updateObservations", get_logs_json_str(obs_reqs))
 
-    ids = [obs.id for obs in observations]
+    ids = [obs.id for obs in obs_reqs]
 
     return ids
 
@@ -70,14 +71,15 @@ def post_observation():
 
     set_system_status(True)
 
-
     obs_instructions: dict = request.get_json()
 
     obs_instructions["owner_id"] = session.get("userid")
     obs_instructions["observer"] = session.get("name")
 
     # Have the spectrograph switch to the correct observation type'
-    sio.emit("prepare_observation", data=(obs_instructions["obs_type"], obs_instructions))
+    sio.emit(
+        "prepare_observation", data=(obs_instructions["obs_type"], obs_instructions)
+    )
 
     return {}
 
@@ -116,7 +118,7 @@ def end_observation():
     db.session.commit()
 
     get_all_log_data()
-    sio.emit("set_obs_type", data=("object"))
+    sio.emit("set_obs_type", data="object")
 
     return {}
 
@@ -129,7 +131,7 @@ def conclude_exposure():
     """
 
     sio.emit("enable_request_form")
-    sio.emit("set_obs_type", data=("object"))
+    sio.emit("set_obs_type", data="object")
 
     system_status = Status.query.filter_by(statusName="System").first()
     system_status.set_attrs({"statusValue": "Ready", "color": "success"})

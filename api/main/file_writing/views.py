@@ -1,5 +1,6 @@
 """TODO."""
 
+
 from datetime import datetime, timedelta
 import math
 import os
@@ -10,11 +11,6 @@ import numpy as np
 from . import file_writer
 from .. import DATA_FILEPATH, db, sio
 from ..models.observation import Observation, get_logs_json_str
-
-
-@file_writer.route("/")
-def index():
-    return ""
 
 
 @sio.on("save_img")
@@ -39,7 +35,9 @@ def submit_data(image_path, exposure_data: dict, request_input: dict):
 
     date_obs: datetime = datetime.strptime(exposure_data["DATE-OBS"], timestr_fmt)
 
-    request_input["date_made_open_source"] = (date_obs + timedelta(weeks=26)).strftime(timestr_fmt)
+    opensrc_date: datetime = date_obs + timedelta(weeks=26)
+    request_input["date_made_open_source"] = opensrc_date.strftime(timestr_fmt)
+
     fits_path_head = __init_filename(date_obs)
     fits_path = __init_fits_abspath(DATA_FILEPATH, fits_path_head)
 
@@ -64,9 +62,11 @@ def __read_image_file(image_path: str) -> np.ndarray:
     return image
 
 
-def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_input: dict, filename: str):
-    def enter_request_input(hdu, input: dict):
-        hdu.header["OBSERVER"] = input["observer"]
+def __init_header_data_unit(
+    image: np.ndarray, exposure_data: dict, request_input: dict, filename: str
+):
+    def enter_request_input(hdu, req_input: dict):
+        hdu.header["OBSERVER"] = req_input["observer"]
 
         # TODO: whats the difference between this and IMAGETYP?
         hdu.header["OBSTYPE"] = {
@@ -74,18 +74,18 @@ def __init_header_data_unit(image: np.ndarray, exposure_data: dict, request_inpu
             "dark": "Dark",
             "flat": "Flat",
             "thar": "ThAr",
-        }[input["obs_type"]]
+        }[req_input["obs_type"]]
 
         # TODO: confirm that "Temperature" in ZWO ASI is CCD-TEMP
         #  hdu.header["CCD-TEMP"] = exposure_data["TEMPERAT"]
-        hdu.header["IMAGETYP"] = input["obs_type"]
+        hdu.header["IMAGETYP"] = req_input["obs_type"]
 
         if hdu.header["OBSTYPE"] == "Object":
-            hdu.header["OBJECT"] = input["object"]
-            hdu.header["RA"] = input["right_ascension"]
-            hdu.header["DEC"] = input["declination"]
-            hdu.header["ALT"] = input["altitude"]
-            hdu.header["AIRM"] = 1 / math.cos(float(input["altitude"]))  # airmass
+            hdu.header["OBJECT"] = req_input["object"]
+            hdu.header["RA"] = req_input["right_ascension"]
+            hdu.header["DEC"] = req_input["declination"]
+            hdu.header["ALT"] = req_input["altitude"]
+            hdu.header["AIRM"] = 1 / math.cos(float(req_input["altitude"]))  # airmass
         else:
             hdu.header["OBJECT"] = "None"
             hdu.header["RA"] = "+00:00:00.00"

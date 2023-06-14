@@ -1,5 +1,10 @@
-from main import db
+"""TODO."""
+
+
 from datetime import datetime
+
+from main import db
+
 
 class Logsheet(db.Model):
     """
@@ -18,14 +23,27 @@ class Logsheet(db.Model):
             given day.
     """
 
-    id = db.Column( db.Integer, primary_key = True )
-    date_created = db.Column( db.DateTime, default=datetime.utcnow )
-    starting_id = db.Column( db.Integer )
-    date_number = db.Column( db.String )
+    id = db.Column(db.Integer, primary_key=True)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    starting_id = db.Column(db.Integer)
+    date_number = db.Column(db.String)
 
     def __init__(self) -> None:
         """
         Initializes the object
         """
 
-        super().__init__()
+    def set_attrs(self, attrs: dict):
+        """
+        Sets the attributes of the object. Can be used to update or initialize
+        the object.
+
+        Parameters:
+        -----------
+            attrs : dict
+                Of all of the attributes to be upgraded
+        """
+
+        for key, val in attrs.items():
+            key = str(key).lower()
+            setattr(self, key, val)

@@ -34,7 +34,7 @@ def get_airmass(sky_coord):
     return obj_altaz.alt.value
 
 
-def query_for_target(target) -> tuple | dict:
+def query_for_target(target) -> tuple:
     """
     Finds the coordinates of the requested object
 
@@ -51,8 +51,7 @@ def query_for_target(target) -> tuple | dict:
     query: Table = Simbad.query_object(target, wildcard=True)
 
     if query is None:
-        # https://flask.palletsprojects.com/en/2.2.x/quickstart/#about-responses
-        return ({}, 502)
+        return "Invalid Response", 502
 
     sky_coord = SkyCoord(
         query[0]["RA"], query[0]["DEC"], unit=(units.hourangle, units.deg)
@@ -68,14 +67,11 @@ def query_for_target(target) -> tuple | dict:
 
     obj_alt = get_airmass(sky_coord)
 
-    if obj_alt > 15:
-        obj_vis_bool = "True"
-    else:
-        obj_vis_bool = "False"
+    obj_vis_bool: str = "True" if obj_alt > 15 else "False"
 
     return {
         "right_ascension": right_asc,
         "declination": dec,
         "altitude": f"{obj_alt:.2f}",
         "visible": f"{obj_vis_bool:s}",
-    }
+    }, 200
